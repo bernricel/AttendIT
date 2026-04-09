@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import FacultyLayout from '../components/faculty/FacultyLayout'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { getMyAttendanceRecords } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 
@@ -25,10 +25,11 @@ export default function FacultyAttendanceHistoryPage() {
   }, [])
 
   return (
-    <FacultyLayout
-      title="My Attendance History"
-      subtitle="Your personal attendance records across sessions."
-    >
+    <>
+      <LayoutPageMeta
+        title="My Attendance History"
+        subtitle="Your personal attendance records across sessions."
+      />
       <section className="faculty-panel">
         {isLoading ? <p className="data-state loading">Loading attendance history...</p> : null}
         {!isLoading && error ? <p className="data-state error">{error}</p> : null}
@@ -68,6 +69,6 @@ export default function FacultyAttendanceHistoryPage() {
           </div>
         ) : null}
       </section>
-    </FacultyLayout>
+    </>
   )
 }

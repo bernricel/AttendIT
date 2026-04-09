@@ -1,7 +1,7 @@
-﻿import { useMemo, useState } from 'react'
-import AdminLayout from '../components/admin/AdminLayout'
+import { useMemo, useState } from 'react'
 import AdminPanel from '../components/admin/AdminPanel'
 import FormField from '../components/FormField'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import MessageBanner from '../components/MessageBanner'
 import { createAttendanceSession } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -13,17 +13,17 @@ import {
   validateSessionForm,
 } from '../utils/attendanceValidation'
 
-const sessionTypeOptions = [
-  { value: 'check-in', label: 'check-in' },
-  { value: 'check-out', label: 'check-out' },
-]
-
 export default function AdminCreateSessionPage() {
   const [form, setForm] = useState({
-    name: '',
-    session_type: 'check-in',
-    start_time: '',
-    end_time: '',
+    title: '',
+    session_date: '',
+    scheduled_start_time: '',
+    scheduled_end_time: '',
+    check_in_start_time: '',
+    check_in_end_time: '',
+    late_threshold_time: '',
+    check_out_start_time: '',
+    check_out_end_time: '',
     is_active: true,
     qr_refresh_interval_seconds: 30,
     is_recurring: false,
@@ -31,8 +31,6 @@ export default function AdminCreateSessionPage() {
     recurrence_days: [],
     recurrence_start_date: '',
     recurrence_end_date: '',
-    recurrence_start_time: '',
-    recurrence_end_time: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -81,15 +79,20 @@ export default function AdminCreateSessionPage() {
         setSuccess('Attendance session created successfully.')
       }
 
+      // Keep recurrence mode and activation preferences, but clear generated rule values for the next entry.
       setForm((prev) => ({
         ...prev,
-        name: '',
-        start_time: '',
-        end_time: '',
+        title: '',
+        session_date: '',
+        scheduled_start_time: '',
+        scheduled_end_time: '',
+        check_in_start_time: '',
+        check_in_end_time: '',
+        late_threshold_time: '',
+        check_out_start_time: '',
+        check_out_end_time: '',
         recurrence_start_date: '',
         recurrence_end_date: '',
-        recurrence_start_time: '',
-        recurrence_end_time: '',
         recurrence_days: [],
       }))
     } catch (apiError) {
@@ -100,27 +103,19 @@ export default function AdminCreateSessionPage() {
   }
 
   return (
-    <AdminLayout
-      title="Create Attendance Session"
-      subtitle="Create a single session or toggle recurring mode for automatic batch generation."
-    >
+    <>
+      <LayoutPageMeta
+        title="Create Attendance Session"
+        subtitle="Create rule-based attendance sessions with check-in/check-out windows and recurrence."
+      />
       <AdminPanel>
         <form className="profile-form" onSubmit={handleSubmit}>
           <FormField
-            id="session_name"
-            label="Session Name"
-            value={form.name}
-            onChange={updateField('name')}
-            placeholder="Example: CIT Morning Check-in"
-            disabled={isSubmitting}
-          />
-
-          <FormField
-            id="session_type"
-            label="Session Type"
-            value={form.session_type}
-            onChange={updateField('session_type')}
-            options={sessionTypeOptions}
+            id="session_title"
+            label="Session Title"
+            value={form.title}
+            onChange={updateField('title')}
+            placeholder="Example: Faculty Daily Attendance"
             disabled={isSubmitting}
           />
 
@@ -136,42 +131,75 @@ export default function AdminCreateSessionPage() {
           </label>
 
           {!form.is_recurring ? (
+            <FormField
+              id="session_date"
+              label="Session Date"
+              type="date"
+              value={form.session_date}
+              onChange={updateField('session_date')}
+              disabled={isSubmitting}
+            />
+          ) : null}
+
+          <FormField
+            id="scheduled_start_time"
+            label="Scheduled Start Time"
+            type="time"
+            value={form.scheduled_start_time}
+            onChange={updateField('scheduled_start_time')}
+            disabled={isSubmitting}
+          />
+          <FormField
+            id="scheduled_end_time"
+            label="Scheduled End Time"
+            type="time"
+            value={form.scheduled_end_time}
+            onChange={updateField('scheduled_end_time')}
+            disabled={isSubmitting}
+          />
+          <FormField
+            id="check_in_start_time"
+            label="Check-in Start Time"
+            type="time"
+            value={form.check_in_start_time}
+            onChange={updateField('check_in_start_time')}
+            disabled={isSubmitting}
+          />
+          <FormField
+            id="check_in_end_time"
+            label="Check-in End Time"
+            type="time"
+            value={form.check_in_end_time}
+            onChange={updateField('check_in_end_time')}
+            disabled={isSubmitting}
+          />
+          <FormField
+            id="late_threshold_time"
+            label="Late Threshold Time"
+            type="time"
+            value={form.late_threshold_time}
+            onChange={updateField('late_threshold_time')}
+            disabled={isSubmitting}
+          />
+          <FormField
+            id="check_out_start_time"
+            label="Check-out Start Time"
+            type="time"
+            value={form.check_out_start_time}
+            onChange={updateField('check_out_start_time')}
+            disabled={isSubmitting}
+          />
+          <FormField
+            id="check_out_end_time"
+            label="Check-out End Time"
+            type="time"
+            value={form.check_out_end_time}
+            onChange={updateField('check_out_end_time')}
+            disabled={isSubmitting}
+          />
+
+          {form.is_recurring ? (
             <>
-              <FormField
-                id="start_time"
-                label="Start Time"
-                type="datetime-local"
-                value={form.start_time}
-                onChange={updateField('start_time')}
-                disabled={isSubmitting}
-              />
-              <FormField
-                id="end_time"
-                label="End Time"
-                type="datetime-local"
-                value={form.end_time}
-                onChange={updateField('end_time')}
-                disabled={isSubmitting}
-              />
-            </>
-          ) : (
-            <>
-              <FormField
-                id="recurrence_start_time"
-                label="Recurring Start Time"
-                type="time"
-                value={form.recurrence_start_time}
-                onChange={updateField('recurrence_start_time')}
-                disabled={isSubmitting}
-              />
-              <FormField
-                id="recurrence_end_time"
-                label="Recurring End Time"
-                type="time"
-                value={form.recurrence_end_time}
-                onChange={updateField('recurrence_end_time')}
-                disabled={isSubmitting}
-              />
               <FormField
                 id="recurrence_pattern"
                 label="Recurrence Pattern"
@@ -218,11 +246,11 @@ export default function AdminCreateSessionPage() {
               />
 
               <p className="subtle-note">
-                This will create approximately {recurringPreviewCount} session
+                This will create approximately {recurringPreviewCount} scheduled occurrence
                 {recurringPreviewCount === 1 ? '' : 's'} in the selected date range.
               </p>
             </>
-          )}
+          ) : null}
 
           <FormField
             id="qr_refresh_interval_seconds"
@@ -254,11 +282,13 @@ export default function AdminCreateSessionPage() {
             </p>
           ) : null}
 
+          <p className="subtle-note">Department is fixed to CIT for this deployment.</p>
+
           <button className="primary-btn" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Creating...' : form.is_recurring ? 'Create Recurring Sessions' : 'Create Session'}
           </button>
         </form>
       </AdminPanel>
-    </AdminLayout>
+    </>
   )
 }

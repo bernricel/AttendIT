@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import FacultyLayout from '../components/faculty/FacultyLayout'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { ROUTES } from '../constants/routes'
 import { getStoredAuth } from '../services/authStorage'
 import { getDisplayName } from '../utils/userName'
@@ -8,10 +8,11 @@ export default function FacultyDashboardPage() {
   const { user } = getStoredAuth()
 
   return (
-    <FacultyLayout
-      title="Faculty Dashboard"
-      subtitle="Access your attendance actions and personal logs."
-    >
+    <>
+      <LayoutPageMeta
+        title="Faculty Dashboard"
+        subtitle="Access your attendance actions and personal logs."
+      />
       <section className="faculty-welcome-card">
         <h2>Welcome, {getDisplayName(user, 'Faculty')}</h2>
         <p>
@@ -48,6 +49,6 @@ export default function FacultyDashboardPage() {
           </div>
         </section>
       </div>
-    </FacultyLayout>
+    </>
   )
 }

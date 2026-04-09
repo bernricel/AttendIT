@@ -1,85 +1,25 @@
-﻿import { NavLink, useNavigate } from 'react-router-dom'
-import { FiPieChart, FiClock } from 'react-icons/fi'
+import { FiClock, FiPieChart } from 'react-icons/fi'
+import DashboardLayout from '../layout/DashboardLayout'
 import { ROUTES } from '../../constants/routes'
-import { clearAuthSession, getStoredAuth } from '../../services/authStorage'
-import { useResponsiveSidebar } from '../../hooks/useResponsiveSidebar'
-import { getDisplayName } from '../../utils/userName'
 
-const facultyNav = [
+const facultyNavItems = [
   { to: ROUTES.FACULTY_DASHBOARD, label: 'Dashboard', icon: <FiPieChart />, colorClass: 'icon-orange' },
   { to: ROUTES.FACULTY_HISTORY, label: 'Attendance History', icon: <FiClock />, colorClass: 'icon-red' },
 ]
 
-export default function FacultyLayout({ title, subtitle, actions, children }) {
-  const navigate = useNavigate()
-  const { user } = getStoredAuth()
-  const { isSidebarOpen, closeSidebar, toggleSidebar } = useResponsiveSidebar()
-
-  const handleLogout = () => {
-    clearAuthSession()
-    navigate(ROUTES.LOGIN, { replace: true })
-  }
-
+export default function FacultyLayout() {
   return (
-    <div className="faculty-shell">
-      <div
-        className={`layout-backdrop ${isSidebarOpen ? 'show' : ''}`}
-        onClick={closeSidebar}
-        aria-hidden="true"
-      />
-
-      <aside
-        id="faculty-sidebar-nav"
-        className={`faculty-sidebar ${isSidebarOpen ? 'is-open' : ''}`}
-      >
-        <div className="faculty-brand">CIT Faculty Portal</div>
-        <nav className="faculty-nav">
-          {facultyNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => `faculty-nav-item${isActive ? ' active' : ''}`}
-              onClick={closeSidebar}
-            >
-              <span className={`nav-icon ${item.colorClass}`}>
-                {item.icon}
-              </span>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-      <section className="faculty-main">
-        <header className="faculty-topbar">
-          <div className="topbar-title-wrap">
-            <div className="topbar-title-row">
-              <button
-                type="button"
-                className="sidebar-toggle"
-                onClick={toggleSidebar}
-                aria-label="Toggle navigation menu"
-                aria-expanded={isSidebarOpen}
-                aria-controls="faculty-sidebar-nav"
-              >
-                &#9776;
-              </button>
-              <h1>{title}</h1>
-            </div>
-            {subtitle ? <p>{subtitle}</p> : null}
-          </div>
-          <div className="faculty-topbar-right">
-            <div className="faculty-user-badge">
-              <strong>{getDisplayName(user, 'Faculty')}</strong>
-              <span>CIT Faculty</span>
-            </div>
-            <button type="button" className="ghost-btn compact" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </header>
-        {actions ? <div className="faculty-actions">{actions}</div> : null}
-        <div className="faculty-content">{children}</div>
-      </section>
-    </div>
+    <DashboardLayout
+      variant="faculty"
+      sidebarId="faculty-sidebar-nav"
+      brandSubtitle="Faculty Portal"
+      navItems={facultyNavItems}
+      fallbackUserLabel="Faculty"
+      userSubtitleResolver={() => 'CIT Faculty'}
+      defaultMeta={{
+        title: 'Faculty Dashboard',
+        subtitle: 'Access your attendance actions and personal logs.',
+      }}
+    />
   )
 }

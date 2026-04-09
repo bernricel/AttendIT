@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import MessageBanner from '../components/MessageBanner'
 import { ROUTES } from '../constants/routes'
-import FacultyLayout from '../components/faculty/FacultyLayout'
 import { getFacultySessionPreview, scanAttendance } from '../services/attendanceApi'
 import { getStoredAuth } from '../services/authStorage'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -63,7 +63,8 @@ export default function FacultyScanConfirmationPage() {
     setError('')
     setSuccess('')
     try {
-      const data = await scanAttendance(qrToken, session.session_type)
+      // Let the backend resolve check-in vs check-out from the active rule windows.
+      const data = await scanAttendance(qrToken)
       setSuccess(data?.message || 'Attendance recorded successfully.')
     } catch (apiError) {
       setError(getApiErrorMessage(apiError, 'Unable to process attendance request.'))
@@ -71,17 +72,19 @@ export default function FacultyScanConfirmationPage() {
       setIsConfirming(false)
     }
   }
+  const isSessionClosed = session?.can_accept_attendance === false || session?.lifecycle_status === 'ENDED'
 
   return (
-    <FacultyLayout
-      title="Attendance Confirmation"
-      subtitle="Review session details before confirming your attendance."
-      actions={
-        <Link className="ghost-btn compact link-button" to={ROUTES.FACULTY_HISTORY}>
-          View My History
-        </Link>
-      }
-    >
+    <>
+      <LayoutPageMeta
+        title="Attendance Confirmation"
+        subtitle="Review session details before confirming your attendance."
+        actions={
+          <Link className="ghost-btn compact link-button" to={ROUTES.FACULTY_HISTORY}>
+            View My History
+          </Link>
+        }
+      />
       <section className="faculty-panel">
         {isLoading ? <p className="data-state loading">Loading session details...</p> : null}
         {!isLoading && error ? <MessageBanner type="error" message={error} /> : null}
@@ -95,16 +98,32 @@ export default function FacultyScanConfirmationPage() {
                 <strong>{session.name}</strong>
               </div>
               <div className="summary-item">
-                <span>Type</span>
-                <strong>{session.session_type}</strong>
+                <span>Department</span>
+                <strong>{session.department || 'N/A'}</strong>
               </div>
               <div className="summary-item">
-                <span>Start</span>
+                <span>Scheduled Start</span>
                 <strong>{formatDateTime(session.start_time)}</strong>
               </div>
               <div className="summary-item">
-                <span>End</span>
+                <span>Scheduled End</span>
                 <strong>{formatDateTime(session.end_time)}</strong>
+              </div>
+              <div className="summary-item">
+                <span>Check-in Window</span>
+                <strong>
+                  {formatDateTime(session.check_in_start_time)} to {formatDateTime(session.check_in_end_time)}
+                </strong>
+              </div>
+              <div className="summary-item">
+                <span>Check-out Window</span>
+                <strong>
+                  {formatDateTime(session.check_out_start_time)} to {formatDateTime(session.check_out_end_time)}
+                </strong>
+              </div>
+              <div className="summary-item">
+                <span>Status</span>
+                <strong>{session.lifecycle_status || 'UNKNOWN'}</strong>
               </div>
             </div>
 
@@ -112,13 +131,19 @@ export default function FacultyScanConfirmationPage() {
               type="button"
               className="primary-btn"
               onClick={handleConfirm}
-              disabled={isConfirming || Boolean(success)}
+              disabled={isConfirming || Boolean(success) || isSessionClosed}
             >
-              {isConfirming ? 'Confirming...' : success ? 'Attendance Confirmed' : 'Confirm Attendance'}
+              {isSessionClosed
+                ? 'Session Closed'
+                : isConfirming
+                  ? 'Confirming...'
+                  : success
+                    ? 'Attendance Confirmed'
+                    : 'Confirm Attendance'}
             </button>
           </div>
         ) : null}
       </section>
-    </FacultyLayout>
+    </>
   )
 }

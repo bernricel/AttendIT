@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
-import AdminLayout from '../components/admin/AdminLayout'
 import AdminPanel from '../components/admin/AdminPanel'
 import { DataEmpty, DataError, DataLoading } from '../components/admin/DataState'
-import { getAdminSessionQrStatus, getAdminSessions } from '../services/attendanceApi'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
+import { buildAdminQrPresentationRoute } from '../constants/routes'
+import { useSessionQrStatus } from '../hooks/useSessionQrStatus'
+import { getAdminSessions } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime } from '../utils/dateTime'
 
@@ -12,10 +14,7 @@ export default function AdminQrDisplayPage() {
   const [selectedId, setSelectedId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [qrStatus, setQrStatus] = useState(null)
-  const [qrError, setQrError] = useState('')
-  const [secondsRemaining, setSecondsRemaining] = useState(0)
-  const [isRefreshingQr, setIsRefreshingQr] = useState(false)
+  const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(selectedId)
 
   useEffect(() => {
     const loadSessions = async () => {
@@ -36,57 +35,25 @@ export default function AdminQrDisplayPage() {
     loadSessions()
   }, [])
 
-  const loadQrStatus = useCallback(async (sessionId) => {
-    if (!sessionId) {
-      setQrStatus(null)
-      setSecondsRemaining(0)
+  useEffect(() => {
+    if (!selectedId || !qrStatus) {
       return
     }
 
-    setIsRefreshingQr(true)
-    setQrError('')
-    try {
-      const data = await getAdminSessionQrStatus(sessionId)
-      setQrStatus(data)
-      setSecondsRemaining(data.seconds_until_rotation ?? 0)
-      setSessions((prev) =>
-        prev.map((session) =>
-          String(session.id) === String(sessionId)
-            ? {
-                ...session,
-                qr_token: data.qr_token,
-                qr_refresh_interval_seconds: data.qr_refresh_interval_seconds,
-              }
-            : session,
-        ),
-      )
-    } catch (apiError) {
-      setQrError(getApiErrorMessage(apiError, 'Failed to refresh QR token status.'))
-    } finally {
-      setIsRefreshingQr(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!selectedId) return
-    loadQrStatus(selectedId)
-  }, [loadQrStatus, selectedId])
-
-  useEffect(() => {
-    if (!selectedId || !qrStatus?.qr_token_expires_at) return
-
-    const timerId = window.setInterval(() => {
-      const expiresAtMs = new Date(qrStatus.qr_token_expires_at).getTime()
-      const remainingSeconds = Math.max(0, Math.ceil((expiresAtMs - Date.now()) / 1000))
-      setSecondsRemaining(remainingSeconds)
-
-      if (remainingSeconds <= 0 && !isRefreshingQr) {
-        loadQrStatus(selectedId)
-      }
-    }, 1000)
-
-    return () => window.clearInterval(timerId)
-  }, [isRefreshingQr, loadQrStatus, qrStatus?.qr_token_expires_at, selectedId])
+    setSessions((prev) =>
+      prev.map((session) =>
+        String(session.id) === String(selectedId)
+          ? {
+              ...session,
+              qr_token: qrStatus.qr_token,
+              qr_refresh_interval_seconds: qrStatus.qr_refresh_interval_seconds,
+              lifecycle_status: qrStatus.lifecycle_status,
+              can_accept_attendance: qrStatus.can_accept_attendance,
+            }
+          : session,
+      ),
+    )
+  }, [qrStatus, selectedId])
 
   const selectedSession = useMemo(
     () => sessions.find((session) => String(session.id) === String(selectedId)),
@@ -96,12 +63,19 @@ export default function AdminQrDisplayPage() {
   const qrUrl = currentQrToken
     ? `${window.location.origin}/faculty/scan/${currentQrToken}`
     : ''
+  const separateDisplayUrl = selectedSession
+    ? buildAdminQrPresentationRoute(selectedSession.id)
+    : ''
+  const sessionLifecycleStatus = qrStatus?.lifecycle_status || selectedSession?.lifecycle_status || 'UNKNOWN'
+  const canAcceptAttendance =
+    qrStatus?.can_accept_attendance ?? selectedSession?.can_accept_attendance ?? false
 
   return (
-    <AdminLayout
-      title="QR Display"
-      subtitle="Select a CIT session and display a full-size QR for faculty scanning."
-    >
+    <>
+      <LayoutPageMeta
+        title="QR Display"
+        subtitle="Select a CIT session and display a full-size QR for faculty scanning."
+      />
       <AdminPanel>
         {isLoading ? <DataLoading message="Loading sessions..." /> : null}
         {error ? <DataError message={error} /> : null}
@@ -130,19 +104,25 @@ export default function AdminQrDisplayPage() {
             {selectedSession ? (
               <div className="qr-stage">
                 <div className="qr-box">
-                  <QRCodeCanvas
-                    value={qrUrl}
-                    size={320}
-                    level="H"
-                    includeMargin
-                  />
+                  {canAcceptAttendance ? (
+                    <QRCodeCanvas
+                      value={qrUrl}
+                      size={320}
+                      level="H"
+                      includeMargin
+                    />
+                  ) : (
+                    <p className="subtle-note">Session Ended. Attendance is closed.</p>
+                  )}
                 </div>
                 <div className="qr-meta">
                   <h3>{selectedSession.name}</h3>
+                  {selectedSession.department ? <p>Department: {selectedSession.department}</p> : null}
                   <p>Type: {selectedSession.session_type}</p>
+                  <p>Status: {sessionLifecycleStatus}</p>
                   <p>Start: {formatDateTime(selectedSession.start_time)}</p>
                   <p>End: {formatDateTime(selectedSession.end_time)}</p>
-                  <p>QR Token: {currentQrToken}</p>
+                  {canAcceptAttendance ? <p>QR Token: {currentQrToken}</p> : null}
                   <p>
                     Refresh Interval:{' '}
                     {qrStatus?.qr_refresh_interval_seconds ??
@@ -150,7 +130,18 @@ export default function AdminQrDisplayPage() {
                       30}
                     s
                   </p>
-                  <p>Next Rotation In: {secondsRemaining}s</p>
+                  <p>Next Rotation In: {canAcceptAttendance ? `${secondsRemaining}s` : 'Closed'}</p>
+                  <div className="qr-meta-actions">
+                    {/* Dedicated admin-protected route can be shown on another screen without dashboard controls. */}
+                    <a
+                      className="ghost-btn link-button"
+                      href={separateDisplayUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open Separate QR Display
+                    </a>
+                  </div>
                   <p className="subtle-note">
                     Rotating QR codes improve security by limiting reuse of old screenshots.
                   </p>
@@ -160,6 +151,6 @@ export default function AdminQrDisplayPage() {
           </>
         ) : null}
       </AdminPanel>
-    </AdminLayout>
+    </>
   )
 }

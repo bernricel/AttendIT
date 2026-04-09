@@ -34,11 +34,12 @@ export async function getFacultySessionPreview(qrToken) {
   return response.data
 }
 
-export async function scanAttendance(qrToken, attendanceType) {
-  const response = await api.post('/attendance/scan', {
-    qr_token: qrToken,
-    attendance_type: attendanceType,
-  })
+export async function scanAttendance(qrToken, attendanceType = '') {
+  const payload = { qr_token: qrToken }
+  if (attendanceType) {
+    payload.attendance_type = attendanceType
+  }
+  const response = await api.post('/attendance/scan', payload)
   return response.data
 }
 

@@ -1,4 +1,4 @@
-﻿export const recurrenceOptions = [
+export const recurrenceOptions = [
   { value: 'weekdays', label: 'Monday to Friday' },
   { value: 'mwf', label: 'MWF' },
   { value: 'tth', label: 'TTH' },
@@ -22,9 +22,19 @@ function resolveWeekdays(recurrencePattern, customWeekdays) {
   return new Set(customWeekdays)
 }
 
+function ensureTimeOrder(startTime, endTime, label) {
+  if (!startTime || !endTime) {
+    return `Please provide ${label} start and end times.`
+  }
+  if (startTime >= endTime) {
+    return `${label} end time must be later than ${label} start time.`
+  }
+  return ''
+}
+
 export function validateSessionForm(form) {
-  if (!form.name.trim()) {
-    return 'Session name is required.'
+  if (!form.title.trim()) {
+    return 'Session title is required.'
   }
 
   const interval = Number(form.qr_refresh_interval_seconds)
@@ -32,33 +42,31 @@ export function validateSessionForm(form) {
     return 'QR refresh interval must be a whole number greater than 0.'
   }
 
-  if (!form.is_recurring) {
-    if (!form.start_time || !form.end_time) {
-      return 'Please provide start and end date/time for a single session.'
-    }
+  const scheduledError = ensureTimeOrder(form.scheduled_start_time, form.scheduled_end_time, 'Scheduled')
+  if (scheduledError) return scheduledError
 
-    const start = new Date(form.start_time)
-    const end = new Date(form.end_time)
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      return 'Invalid start or end time.'
-    }
-    if (start >= end) {
-      return 'End time must be later than start time.'
+  const checkInError = ensureTimeOrder(form.check_in_start_time, form.check_in_end_time, 'Check-in')
+  if (checkInError) return checkInError
+
+  const checkOutError = ensureTimeOrder(form.check_out_start_time, form.check_out_end_time, 'Check-out')
+  if (checkOutError) return checkOutError
+
+  if (
+    form.late_threshold_time < form.check_in_start_time ||
+    form.late_threshold_time > form.check_in_end_time
+  ) {
+    return 'Late threshold must be within the check-in window.'
+  }
+
+  if (!form.is_recurring) {
+    if (!form.session_date) {
+      return 'Please provide a session date.'
     }
     return ''
   }
 
-  if (
-    !form.recurrence_start_time ||
-    !form.recurrence_end_time ||
-    !form.recurrence_start_date ||
-    !form.recurrence_end_date
-  ) {
-    return 'Please complete recurrence time and date range fields.'
-  }
-
-  if (form.recurrence_start_time >= form.recurrence_end_time) {
-    return 'Recurring end time must be later than recurring start time.'
+  if (!form.recurrence_start_date || !form.recurrence_end_date) {
+    return 'Please complete recurrence date range fields.'
   }
 
   if (form.recurrence_start_date > form.recurrence_end_date) {
@@ -73,30 +81,34 @@ export function validateSessionForm(form) {
 }
 
 export function buildSessionPayload(form) {
+  const basePayload = {
+    title: form.title,
+    scheduled_start_time: `${form.scheduled_start_time}:00`,
+    scheduled_end_time: `${form.scheduled_end_time}:00`,
+    check_in_start_time: `${form.check_in_start_time}:00`,
+    check_in_end_time: `${form.check_in_end_time}:00`,
+    late_threshold_time: `${form.late_threshold_time}:00`,
+    check_out_start_time: `${form.check_out_start_time}:00`,
+    check_out_end_time: `${form.check_out_end_time}:00`,
+    is_active: form.is_active,
+    qr_refresh_interval_seconds: Number(form.qr_refresh_interval_seconds),
+  }
+
   if (!form.is_recurring) {
     return {
-      name: form.name,
-      session_type: form.session_type,
-      start_time: new Date(form.start_time).toISOString(),
-      end_time: new Date(form.end_time).toISOString(),
-      is_active: form.is_active,
-      qr_refresh_interval_seconds: Number(form.qr_refresh_interval_seconds),
+      ...basePayload,
       is_recurring: false,
+      session_date: form.session_date,
     }
   }
 
   return {
-    name: form.name,
-    session_type: form.session_type,
-    is_active: form.is_active,
-    qr_refresh_interval_seconds: Number(form.qr_refresh_interval_seconds),
+    ...basePayload,
     is_recurring: true,
     recurrence_pattern: form.recurrence_pattern,
     recurrence_days: form.recurrence_pattern === 'custom' ? form.recurrence_days : [],
     recurrence_start_date: form.recurrence_start_date,
     recurrence_end_date: form.recurrence_end_date,
-    recurrence_start_time: `${form.recurrence_start_time}:00`,
-    recurrence_end_time: `${form.recurrence_end_time}:00`,
   }
 }
 

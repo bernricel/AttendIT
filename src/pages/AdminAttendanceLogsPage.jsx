@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import AdminLayout from '../components/admin/AdminLayout'
 import AdminPanel from '../components/admin/AdminPanel'
 import { DataEmpty, DataError, DataLoading } from '../components/admin/DataState'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { getAttendanceByDate, verifyAttendanceSignature } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime, toIsoDate } from '../utils/dateTime'
@@ -52,21 +52,22 @@ export default function AdminAttendanceLogsPage() {
   const hasData = useMemo(() => records.length > 0, [records])
 
   return (
-    <AdminLayout
-      title="Attendance Logs"
-      subtitle="Daily attendance records with digital signature status."
-      actions={
-        <label className="field-block logs-date-picker" htmlFor="logs_date">
-          <span className="field-label">Date</span>
-          <input
-            id="logs_date"
-            type="date"
-            value={selectedDate}
-            onChange={(event) => setSelectedDate(event.target.value)}
-          />
-        </label>
-      }
-    >
+    <>
+      <LayoutPageMeta
+        title="Attendance Logs"
+        subtitle="Daily attendance records with digital signature status."
+        actions={
+          <label className="field-block logs-date-picker" htmlFor="logs_date">
+            <span className="field-label">Date</span>
+            <input
+              id="logs_date"
+              type="date"
+              value={selectedDate}
+              onChange={(event) => setSelectedDate(event.target.value)}
+            />
+          </label>
+        }
+      />
       <AdminPanel>
         {isLoading ? <DataLoading message="Loading attendance logs..." /> : null}
         {error ? <DataError message={error} /> : null}
@@ -105,6 +106,6 @@ export default function AdminAttendanceLogsPage() {
           </div>
         ) : null}
       </AdminPanel>
-    </AdminLayout>
+    </>
   )
 }
