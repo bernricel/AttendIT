@@ -1,15 +1,18 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+// 1. ADDED: Import the icons
+import { FiPieChart, FiEdit3, FiMaximize, FiGrid, FiCalendar } from 'react-icons/fi'
 import { ROUTES } from '../../constants/routes'
 import { clearAuthSession, getStoredAuth } from '../../services/authStorage'
 import { useResponsiveSidebar } from '../../hooks/useResponsiveSidebar'
 import { getDisplayName } from '../../utils/userName'
 
+// 2. ADDED: Icons and color classes to your existing array
 const navItems = [
-  { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
-  { to: ROUTES.ADMIN_CREATE_SESSION, label: 'Create Session' },
-  { to: ROUTES.ADMIN_QR_DISPLAY, label: 'QR Display' },
-  { to: ROUTES.ADMIN_LOGS, label: 'Attendance Logs' },
-  { to: ROUTES.ADMIN_CALENDAR, label: 'Calendar' },
+  { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard', icon: <FiPieChart />, colorClass: 'icon-orange' },
+  { to: ROUTES.ADMIN_CREATE_SESSION, label: 'Create Session', icon: <FiEdit3 />, colorClass: 'icon-yellow' },
+  { to: ROUTES.ADMIN_QR_DISPLAY, label: 'QR Display', icon: <FiMaximize />, colorClass: 'icon-cyan' },
+  { to: ROUTES.ADMIN_LOGS, label: 'Attendance Logs', icon: <FiGrid />, colorClass: 'icon-magenta' },
+  { to: ROUTES.ADMIN_CALENDAR, label: 'Calendar', icon: <FiCalendar />, colorClass: 'icon-purple' },
 ]
 
 export default function AdminLayout({ title, subtitle, actions, children }) {
@@ -40,6 +43,10 @@ export default function AdminLayout({ title, subtitle, actions, children }) {
               className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}
               onClick={closeSidebar}
             >
+              {/* 3. ADDED: The icon span right before the text */}
+              <span className={`nav-icon ${item.colorClass}`}>
+                {item.icon}
+              </span>
               {item.label}
             </NavLink>
           ))}
@@ -81,4 +88,3 @@ export default function AdminLayout({ title, subtitle, actions, children }) {
     </div>
   )
 }
-

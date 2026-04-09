@@ -1,12 +1,15 @@
 ﻿import { NavLink, useNavigate } from 'react-router-dom'
+// 1. ADDED: Import the icons
+import { FiPieChart, FiClock } from 'react-icons/fi'
 import { ROUTES } from '../../constants/routes'
 import { clearAuthSession, getStoredAuth } from '../../services/authStorage'
 import { useResponsiveSidebar } from '../../hooks/useResponsiveSidebar'
 import { getDisplayName } from '../../utils/userName'
 
+// 2. ADDED: Icons and color classes to your existing array
 const facultyNav = [
-  { to: ROUTES.FACULTY_DASHBOARD, label: 'Dashboard' },
-  { to: ROUTES.FACULTY_HISTORY, label: 'Attendance History' },
+  { to: ROUTES.FACULTY_DASHBOARD, label: 'Dashboard', icon: <FiPieChart />, colorClass: 'icon-orange' },
+  { to: ROUTES.FACULTY_HISTORY, label: 'Attendance History', icon: <FiClock />, colorClass: 'icon-red' },
 ]
 
 export default function FacultyLayout({ title, subtitle, actions, children }) {
@@ -40,6 +43,10 @@ export default function FacultyLayout({ title, subtitle, actions, children }) {
               className={({ isActive }) => `faculty-nav-item${isActive ? ' active' : ''}`}
               onClick={closeSidebar}
             >
+              {/* 3. ADDED: The icon span right before the text */}
+              <span className={`nav-icon ${item.colorClass}`}>
+                {item.icon}
+              </span>
               {item.label}
             </NavLink>
           ))}
