@@ -10,6 +10,11 @@ export async function getAdminSessions() {
   return response.data
 }
 
+export async function getAdminSessionQrStatus(sessionId) {
+  const response = await api.get(`/admin/sessions/${sessionId}/qr-status`)
+  return response.data
+}
+
 export async function getAttendanceByDate(date) {
   const response = await api.get('/admin/attendance-by-date', { params: { date } })
   return response.data
@@ -29,11 +34,12 @@ export async function getFacultySessionPreview(qrToken) {
   return response.data
 }
 
-export async function scanAttendance(qrToken, attendanceType) {
-  const response = await api.post('/attendance/scan', {
-    qr_token: qrToken,
-    attendance_type: attendanceType,
-  })
+export async function scanAttendance(qrToken, attendanceType = '') {
+  const payload = { qr_token: qrToken }
+  if (attendanceType) {
+    payload.attendance_type = attendanceType
+  }
+  const response = await api.post('/attendance/scan', payload)
   return response.data
 }
 

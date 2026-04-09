@@ -1,6 +1,6 @@
 import { GoogleLogin } from '@react-oauth/google'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AuthCard from '../components/AuthCard'
 import AuthLayout from '../components/AuthLayout'
 import MessageBanner from '../components/MessageBanner'
@@ -81,8 +81,8 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="Faculty Attendance Portal"
-      subtitle="Secure sign-in for university faculty and administrators."
+      title="CIT Faculty Attendance Portal"
+      subtitle="Secure sign-in for CIT faculty and administrators."
       sideNote={
         <p>
           Access is limited to accounts ending with <strong>@ua.edu.ph</strong>.
@@ -90,8 +90,8 @@ export default function LoginPage() {
       }
     >
       <AuthCard
-        title="Welcome Back"
-        description="Use your institutional Google account to continue."
+        title="Login"
+        description="Access the CIT Faculty Attendance System."
       >
         {isLoading ? <div className="loader-line">Authenticating...</div> : null}
         <MessageBanner type="error" message={error} />
@@ -115,6 +115,13 @@ export default function LoginPage() {
             message="Missing VITE_GOOGLE_CLIENT_ID. Add it to your frontend environment."
           />
         )}
+
+        <div className="auth-divider" role="presentation">
+          <span>or</span>
+        </div>
+        <Link className="ghost-btn auth-link-btn" to={ROUTES.ADMIN_LOGIN}>
+          Admin Login
+        </Link>
       </AuthCard>
     </AuthLayout>
   )

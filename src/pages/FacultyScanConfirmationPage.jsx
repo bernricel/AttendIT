@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import MessageBanner from '../components/MessageBanner'
 import { ROUTES } from '../constants/routes'
-import DepartmentMismatchModal from '../components/faculty/DepartmentMismatchModal'
-import FacultyLayout from '../components/faculty/FacultyLayout'
 import { getFacultySessionPreview, scanAttendance } from '../services/attendanceApi'
 import { getStoredAuth } from '../services/authStorage'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -14,7 +13,7 @@ export default function FacultyScanConfirmationPage() {
   const location = useLocation()
   const params = useParams()
   const [searchParams] = useSearchParams()
-  const { token, user } = getStoredAuth()
+  const { token } = getStoredAuth()
 
   const qrToken = useMemo(
     () => params.qrToken || searchParams.get('token') || '',
@@ -26,8 +25,6 @@ export default function FacultyScanConfirmationPage() {
   const [isConfirming, setIsConfirming] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [showMismatchModal, setShowMismatchModal] = useState(false)
-  const [mismatchMessage, setMismatchMessage] = useState('')
 
   useEffect(() => {
     if (!token) {
@@ -66,32 +63,28 @@ export default function FacultyScanConfirmationPage() {
     setError('')
     setSuccess('')
     try {
-      const data = await scanAttendance(qrToken, session.session_type)
-      setShowMismatchModal(false)
+      // Let the backend resolve check-in vs check-out from the active rule windows.
+      const data = await scanAttendance(qrToken)
       setSuccess(data?.message || 'Attendance recorded successfully.')
     } catch (apiError) {
-      const message = getApiErrorMessage(apiError, 'Unable to process attendance request.')
-      if (apiError?.response?.status === 403 && message.toLowerCase().includes('department mismatch')) {
-        setMismatchMessage(message)
-        setShowMismatchModal(true)
-      } else {
-        setError(message)
-      }
+      setError(getApiErrorMessage(apiError, 'Unable to process attendance request.'))
     } finally {
       setIsConfirming(false)
     }
   }
+  const isSessionClosed = session?.can_accept_attendance === false || session?.lifecycle_status === 'ENDED'
 
   return (
-    <FacultyLayout
-      title="Attendance Confirmation"
-      subtitle="Review session details before confirming your attendance."
-      actions={
-        <Link className="ghost-btn compact link-button" to={ROUTES.FACULTY_HISTORY}>
-          View My History
-        </Link>
-      }
-    >
+    <>
+      <LayoutPageMeta
+        title="Attendance Confirmation"
+        subtitle="Review session details before confirming your attendance."
+        actions={
+          <Link className="ghost-btn compact link-button" to={ROUTES.FACULTY_HISTORY}>
+            View My History
+          </Link>
+        }
+      />
       <section className="faculty-panel">
         {isLoading ? <p className="data-state loading">Loading session details...</p> : null}
         {!isLoading && error ? <MessageBanner type="error" message={error} /> : null}
@@ -106,23 +99,31 @@ export default function FacultyScanConfirmationPage() {
               </div>
               <div className="summary-item">
                 <span>Department</span>
-                <strong>{session.department_name}</strong>
+                <strong>{session.department || 'N/A'}</strong>
               </div>
               <div className="summary-item">
-                <span>Type</span>
-                <strong>{session.session_type}</strong>
-              </div>
-              <div className="summary-item">
-                <span>Start</span>
+                <span>Scheduled Start</span>
                 <strong>{formatDateTime(session.start_time)}</strong>
               </div>
               <div className="summary-item">
-                <span>End</span>
+                <span>Scheduled End</span>
                 <strong>{formatDateTime(session.end_time)}</strong>
               </div>
               <div className="summary-item">
-                <span>Your Department</span>
-                <strong>{user?.department || '-'}</strong>
+                <span>Check-in Window</span>
+                <strong>
+                  {formatDateTime(session.check_in_start_time)} to {formatDateTime(session.check_in_end_time)}
+                </strong>
+              </div>
+              <div className="summary-item">
+                <span>Check-out Window</span>
+                <strong>
+                  {formatDateTime(session.check_out_start_time)} to {formatDateTime(session.check_out_end_time)}
+                </strong>
+              </div>
+              <div className="summary-item">
+                <span>Status</span>
+                <strong>{session.lifecycle_status || 'UNKNOWN'}</strong>
               </div>
             </div>
 
@@ -130,19 +131,19 @@ export default function FacultyScanConfirmationPage() {
               type="button"
               className="primary-btn"
               onClick={handleConfirm}
-              disabled={isConfirming || Boolean(success)}
+              disabled={isConfirming || Boolean(success) || isSessionClosed}
             >
-              {isConfirming ? 'Confirming...' : success ? 'Attendance Confirmed' : 'Confirm Attendance'}
+              {isSessionClosed
+                ? 'Session Closed'
+                : isConfirming
+                  ? 'Confirming...'
+                  : success
+                    ? 'Attendance Confirmed'
+                    : 'Confirm Attendance'}
             </button>
           </div>
         ) : null}
       </section>
-
-      <DepartmentMismatchModal
-        isOpen={showMismatchModal}
-        message={mismatchMessage}
-        onClose={() => setShowMismatchModal(false)}
-      />
-    </FacultyLayout>
+    </>
   )
 }

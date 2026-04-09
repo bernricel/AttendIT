@@ -9,19 +9,12 @@ import { completeProfile } from '../services/authApi'
 import { clearAuthSession, updateStoredUser } from '../services/authStorage'
 import { getApiErrorMessage } from '../utils/apiError'
 
-const departmentOptions = [
-  { value: '', label: 'Select a department' },
-  { value: 'faculty1', label: 'faculty1' },
-  { value: 'faculty2', label: 'faculty2' },
-]
-
 export default function CompleteProfilePage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
     school_id: '',
-    department: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -30,8 +23,7 @@ export default function CompleteProfilePage() {
     () =>
       form.first_name.trim() &&
       form.last_name.trim() &&
-      form.school_id.trim() &&
-      form.department.trim(),
+      form.school_id.trim(),
     [form],
   )
 
@@ -69,7 +61,7 @@ export default function CompleteProfilePage() {
   return (
     <AuthLayout
       title="Profile Completion"
-      subtitle="One more step before entering the Faculty Attendance System."
+      subtitle="One more step before entering the CIT Faculty Attendance System."
       sideNote={<p>This information will be used across attendance records and reporting.</p>}
     >
       <AuthCard title="Complete Your Profile">
@@ -98,15 +90,6 @@ export default function CompleteProfilePage() {
             value={form.school_id}
             onChange={updateField('school_id')}
             placeholder="Enter your school ID"
-            disabled={isSubmitting}
-          />
-
-          <FormField
-            id="department"
-            label="Department"
-            value={form.department}
-            onChange={updateField('department')}
-            options={departmentOptions}
             disabled={isSubmitting}
           />
 

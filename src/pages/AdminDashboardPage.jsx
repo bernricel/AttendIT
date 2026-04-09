@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import AdminLayout from '../components/admin/AdminLayout'
 import AdminPanel from '../components/admin/AdminPanel'
 import AdminStatCard from '../components/admin/AdminStatCard'
 import { DataEmpty, DataError, DataLoading } from '../components/admin/DataState'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { getAdminSessions, getAttendanceByDate } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime, toIsoDate } from '../utils/dateTime'
@@ -35,7 +35,7 @@ export default function AdminDashboardPage() {
   }, [])
 
   const activeSessions = useMemo(
-    () => sessions.filter((session) => session.is_active).length,
+    () => sessions.filter((session) => session.lifecycle_status === 'ACTIVE').length,
     [sessions],
   )
   const checkInsToday = useMemo(
@@ -48,10 +48,11 @@ export default function AdminDashboardPage() {
   )
 
   return (
-    <AdminLayout
-      title="Admin Dashboard"
-      subtitle="Overview of attendance sessions and activity today."
-    >
+    <>
+      <LayoutPageMeta
+        title="Admin Dashboard"
+        subtitle="Overview of attendance sessions and activity today."
+      />
       {isLoading ? <DataLoading message="Loading dashboard..." /> : null}
       {error ? <DataError message={error} /> : null}
 
@@ -74,12 +75,18 @@ export default function AdminDashboardPage() {
                     <article key={session.id} className="session-item">
                       <div>
                         <h3>{session.name}</h3>
-                        <p>
-                          {session.department?.name} | {session.session_type}
-                        </p>
+                        <p>{session.session_type}</p>
                       </div>
-                      <div className={`chip ${session.is_active ? 'ok' : 'muted'}`}>
-                        {session.is_active ? 'Active' : 'Inactive'}
+                      <div
+                        className={`chip ${
+                          session.lifecycle_status === 'ACTIVE'
+                            ? 'ok'
+                            : session.lifecycle_status === 'UPCOMING'
+                              ? ''
+                              : 'muted'
+                        }`}
+                      >
+                        {session.lifecycle_status || 'UNKNOWN'}
                       </div>
                     </article>
                   ))}
@@ -98,9 +105,7 @@ export default function AdminDashboardPage() {
                         <h3>
                           {record.user_first_name} {record.user_last_name}
                         </h3>
-                        <p>
-                          {record.department_name} | {record.session_name}
-                        </p>
+                        <p>{record.session_name}</p>
                       </div>
                       <div className="chip">{formatDateTime(record.check_time)}</div>
                     </article>
@@ -111,6 +116,6 @@ export default function AdminDashboardPage() {
           </div>
         </>
       ) : null}
-    </AdminLayout>
+    </>
   )
 }

@@ -11,6 +11,7 @@ import AdminAttendanceLogsPage from './pages/AdminAttendanceLogsPage'
 import AdminCreateSessionPage from './pages/AdminCreateSessionPage'
 import { getDefaultRouteForUser, getStoredAuth } from './services/authStorage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminQrPresentationPage from './pages/AdminQrPresentationPage'
 import AdminQrDisplayPage from './pages/AdminQrDisplayPage'
 import { ROUTES } from './constants/routes'
 import CompleteProfilePage from './pages/CompleteProfilePage'
@@ -18,6 +19,9 @@ import FacultyAttendanceHistoryPage from './pages/FacultyAttendanceHistoryPage'
 import FacultyDashboardPage from './pages/FacultyDashboardPage'
 import FacultyScanConfirmationPage from './pages/FacultyScanConfirmationPage'
 import LoginPage from './pages/LoginPage'
+import AdminLoginPage from './pages/AdminLoginPage'
+import AdminLayout from './components/admin/AdminLayout'
+import FacultyLayout from './components/faculty/FacultyLayout'
 
 function HomeRedirect() {
   const { token, user } = getStoredAuth()
@@ -37,6 +41,7 @@ function App() {
     <Routes>
       <Route path={ROUTES.HOME} element={<HomeRedirect />} />
       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+      <Route path={ROUTES.ADMIN_LOGIN} element={<AdminLoginPage />} />
       <Route
         path={ROUTES.COMPLETE_PROFILE}
         element={
@@ -48,108 +53,49 @@ function App() {
         }
       />
       <Route
-        path={ROUTES.FACULTY_DASHBOARD}
+        path="/faculty"
         element={
           <RequireAuth>
             <RequireCompleteProfile>
               <RequireFacultyRole>
-                <FacultyDashboardPage />
+                {/* Shared faculty layout stays mounted while child routes render via Outlet. */}
+                <FacultyLayout />
               </RequireFacultyRole>
             </RequireCompleteProfile>
           </RequireAuth>
         }
-      />
+      >
+        <Route path="dashboard" element={<FacultyDashboardPage />} />
+        <Route path="history" element={<FacultyAttendanceHistoryPage />} />
+        <Route path="scan" element={<FacultyScanConfirmationPage />} />
+        <Route path="scan/:qrToken" element={<FacultyScanConfirmationPage />} />
+      </Route>
       <Route
-        path={ROUTES.FACULTY_HISTORY}
-        element={
-          <RequireAuth>
-            <RequireCompleteProfile>
-              <RequireFacultyRole>
-                <FacultyAttendanceHistoryPage />
-              </RequireFacultyRole>
-            </RequireCompleteProfile>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path={ROUTES.FACULTY_SCAN}
-        element={
-          <RequireAuth>
-            <RequireCompleteProfile>
-              <RequireFacultyRole>
-                <FacultyScanConfirmationPage />
-              </RequireFacultyRole>
-            </RequireCompleteProfile>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path={`${ROUTES.FACULTY_SCAN}/:qrToken`}
-        element={
-          <RequireAuth>
-            <RequireCompleteProfile>
-              <RequireFacultyRole>
-                <FacultyScanConfirmationPage />
-              </RequireFacultyRole>
-            </RequireCompleteProfile>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_DASHBOARD}
+        path="/admin"
         element={
           <RequireAuth>
             <RequireCompleteProfile>
               <RequireAdminRole>
-                <AdminDashboardPage />
+                {/* Shared admin layout stays mounted while child routes render via Outlet. */}
+                <AdminLayout />
               </RequireAdminRole>
             </RequireCompleteProfile>
           </RequireAuth>
         }
-      />
+      >
+        <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route path="create-session" element={<AdminCreateSessionPage />} />
+        <Route path="qr-display" element={<AdminQrDisplayPage />} />
+        <Route path="logs" element={<AdminAttendanceLogsPage />} />
+        <Route path="calendar" element={<AdminAttendanceCalendarPage />} />
+      </Route>
       <Route
-        path={ROUTES.ADMIN_CREATE_SESSION}
+        path={ROUTES.ADMIN_QR_PRESENTATION}
         element={
           <RequireAuth>
             <RequireCompleteProfile>
               <RequireAdminRole>
-                <AdminCreateSessionPage />
-              </RequireAdminRole>
-            </RequireCompleteProfile>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_QR_DISPLAY}
-        element={
-          <RequireAuth>
-            <RequireCompleteProfile>
-              <RequireAdminRole>
-                <AdminQrDisplayPage />
-              </RequireAdminRole>
-            </RequireCompleteProfile>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_LOGS}
-        element={
-          <RequireAuth>
-            <RequireCompleteProfile>
-              <RequireAdminRole>
-                <AdminAttendanceLogsPage />
-              </RequireAdminRole>
-            </RequireCompleteProfile>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_CALENDAR}
-        element={
-          <RequireAuth>
-            <RequireCompleteProfile>
-              <RequireAdminRole>
-                <AdminAttendanceCalendarPage />
+                <AdminQrPresentationPage />
               </RequireAdminRole>
             </RequireCompleteProfile>
           </RequireAuth>

@@ -6,9 +6,11 @@ export function RequireAuth({ children }) {
   const location = useLocation()
   const { token } = getStoredAuth()
   if (!token) {
+    const isAdminPath =
+      location.pathname.startsWith('/admin') || location.pathname.startsWith('/qr-display')
     return (
       <Navigate
-        to={ROUTES.LOGIN}
+        to={isAdminPath ? ROUTES.ADMIN_LOGIN : ROUTES.LOGIN}
         replace
         state={{ from: `${location.pathname}${location.search}` }}
       />
@@ -36,7 +38,7 @@ export function RequireIncompleteProfile({ children }) {
 export function RequireAdminRole({ children }) {
   const { user } = getStoredAuth()
   if (user?.role !== 'admin') {
-    return <Navigate to={getDefaultRouteForUser(user)} replace />
+    return <Navigate to={user ? getDefaultRouteForUser(user) : ROUTES.ADMIN_LOGIN} replace />
   }
   return children
 }

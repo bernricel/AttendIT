@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import AdminLayout from '../components/admin/AdminLayout'
 import AdminPanel from '../components/admin/AdminPanel'
 import { DataEmpty, DataError, DataLoading } from '../components/admin/DataState'
+import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { getAttendanceByDate } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime, monthMatrix, toIsoDate } from '../utils/dateTime'
@@ -69,29 +69,30 @@ export default function AdminAttendanceCalendarPage() {
   })
 
   return (
-    <AdminLayout
-      title="Attendance Calendar"
-      subtitle="Monthly view of attendance activity. Click any day for records."
-      actions={
-        <div className="calendar-actions">
-          <button
-            type="button"
-            className="ghost-btn compact"
-            onClick={() => setMonthDate(new Date(year, month - 1, 1))}
-          >
-            Prev
-          </button>
-          <span className="month-label">{monthLabel}</span>
-          <button
-            type="button"
-            className="ghost-btn compact"
-            onClick={() => setMonthDate(new Date(year, month + 1, 1))}
-          >
-            Next
-          </button>
-        </div>
-      }
-    >
+    <>
+      <LayoutPageMeta
+        title="Attendance Calendar"
+        subtitle="Monthly view of attendance activity. Click any day for records."
+        actions={
+          <div className="calendar-actions">
+            <button
+              type="button"
+              className="ghost-btn compact"
+              onClick={() => setMonthDate(new Date(year, month - 1, 1))}
+            >
+              Prev
+            </button>
+            <span className="month-label">{monthLabel}</span>
+            <button
+              type="button"
+              className="ghost-btn compact"
+              onClick={() => setMonthDate(new Date(year, month + 1, 1))}
+            >
+              Next
+            </button>
+          </div>
+        }
+      />
       {error ? <DataError message={error} /> : null}
       <div className="admin-two-col calendar-layout">
         <AdminPanel title="Monthly Calendar">
@@ -141,7 +142,7 @@ export default function AdminAttendanceCalendarPage() {
                       {record.user_first_name} {record.user_last_name}
                     </h3>
                     <p>
-                      {record.department_name} | {record.session_name} | {record.attendance_type}
+                      {record.session_name} | {record.attendance_type}
                     </p>
                   </div>
                   <div className="chip">{formatDateTime(record.check_time)}</div>
@@ -151,6 +152,6 @@ export default function AdminAttendanceCalendarPage() {
           ) : null}
         </AdminPanel>
       </div>
-    </AdminLayout>
+    </>
   )
 }
