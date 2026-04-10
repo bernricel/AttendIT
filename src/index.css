@@ -609,6 +609,10 @@ select option {
   box-shadow: var(--shadow);
 }
 
+.admin-panel {
+  margin-bottom: 22px;
+}
+
 .faculty-welcome-card {
   margin-bottom: 22px;
 }
