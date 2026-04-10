@@ -25,12 +25,15 @@ export default function AdminAttendanceLogsPage() {
       const fetchedRecords = data.records || []
       setRecords(fetchedRecords)
 
+      // For each record, ask backend to verify DSA signature integrity.
       const verifications = await Promise.all(
         fetchedRecords.map(async (record) => {
           try {
             const result = await verifyAttendanceSignature(record.id)
+            // Map backend boolean to UI-friendly status chip text.
             return [record.id, result.is_valid ? 'valid' : 'invalid']
           } catch {
+            // Network/server issue while verifying this specific row.
             return [record.id, 'unknown']
           }
         }),

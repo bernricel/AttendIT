@@ -9,6 +9,7 @@ export function useSessionQrStatus(sessionId) {
   const [isRefreshingQr, setIsRefreshingQr] = useState(false)
 
   const refreshQrStatus = useCallback(async () => {
+    // Guard: no session selected, reset QR state.
     if (!sessionId) {
       setQrStatus(null)
       setSecondsRemaining(0)
@@ -19,6 +20,7 @@ export function useSessionQrStatus(sessionId) {
     setIsRefreshingQr(true)
     setQrError('')
     try {
+      // Pull current token/status from backend QR status endpoint.
       const data = await getAdminSessionQrStatus(sessionId)
       setQrStatus(data)
       setSecondsRemaining(data.seconds_until_rotation ?? 0)
@@ -32,6 +34,7 @@ export function useSessionQrStatus(sessionId) {
   }, [sessionId])
 
   useEffect(() => {
+    // Initial load and reload whenever selected session changes.
     refreshQrStatus()
   }, [refreshQrStatus])
 
@@ -47,6 +50,7 @@ export function useSessionQrStatus(sessionId) {
       setSecondsRemaining(remainingSeconds)
 
       if (remainingSeconds <= 0 && !isRefreshingQr) {
+        // Auto-refresh when countdown reaches zero to fetch the rotated token.
         refreshQrStatus()
       }
     }, 1000)

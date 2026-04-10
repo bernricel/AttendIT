@@ -18,12 +18,14 @@ export default function AdminQrDisplayPage() {
 
   useEffect(() => {
     const loadSessions = async () => {
+      // Load all sessions so admin can choose which QR to display.
       setIsLoading(true)
       setError('')
       try {
         const data = await getAdminSessions()
         setSessions(data.sessions || [])
         if (data.sessions?.length) {
+          // Default selection: first available session.
           setSelectedId(String(data.sessions[0].id))
         }
       } catch (apiError) {
@@ -40,6 +42,7 @@ export default function AdminQrDisplayPage() {
       return
     }
 
+    // Keep selected session row in sync with latest token/status from polling hook.
     setSessions((prev) =>
       prev.map((session) =>
         String(session.id) === String(selectedId)
@@ -56,11 +59,13 @@ export default function AdminQrDisplayPage() {
   }, [qrStatus, selectedId])
 
   const selectedSession = useMemo(
+    // Resolve selected session object for rendering details and QR metadata.
     () => sessions.find((session) => String(session.id) === String(selectedId)),
     [sessions, selectedId],
   )
   const currentQrToken = qrStatus?.qr_token || selectedSession?.qr_token || ''
   const qrUrl = currentQrToken
+    // Faculty scans this URL; token is embedded in the route.
     ? `${window.location.origin}/faculty/scan/${currentQrToken}`
     : ''
   const separateDisplayUrl = selectedSession
@@ -106,6 +111,7 @@ export default function AdminQrDisplayPage() {
                 <div className="qr-box">
                   {canAcceptAttendance ? (
                     <QRCodeCanvas
+                      // Render QR from the scan URL that includes the current token.
                       value={qrUrl}
                       size={320}
                       level="H"

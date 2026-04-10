@@ -7,6 +7,7 @@ const API_BASE_URL = (
 ).replace(/\/+$/, "");
 
 const api = axios.create({
+  // Shared HTTP client used by all frontend service files.
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
@@ -14,6 +15,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  // Automatically attach auth token so protected QR/admin endpoints can be called.
   const { token } = getStoredAuth();
   if (token) {
     config.headers.Authorization = `Token ${token}`;

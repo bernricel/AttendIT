@@ -16,6 +16,7 @@ export default function FacultyScanConfirmationPage() {
   const { token } = getStoredAuth()
 
   const qrToken = useMemo(
+    // Token may come from route param (/scan/:qrToken) or query string (?token=...).
     () => params.qrToken || searchParams.get('token') || '',
     [params.qrToken, searchParams],
   )
@@ -27,6 +28,7 @@ export default function FacultyScanConfirmationPage() {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
+    // QR links can be opened directly; redirect to login if user is not authenticated.
     if (!token) {
       navigate(ROUTES.LOGIN, {
         replace: true,
@@ -46,6 +48,7 @@ export default function FacultyScanConfirmationPage() {
       setIsLoading(true)
       setError('')
       try {
+        // Preview call validates token/session state before final confirmation.
         const data = await getFacultySessionPreview(qrToken)
         setSession(data.session)
       } catch (apiError) {
@@ -64,6 +67,7 @@ export default function FacultyScanConfirmationPage() {
     setSuccess('')
     try {
       // Let the backend resolve check-in vs check-out from the active rule windows.
+      // This POST is the actual attendance record action for the scanned QR.
       const data = await scanAttendance(qrToken)
       setSuccess(data?.message || 'Attendance recorded successfully.')
     } catch (apiError) {
@@ -72,6 +76,7 @@ export default function FacultyScanConfirmationPage() {
       setIsConfirming(false)
     }
   }
+  // Disable action if backend indicates session is no longer accepting attendance.
   const isSessionClosed = session?.can_accept_attendance === false || session?.lifecycle_status === 'ENDED'
 
   return (

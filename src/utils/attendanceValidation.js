@@ -16,6 +16,7 @@ export const customWeekdayOptions = [
 ]
 
 function resolveWeekdays(recurrencePattern, customWeekdays) {
+  // Utility: normalize recurrence options to numeric weekdays.
   if (recurrencePattern === 'weekdays') return new Set([0, 1, 2, 3, 4])
   if (recurrencePattern === 'mwf') return new Set([0, 2, 4])
   if (recurrencePattern === 'tth') return new Set([1, 3])
@@ -23,6 +24,7 @@ function resolveWeekdays(recurrencePattern, customWeekdays) {
 }
 
 function ensureTimeOrder(startTime, endTime, label) {
+  // Utility: shared validator for all time-window start/end pairs.
   if (!startTime || !endTime) {
     return `Please provide ${label} start and end times.`
   }
@@ -33,10 +35,12 @@ function ensureTimeOrder(startTime, endTime, label) {
 }
 
 export function validateSessionForm(form) {
+  // Frontend-side validation before calling create-session API.
   if (!form.title.trim()) {
     return 'Session title is required.'
   }
 
+  // QR token rotation interval is configured during session creation.
   const interval = Number(form.qr_refresh_interval_seconds)
   if (!Number.isInteger(interval) || interval < 1) {
     return 'QR refresh interval must be a whole number greater than 0.'
@@ -81,6 +85,7 @@ export function validateSessionForm(form) {
 }
 
 export function buildSessionPayload(form) {
+  // Utility: convert UI form state into backend API payload shape.
   const basePayload = {
     title: form.title,
     scheduled_start_time: `${form.scheduled_start_time}:00`,
@@ -113,6 +118,7 @@ export function buildSessionPayload(form) {
 }
 
 export function getRecurringPreviewCount(form) {
+  // Utility: estimate how many sessions will be generated for recurring setup.
   if (!form.is_recurring || !form.recurrence_start_date || !form.recurrence_end_date) return 0
 
   const weekdays = resolveWeekdays(form.recurrence_pattern, form.recurrence_days)

@@ -19,6 +19,7 @@ export default function AdminQrPresentationPage() {
     let isActive = true
 
     const loadSession = async () => {
+      // Load session metadata by ID for this clean full-screen presentation route.
       setSessionLookup({ isLoading: true, error: '', session: null })
 
       try {
@@ -62,9 +63,11 @@ export default function AdminQrPresentationPage() {
 
   const currentQrToken = qrStatus?.qr_token || sessionLookup.session?.qr_token || ''
   const qrUrl = currentQrToken
+    // This QR URL is scanned by faculty devices.
     ? `${window.location.origin}/faculty/scan/${currentQrToken}`
     : ''
   const refreshInterval = useMemo(
+    // Prefer live interval from polling endpoint, fallback to session data/default.
     () => qrStatus?.qr_refresh_interval_seconds ?? sessionLookup.session?.qr_refresh_interval_seconds ?? 30,
     [qrStatus?.qr_refresh_interval_seconds, sessionLookup.session?.qr_refresh_interval_seconds],
   )
@@ -92,6 +95,7 @@ export default function AdminQrPresentationPage() {
           {/* Large QR surface keeps scanning reliable for monitor, kiosk, and projector setups. */}
           {canAcceptAttendance ? (
             <div className="qr-display-code-wrap">
+              {/* High-error-correction QR for projector/large-screen readability. */}
               <QRCodeCanvas value={qrUrl} size={380} level="H" includeMargin />
             </div>
           ) : null}

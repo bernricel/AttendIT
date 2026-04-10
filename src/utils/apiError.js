@@ -1,4 +1,5 @@
 export function getApiErrorMessage(error, fallback = 'Something went wrong.') {
+  // Utility: extract a user-friendly message from common API error shapes.
   const responseData = error?.response?.data
   const serializerErrors = responseData?.errors || responseData
 
@@ -16,6 +17,7 @@ export function getApiErrorMessage(error, fallback = 'Something went wrong.') {
   }
 
   return (
+    // Fallback chain keeps error display consistent across all pages/services.
     responseData?.message ||
     responseData?.detail ||
     error?.message ||
