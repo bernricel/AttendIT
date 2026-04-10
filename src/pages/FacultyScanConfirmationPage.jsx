@@ -25,6 +25,7 @@ export default function FacultyScanConfirmationPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isConfirming, setIsConfirming] = useState(false)
   const [error, setError] = useState('')
+  const [warning, setWarning] = useState('')
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function FacultyScanConfirmationPage() {
       }
       setIsLoading(true)
       setError('')
+      setWarning('')
       try {
         // Preview call validates token/session state before final confirmation.
         const data = await getFacultySessionPreview(qrToken)
@@ -64,6 +66,7 @@ export default function FacultyScanConfirmationPage() {
     if (!qrToken || !session) return
     setIsConfirming(true)
     setError('')
+    setWarning('')
     setSuccess('')
     try {
       // Let the backend resolve check-in vs check-out from the active rule windows.
@@ -71,7 +74,17 @@ export default function FacultyScanConfirmationPage() {
       const data = await scanAttendance(qrToken)
       setSuccess(data?.message || 'Attendance recorded successfully.')
     } catch (apiError) {
-      setError(getApiErrorMessage(apiError, 'Unable to process attendance request.'))
+      const apiMessage = getApiErrorMessage(apiError, 'Unable to process attendance request.')
+      const statusCode = apiError?.response?.status
+
+      // Keep duplicate-check prevention behavior, but show a clear user-facing warning.
+      if (statusCode === 409) {
+        setWarning(
+          apiMessage || 'You have already checked in for this session.',
+        )
+      } else {
+        setError(apiMessage)
+      }
     } finally {
       setIsConfirming(false)
     }
@@ -92,6 +105,7 @@ export default function FacultyScanConfirmationPage() {
       />
       <section className="faculty-panel">
         {isLoading ? <p className="data-state loading">Loading session details...</p> : null}
+        {!isLoading && warning ? <p className="data-state error">{warning}</p> : null}
         {!isLoading && error ? <MessageBanner type="error" message={error} /> : null}
         {!isLoading && success ? <MessageBanner type="info" message={success} /> : null}
 
