@@ -39,6 +39,11 @@ export async function deleteAttendanceSession(sessionId, password) {
   return response.data
 }
 
+export async function endAttendanceSession(sessionId) {
+  const response = await api.post(`/admin/sessions/${sessionId}/end`)
+  return response.data
+}
+
 export async function verifyAttendanceSignature(attendanceRecordId) {
   // Calls backend DSA verification endpoint for one attendance record.
   // Response includes: { is_valid: true/false }.

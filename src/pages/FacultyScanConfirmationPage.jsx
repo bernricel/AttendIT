@@ -91,6 +91,20 @@ export default function FacultyScanConfirmationPage() {
   }
   // Disable action if backend indicates session is no longer accepting attendance.
   const isSessionClosed = session?.can_accept_attendance === false || session?.lifecycle_status === 'ENDED'
+  const checkInWindowLabel = useMemo(() => {
+    if (!session) return ''
+    if (!session.enable_check_in_window) return 'Anytime while session is active'
+    const startLabel = formatDateTime(session.check_in_start_time)
+    const endLabel = session.check_in_end_time ? formatDateTime(session.check_in_end_time) : 'No end time'
+    return `${startLabel} to ${endLabel}`
+  }, [session])
+  const checkOutWindowLabel = useMemo(() => {
+    if (!session) return ''
+    if (!session.enable_check_out_window) return 'Anytime while session is active'
+    const startLabel = formatDateTime(session.check_out_start_time)
+    const endLabel = session.check_out_end_time ? formatDateTime(session.check_out_end_time) : 'No end time'
+    return `${startLabel} to ${endLabel}`
+  }, [session])
 
   return (
     <>
@@ -130,15 +144,11 @@ export default function FacultyScanConfirmationPage() {
               </div>
               <div className="summary-item">
                 <span>Check-in Window</span>
-                <strong>
-                  {formatDateTime(session.check_in_start_time)} to {formatDateTime(session.check_in_end_time)}
-                </strong>
+                <strong>{checkInWindowLabel}</strong>
               </div>
               <div className="summary-item">
                 <span>Check-out Window</span>
-                <strong>
-                  {formatDateTime(session.check_out_start_time)} to {formatDateTime(session.check_out_end_time)}
-                </strong>
+                <strong>{checkOutWindowLabel}</strong>
               </div>
               <div className="summary-item">
                 <span>Status</span>

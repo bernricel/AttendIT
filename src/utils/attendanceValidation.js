@@ -23,12 +23,15 @@ function resolveWeekdays(recurrencePattern, customWeekdays) {
   return new Set(customWeekdays)
 }
 
-function ensureTimeOrder(startTime, endTime, label) {
+function ensureTimeOrder(startTime, endTime, label, { requireEnd = true } = {}) {
   // Utility: shared validator for all time-window start/end pairs.
-  if (!startTime || !endTime) {
-    return `Please provide ${label} start and end times.`
+  if (!startTime) {
+    return `Please provide ${label} start time.`
   }
-  if (startTime >= endTime) {
+  if (requireEnd && !endTime) {
+    return `Please provide ${label} end time.`
+  }
+  if (startTime && endTime && startTime >= endTime) {
     return `${label} end time must be later than ${label} start time.`
   }
   return ''
@@ -46,20 +49,29 @@ export function validateSessionForm(form) {
     return 'QR refresh interval must be a whole number greater than 0.'
   }
 
-  const scheduledError = ensureTimeOrder(form.scheduled_start_time, form.scheduled_end_time, 'Scheduled')
-  if (scheduledError) return scheduledError
+  if (form.scheduled_start_time && form.session_end_time && form.scheduled_start_time >= form.session_end_time) {
+    return 'Session end time must be later than scheduled start time.'
+  }
 
-  const checkInError = ensureTimeOrder(form.check_in_start_time, form.check_in_end_time, 'Check-in')
-  if (checkInError) return checkInError
+  if (form.enable_check_in_window) {
+    const checkInError = ensureTimeOrder(form.check_in_start_time, form.check_in_end_time, 'Check-in', {
+      requireEnd: false,
+    })
+    if (checkInError) return checkInError
 
-  const checkOutError = ensureTimeOrder(form.check_out_start_time, form.check_out_end_time, 'Check-out')
-  if (checkOutError) return checkOutError
+    if (form.late_threshold_time && form.late_threshold_time < form.check_in_start_time) {
+      return 'Late threshold must be on or after check-in start time.'
+    }
+    if (form.late_threshold_time && form.check_in_end_time && form.late_threshold_time > form.check_in_end_time) {
+      return 'Late threshold must be within the check-in window.'
+    }
+  }
 
-  if (
-    form.late_threshold_time < form.check_in_start_time ||
-    form.late_threshold_time > form.check_in_end_time
-  ) {
-    return 'Late threshold must be within the check-in window.'
+  if (form.enable_check_out_window) {
+    const checkOutError = ensureTimeOrder(form.check_out_start_time, form.check_out_end_time, 'Check-out', {
+      requireEnd: false,
+    })
+    if (checkOutError) return checkOutError
   }
 
   if (!form.is_recurring) {
@@ -86,15 +98,18 @@ export function validateSessionForm(form) {
 
 export function buildSessionPayload(form) {
   // Utility: convert UI form state into backend API payload shape.
+  const optionalTime = (value) => (value ? `${value}:00` : null)
   const basePayload = {
     title: form.title,
-    scheduled_start_time: `${form.scheduled_start_time}:00`,
-    scheduled_end_time: `${form.scheduled_end_time}:00`,
-    check_in_start_time: `${form.check_in_start_time}:00`,
-    check_in_end_time: `${form.check_in_end_time}:00`,
-    late_threshold_time: `${form.late_threshold_time}:00`,
-    check_out_start_time: `${form.check_out_start_time}:00`,
-    check_out_end_time: `${form.check_out_end_time}:00`,
+    scheduled_start_time: optionalTime(form.scheduled_start_time),
+    check_in_start_time: form.enable_check_in_window ? optionalTime(form.check_in_start_time) : null,
+    check_in_end_time: form.enable_check_in_window ? optionalTime(form.check_in_end_time) : null,
+    late_threshold_time: optionalTime(form.late_threshold_time),
+    check_out_start_time: form.enable_check_out_window ? optionalTime(form.check_out_start_time) : null,
+    check_out_end_time: form.enable_check_out_window ? optionalTime(form.check_out_end_time) : null,
+    enable_check_in_window: Boolean(form.enable_check_in_window),
+    enable_check_out_window: Boolean(form.enable_check_out_window),
+    session_end_time: optionalTime(form.session_end_time),
     is_active: form.is_active,
     qr_refresh_interval_seconds: Number(form.qr_refresh_interval_seconds),
   }

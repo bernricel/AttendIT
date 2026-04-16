@@ -5,7 +5,7 @@ import { DataEmpty, DataError, DataLoading } from '../components/admin/DataState
 import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { buildAdminQrPresentationRoute } from '../constants/routes'
 import { useSessionQrStatus } from '../hooks/useSessionQrStatus'
-import { deleteAttendanceSession, getAdminSessions } from '../services/attendanceApi'
+import { deleteAttendanceSession, endAttendanceSession, getAdminSessions } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime } from '../utils/dateTime'
 
@@ -19,6 +19,7 @@ export default function AdminQrDisplayPage() {
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteError, setDeleteError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isEnding, setIsEnding] = useState(false)
   const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(selectedId)
 
   useEffect(() => {
@@ -105,6 +106,35 @@ export default function AdminQrDisplayPage() {
     }
   }
 
+  const handleEndSession = async () => {
+    if (!selectedSession) {
+      return
+    }
+    setIsEnding(true)
+    setError('')
+    setDeleteSuccess('')
+    try {
+      const response = await endAttendanceSession(selectedSession.id)
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === selectedSession.id
+            ? {
+                ...session,
+                ...response.session,
+                lifecycle_status: response.session?.lifecycle_status || 'ENDED',
+                can_accept_attendance: false,
+              }
+            : session,
+        ),
+      )
+      setDeleteSuccess(`${response.session?.name || selectedSession.name} was ended. Attendance is now closed.`)
+    } catch (apiError) {
+      setError(getApiErrorMessage(apiError, 'Failed to end the session.'))
+    } finally {
+      setIsEnding(false)
+    }
+  }
+
   return (
     <>
       <LayoutPageMeta
@@ -158,7 +188,7 @@ export default function AdminQrDisplayPage() {
                   <p>Type: {selectedSession.session_type}</p>
                   <p>Status: {sessionLifecycleStatus}</p>
                   <p>Start: {formatDateTime(selectedSession.start_time)}</p>
-                  <p>End: {formatDateTime(selectedSession.end_time)}</p>
+                  <p>End: {formatDateTime(selectedSession.session_end_time || selectedSession.end_time)}</p>
                   {canAcceptAttendance ? <p>QR Token: {currentQrToken}</p> : null}
                   <p>
                     Refresh Interval:{' '}
@@ -178,6 +208,14 @@ export default function AdminQrDisplayPage() {
                     >
                       Open Separate QR Display
                     </a>
+                    <button
+                      className="ghost-btn"
+                      type="button"
+                      onClick={handleEndSession}
+                      disabled={isEnding || !canAcceptAttendance}
+                    >
+                      {isEnding ? 'Ending...' : 'End Session'}
+                    </button>
                     <button
                       className="ghost-btn danger-btn"
                       type="button"

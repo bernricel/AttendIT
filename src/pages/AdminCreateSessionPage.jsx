@@ -18,12 +18,14 @@ export default function AdminCreateSessionPage() {
     title: '',
     session_date: '',
     scheduled_start_time: '',
-    scheduled_end_time: '',
     check_in_start_time: '',
     check_in_end_time: '',
     late_threshold_time: '',
     check_out_start_time: '',
     check_out_end_time: '',
+    enable_check_in_window: false,
+    enable_check_out_window: false,
+    session_end_time: '',
     is_active: true,
     qr_refresh_interval_seconds: 30,
     is_recurring: false,
@@ -38,7 +40,8 @@ export default function AdminCreateSessionPage() {
   const [creationSummary, setCreationSummary] = useState(null)
 
   const updateField = (field) => (event) => {
-    const value = field === 'is_active' || field === 'is_recurring' ? event.target.checked : event.target.value
+    const booleanFields = ['is_active', 'is_recurring', 'enable_check_in_window', 'enable_check_out_window']
+    const value = booleanFields.includes(field) ? event.target.checked : event.target.value
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -85,12 +88,12 @@ export default function AdminCreateSessionPage() {
         title: '',
         session_date: '',
         scheduled_start_time: '',
-        scheduled_end_time: '',
         check_in_start_time: '',
         check_in_end_time: '',
         late_threshold_time: '',
         check_out_start_time: '',
         check_out_end_time: '',
+        session_end_time: '',
         recurrence_start_date: '',
         recurrence_end_date: '',
         recurrence_days: [],
@@ -149,52 +152,80 @@ export default function AdminCreateSessionPage() {
             onChange={updateField('scheduled_start_time')}
             disabled={isSubmitting}
           />
-          <FormField
-            id="scheduled_end_time"
-            label="Scheduled End Time"
-            type="time"
-            value={form.scheduled_end_time}
-            onChange={updateField('scheduled_end_time')}
-            disabled={isSubmitting}
-          />
-          <FormField
-            id="check_in_start_time"
-            label="Check-in Start Time"
-            type="time"
-            value={form.check_in_start_time}
-            onChange={updateField('check_in_start_time')}
-            disabled={isSubmitting}
-          />
-          <FormField
-            id="check_in_end_time"
-            label="Check-in End Time"
-            type="time"
-            value={form.check_in_end_time}
-            onChange={updateField('check_in_end_time')}
-            disabled={isSubmitting}
-          />
+          <label className="toggle-field" htmlFor="enable_check_in_window">
+            <input
+              id="enable_check_in_window"
+              type="checkbox"
+              checked={form.enable_check_in_window}
+              onChange={updateField('enable_check_in_window')}
+              disabled={isSubmitting}
+            />
+            <span>Enable Check-in Window</span>
+          </label>
+          {form.enable_check_in_window ? (
+            <>
+              <FormField
+                id="check_in_start_time"
+                label="Check-in Start Time"
+                type="time"
+                value={form.check_in_start_time}
+                onChange={updateField('check_in_start_time')}
+                disabled={isSubmitting}
+              />
+              <FormField
+                id="check_in_end_time"
+                label="Check-in End Time (Optional)"
+                type="time"
+                value={form.check_in_end_time}
+                onChange={updateField('check_in_end_time')}
+                disabled={isSubmitting}
+              />
+            </>
+          ) : null}
           <FormField
             id="late_threshold_time"
-            label="Late Threshold Time"
+            label="Late Threshold Time (Optional)"
             type="time"
             value={form.late_threshold_time}
             onChange={updateField('late_threshold_time')}
             disabled={isSubmitting}
           />
+          <label className="toggle-field" htmlFor="enable_check_out_window">
+            <input
+              id="enable_check_out_window"
+              type="checkbox"
+              checked={form.enable_check_out_window}
+              onChange={updateField('enable_check_out_window')}
+              disabled={isSubmitting}
+            />
+            <span>Enable Check-out Window</span>
+          </label>
+          {form.enable_check_out_window ? (
+            <>
+              <FormField
+                id="check_out_start_time"
+                label="Check-out Start Time"
+                type="time"
+                value={form.check_out_start_time}
+                onChange={updateField('check_out_start_time')}
+                disabled={isSubmitting}
+              />
+              <FormField
+                id="check_out_end_time"
+                label="Check-out End Time (Optional)"
+                type="time"
+                value={form.check_out_end_time}
+                onChange={updateField('check_out_end_time')}
+                disabled={isSubmitting}
+              />
+            </>
+          ) : null}
           <FormField
-            id="check_out_start_time"
-            label="Check-out Start Time"
+            id="session_end_time"
+            label="Session End Time (Optional)"
             type="time"
-            value={form.check_out_start_time}
-            onChange={updateField('check_out_start_time')}
-            disabled={isSubmitting}
-          />
-          <FormField
-            id="check_out_end_time"
-            label="Check-out End Time"
-            type="time"
-            value={form.check_out_end_time}
-            onChange={updateField('check_out_end_time')}
+            value={form.session_end_time}
+            onChange={updateField('session_end_time')}
             disabled={isSubmitting}
           />
 
