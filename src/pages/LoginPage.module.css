@@ -1,0 +1,48 @@
+.loaderLine {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.googleBtnWrap {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  transition: transform 0.2s ease;
+}
+
+.googleBtnWrap:hover {
+  transform: translateY(-2px);
+}
+
+.googleBtnWrap > div {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.authDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0 10px;
+  color: #90a6c7;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.authDivider::before,
+.authDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.authDivider span {
+  padding: 0 10px;
+}

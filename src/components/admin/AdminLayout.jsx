@@ -3,11 +3,11 @@ import DashboardLayout from '../layout/DashboardLayout'
 import { ROUTES } from '../../constants/routes'
 
 const adminNavItems = [
-  { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard', icon: <FiPieChart />, colorClass: 'icon-orange' },
-  { to: ROUTES.ADMIN_CREATE_SESSION, label: 'Create Session', icon: <FiEdit3 />, colorClass: 'icon-yellow' },
-  { to: ROUTES.ADMIN_QR_DISPLAY, label: 'QR Display', icon: <FiMaximize />, colorClass: 'icon-cyan' },
-  { to: ROUTES.ADMIN_LOGS, label: 'Attendance Logs', icon: <FiGrid />, colorClass: 'icon-magenta' },
-  { to: ROUTES.ADMIN_CALENDAR, label: 'Calendar', icon: <FiCalendar />, colorClass: 'icon-purple' },
+  { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard', icon: <FiPieChart />, colorClass: 'iconOrange' },
+  { to: ROUTES.ADMIN_CREATE_SESSION, label: 'Create Session', icon: <FiEdit3 />, colorClass: 'iconYellow' },
+  { to: ROUTES.ADMIN_QR_DISPLAY, label: 'QR Display', icon: <FiMaximize />, colorClass: 'iconCyan' },
+  { to: ROUTES.ADMIN_LOGS, label: 'Attendance Logs', icon: <FiGrid />, colorClass: 'iconMagenta' },
+  { to: ROUTES.ADMIN_CALENDAR, label: 'Calendar', icon: <FiCalendar />, colorClass: 'iconPurple' },
 ]
 
 export default function AdminLayout() {

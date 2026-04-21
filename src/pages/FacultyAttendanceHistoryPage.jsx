@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { getMyAttendanceRecords } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
+import styles from './FacultyAttendanceHistoryPage.module.css'
+import common from '../styles/common.module.css'
 
 export default function FacultyAttendanceHistoryPage() {
   const [records, setRecords] = useState([])
@@ -30,42 +32,66 @@ export default function FacultyAttendanceHistoryPage() {
         title="My Attendance History"
         subtitle="Your personal attendance records across sessions."
       />
-      <section className="faculty-panel">
-        {isLoading ? <p className="data-state loading">Loading attendance history...</p> : null}
-        {!isLoading && error ? <p className="data-state error">{error}</p> : null}
+      <section className={styles.facultyPanel}>
+        {isLoading ? <p className={`${common.dataState} ${common.loading}`.trim()}>Loading attendance history...</p> : null}
+        {!isLoading && error ? <p className={`${common.dataState} ${common.error}`.trim()}>{error}</p> : null}
         {!isLoading && !error && records.length === 0 ? (
-          <p className="data-state empty">No attendance records found.</p>
+          <p className={`${common.dataState} ${common.empty}`.trim()}>No attendance records found.</p>
         ) : null}
 
         {!isLoading && !error && records.length > 0 ? (
-          <div className="table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Session</th>
-                  <th>Date</th>
-                  <th>Time</th>
-                  <th>Attendance Type</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className={styles.responsiveBlock}>
+            <div className={styles.desktopOnly}>
+              <div className={common.tableWrap}>
+                <table className={common.adminTable}>
+                  <thead>
+                    <tr>
+                      <th>Session</th>
+                      <th>Date</th>
+                      <th>Time</th>
+                      <th>Attendance Type</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {records.map((record) => {
+                      const dateTime = new Date(record.check_time)
+                      return (
+                        <tr key={record.id}>
+                          <td>{record.session_name}</td>
+                          <td>{dateTime.toLocaleDateString()}</td>
+                          <td>{dateTime.toLocaleTimeString()}</td>
+                          <td>{record.attendance_type}</td>
+                          <td>
+                            <span className={`${common.chip} ${common.ok}`.trim()}>{record.status}</span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className={styles.mobileOnly}>
+              <div className={styles.mobileCards}>
                 {records.map((record) => {
                   const dateTime = new Date(record.check_time)
                   return (
-                    <tr key={record.id}>
-                      <td>{record.session_name}</td>
-                      <td>{dateTime.toLocaleDateString()}</td>
-                      <td>{dateTime.toLocaleTimeString()}</td>
-                      <td>{record.attendance_type}</td>
-                      <td>
-                        <span className="chip ok">{record.status}</span>
-                      </td>
-                    </tr>
+                    <article key={record.id} className={styles.mobileCard}>
+                      <p className={styles.cardTitle}>{record.session_name}</p>
+                      <p className={styles.cardMeta}>
+                        {dateTime.toLocaleDateString()} {'\u2022'} {dateTime.toLocaleTimeString()}
+                      </p>
+                      <p className={styles.cardLine}>{record.attendance_type}</p>
+                      <div>
+                        <span className={`${common.chip} ${common.ok}`.trim()}>{record.status}</span>
+                      </div>
+                    </article>
                   )
                 })}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
         ) : null}
       </section>

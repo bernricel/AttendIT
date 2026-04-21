@@ -1,0 +1,64 @@
+.qrDisplayScreen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.qrDisplayCard {
+  width: min(920px, 100%);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  background: rgba(0, 20, 45, 0.84);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  padding: clamp(20px, 3vw, 36px);
+  text-align: center;
+}
+
+.qrDisplayKicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.qrDisplayCard h1 {
+  margin: 10px 0 8px;
+  color: var(--ua-gold);
+  font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+}
+
+.qrDisplayInstruction {
+  margin: 0;
+  color: #e8f0f8;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+.qrDisplayCodeWrap {
+  margin: 24px auto;
+  background: #fff;
+  width: fit-content;
+  border-radius: 20px;
+  padding: clamp(12px, 2vw, 18px);
+}
+
+.qrDisplayMeta {
+  display: grid;
+  gap: 8px;
+}
+
+.qrDisplayMeta p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: clamp(0.92rem, 1.6vw, 1.05rem);
+}
+
+@media (max-width: 1100px) {
+  .qrDisplayCodeWrap canvas {
+    width: min(76vw, 360px) !important;
+    height: min(76vw, 360px) !important;
+  }
+}

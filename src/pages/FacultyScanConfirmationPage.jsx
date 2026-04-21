@@ -7,6 +7,8 @@ import { getFacultySessionPreview, scanAttendance } from '../services/attendance
 import { getStoredAuth } from '../services/authStorage'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime } from '../utils/dateTime'
+import styles from './FacultyScanConfirmationPage.module.css'
+import common from '../styles/common.module.css'
 
 export default function FacultyScanConfirmationPage() {
   const navigate = useNavigate()
@@ -112,45 +114,45 @@ export default function FacultyScanConfirmationPage() {
         title="Attendance Confirmation"
         subtitle="Review session details before confirming your attendance."
         actions={
-          <Link className="ghost-btn compact link-button" to={ROUTES.FACULTY_HISTORY}>
+          <Link className={`${common.ghostBtn} ${common.compact} ${common.linkButton}`.trim()} to={ROUTES.FACULTY_HISTORY}>
             View My History
           </Link>
         }
       />
-      <section className="faculty-panel">
-        {isLoading ? <p className="data-state loading">Loading session details...</p> : null}
-        {!isLoading && warning ? <p className="data-state error">{warning}</p> : null}
+      <section className={styles.facultyPanel}>
+        {isLoading ? <p className={`${common.dataState} ${common.loading}`.trim()}>Loading session details...</p> : null}
+        {!isLoading && warning ? <p className={`${common.dataState} ${common.error}`.trim()}>{warning}</p> : null}
         {!isLoading && error ? <MessageBanner type="error" message={error} /> : null}
         {!isLoading && success ? <MessageBanner type="info" message={success} /> : null}
 
         {!isLoading && session ? (
-          <div className="scan-confirm-grid">
-            <div className="summary-grid">
-              <div className="summary-item">
+          <div className={common.scanConfirmGrid}>
+            <div className={common.summaryGrid}>
+              <div className={common.summaryItem}>
                 <span>Session Name</span>
                 <strong>{session.name}</strong>
               </div>
-              <div className="summary-item">
+              <div className={common.summaryItem}>
                 <span>Department</span>
                 <strong>{session.department || 'N/A'}</strong>
               </div>
-              <div className="summary-item">
+              <div className={common.summaryItem}>
                 <span>Scheduled Start</span>
                 <strong>{formatDateTime(session.start_time)}</strong>
               </div>
-              <div className="summary-item">
+              <div className={common.summaryItem}>
                 <span>Scheduled End</span>
                 <strong>{formatDateTime(session.end_time)}</strong>
               </div>
-              <div className="summary-item">
+              <div className={common.summaryItem}>
                 <span>Check-in Window</span>
                 <strong>{checkInWindowLabel}</strong>
               </div>
-              <div className="summary-item">
+              <div className={common.summaryItem}>
                 <span>Check-out Window</span>
                 <strong>{checkOutWindowLabel}</strong>
               </div>
-              <div className="summary-item">
+              <div className={common.summaryItem}>
                 <span>Status</span>
                 <strong>{session.lifecycle_status || 'UNKNOWN'}</strong>
               </div>
@@ -158,7 +160,7 @@ export default function FacultyScanConfirmationPage() {
 
             <button
               type="button"
-              className="primary-btn"
+              className={common.primaryBtn}
               onClick={handleConfirm}
               disabled={isConfirming || Boolean(success) || isSessionClosed}
             >

@@ -8,6 +8,8 @@ import { ROUTES } from '../constants/routes'
 import { loginAdmin } from '../services/authApi'
 import { clearAuthSession, getDefaultRouteForUser, getStoredAuth, storeAuthSession } from '../services/authStorage'
 import { getApiErrorMessage } from '../utils/apiError'
+import styles from './AdminLoginPage.module.css'
+import common from '../styles/common.module.css'
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
@@ -74,7 +76,7 @@ export default function AdminLoginPage() {
       sideNote={<p>Use your assigned admin credentials to continue.</p>}
     >
       <AuthCard title="Admin Login" description="Authorized administrators only.">
-        <form className="profile-form" onSubmit={handleSubmit}>
+        <form className={common.profileForm} onSubmit={handleSubmit}>
           {/* Identifier accepts either admin email or configured admin username. */}
           <FormField
             id="admin_identifier"
@@ -94,15 +96,15 @@ export default function AdminLoginPage() {
             disabled={isLoading}
           />
           <MessageBanner type="error" message={error} />
-          <button className="primary-btn" type="submit" disabled={!isFormValid || isLoading}>
+          <button className={common.primaryBtn} type="submit" disabled={!isFormValid || isLoading}>
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="auth-divider" role="presentation">
+        <div className={styles.authDivider} role="presentation">
           <span>faculty or staff</span>
         </div>
-        <Link className="ghost-btn auth-link-btn" to={ROUTES.LOGIN}>
+        <Link className={`${common.ghostBtn} ${common.authLinkBtn}`.trim()} to={ROUTES.LOGIN}>
           Back to Faculty Login
         </Link>
       </AuthCard>

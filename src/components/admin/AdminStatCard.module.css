@@ -1,0 +1,40 @@
+.adminStatCard {
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-left: 4px solid var(--info);
+  border-radius: 14px;
+  padding: 18px;
+  display: grid;
+  gap: 6px;
+  box-shadow: var(--shadow);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.adminStatCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
+.yellow {
+  border-left-color: var(--ua-gold);
+}
+
+.red {
+  border-left-color: var(--red);
+}
+
+.adminStatCard span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.adminStatCard strong {
+  font-size: 1.8rem;
+  color: #fff;
+}

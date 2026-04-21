@@ -3,8 +3,8 @@ import DashboardLayout from '../layout/DashboardLayout'
 import { ROUTES } from '../../constants/routes'
 
 const facultyNavItems = [
-  { to: ROUTES.FACULTY_DASHBOARD, label: 'Dashboard', icon: <FiPieChart />, colorClass: 'icon-orange' },
-  { to: ROUTES.FACULTY_HISTORY, label: 'Attendance History', icon: <FiClock />, colorClass: 'icon-red' },
+  { to: ROUTES.FACULTY_DASHBOARD, label: 'Dashboard', icon: <FiPieChart />, colorClass: 'iconOrange' },
+  { to: ROUTES.FACULTY_HISTORY, label: 'Attendance History', icon: <FiClock />, colorClass: 'iconRed' },
 ]
 
 export default function FacultyLayout() {

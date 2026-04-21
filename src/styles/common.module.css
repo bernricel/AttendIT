@@ -1,0 +1,395 @@
+.profileForm {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+}
+
+.fieldBlock {
+  display: grid;
+  gap: 7px;
+  text-align: left;
+}
+
+.fieldLabel {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.inputControl {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  padding: 10px 12px;
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.inputControl:focus {
+  border-color: var(--ua-gold);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(253, 185, 19, 0.16);
+}
+
+.inputControl::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.inputControl option {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.primaryBtn,
+.ghostBtn {
+  border-radius: 12px;
+  min-height: 46px;
+  border: none;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primaryBtn {
+  margin-top: 6px;
+  color: var(--ua-navy);
+  background: var(--ua-gold);
+  box-shadow: 0 4px 15px rgba(253, 185, 19, 0.3);
+}
+
+.primaryBtn:hover {
+  background: var(--ua-gold-hover);
+  transform: translateY(-2px);
+}
+
+.primaryBtn:disabled {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ghostBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border: 1px solid var(--glass-border);
+}
+
+.ghostBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.compact {
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+.authLinkBtn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.toggleField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.toggleField input[type="checkbox"] {
+  width: auto;
+  min-height: auto;
+  accent-color: var(--ua-gold);
+}
+
+.switchField {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px 12px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.switchInput {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.switchControl {
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switchThumb {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.switchText {
+  color: var(--text);
+}
+
+.switchInput:checked + .switchControl {
+  background: rgba(253, 185, 19, 0.32);
+  border-color: rgba(253, 185, 19, 0.8);
+}
+
+.switchInput:checked + .switchControl .switchThumb {
+  transform: translateX(20px);
+}
+
+.switchInput:focus-visible + .switchControl {
+  box-shadow:
+    0 0 0 3px rgba(253, 185, 19, 0.25),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switchInput:disabled + .switchControl {
+  opacity: 0.55;
+}
+
+.switchInput:disabled ~ .switchText {
+  opacity: 0.65;
+}
+
+.subtleNote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.adminTwoCol,
+.facultyTwoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.summaryGrid {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.summaryItem {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.summaryItem span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.summaryItem strong {
+  color: #fff;
+  font-size: 1.05rem;
+  word-break: break-all;
+}
+
+.quickActionsGrid {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.quickActionCard {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 18px;
+  text-decoration: none;
+  background: rgba(253, 185, 19, 0.05);
+  display: grid;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.quickActionCard:hover {
+  border-color: var(--ua-gold);
+  background: rgba(253, 185, 19, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(253, 185, 19, 0.1);
+}
+
+.quickActionCard strong {
+  color: var(--ua-gold);
+  font-size: 1.05rem;
+}
+
+.quickActionCard span {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.adminTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  min-width: 760px;
+}
+
+.adminTable th {
+  color: var(--ua-gold);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.adminTable td {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.adminTable td:first-child {
+  border-left: 1px solid var(--glass-border);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.adminTable td:last-child {
+  border-right: 1px solid var(--glass-border);
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.chip {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: #fff;
+}
+
+.ok,
+.valid {
+  background: rgba(46, 204, 113, 0.2);
+  border-color: rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+}
+
+.muted {
+}
+
+.unknown {
+}
+
+.invalid {
+}
+
+.sessionItem {
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.sessionItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dataState {
+  margin: 0;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 0.95rem;
+}
+
+.loading {
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.empty {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  border: 1px solid var(--glass-border);
+}
+
+.error {
+  background: rgba(255, 92, 92, 0.1);
+  color: #ff5c5c;
+  border: 1px solid rgba(255, 92, 92, 0.2);
+}
+
+.calendarActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.logsDatePicker {
+  min-width: 180px;
+}
+
+.scanConfirmGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.linkButton {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 1100px) {
+  .adminTwoCol,
+  .facultyTwoCol {
+    grid-template-columns: 1fr;
+  }
+}

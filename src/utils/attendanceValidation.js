@@ -104,7 +104,7 @@ export function buildSessionPayload(form) {
     scheduled_start_time: optionalTime(form.scheduled_start_time),
     check_in_start_time: form.enable_check_in_window ? optionalTime(form.check_in_start_time) : null,
     check_in_end_time: form.enable_check_in_window ? optionalTime(form.check_in_end_time) : null,
-    late_threshold_time: optionalTime(form.late_threshold_time),
+    late_threshold_time: form.enable_check_in_window ? optionalTime(form.late_threshold_time) : null,
     check_out_start_time: form.enable_check_out_window ? optionalTime(form.check_out_start_time) : null,
     check_out_end_time: form.enable_check_out_window ? optionalTime(form.check_out_end_time) : null,
     enable_check_in_window: Boolean(form.enable_check_in_window),

@@ -5,6 +5,8 @@ import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { getAttendanceByDate } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime, monthMatrix, toIsoDate } from '../utils/dateTime'
+import styles from './AdminAttendanceCalendarPage.module.css'
+import common from '../styles/common.module.css'
 
 const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -74,18 +76,18 @@ export default function AdminAttendanceCalendarPage() {
         title="Attendance Calendar"
         subtitle="Monthly view of attendance activity. Click any day for records."
         actions={
-          <div className="calendar-actions">
+          <div className={common.calendarActions}>
             <button
               type="button"
-              className="ghost-btn compact"
+              className={`${common.ghostBtn} ${common.compact}`.trim()}
               onClick={() => setMonthDate(new Date(year, month - 1, 1))}
             >
               Prev
             </button>
-            <span className="month-label">{monthLabel}</span>
+            <span className={styles.monthLabel}>{monthLabel}</span>
             <button
               type="button"
-              className="ghost-btn compact"
+              className={`${common.ghostBtn} ${common.compact}`.trim()}
               onClick={() => setMonthDate(new Date(year, month + 1, 1))}
             >
               Next
@@ -94,20 +96,20 @@ export default function AdminAttendanceCalendarPage() {
         }
       />
       {error ? <DataError message={error} /> : null}
-      <div className="admin-two-col calendar-layout">
+      <div className={`${common.adminTwoCol} ${styles.calendarLayout}`.trim()}>
         <AdminPanel title="Monthly Calendar">
           {isMonthLoading ? (
             <DataLoading message="Loading month view..." />
           ) : (
-            <div className="calendar-grid">
+            <div className={styles.calendarGrid}>
               {weekdayLabels.map((label) => (
-                <div key={label} className="calendar-cell weekday">
+                <div key={label} className={`${styles.calendarCell} ${styles.weekday}`.trim()}>
                   {label}
                 </div>
               ))}
               {cells.map((cell, index) => {
                 if (!cell) {
-                  return <div key={`empty-${index}`} className="calendar-cell empty" />
+                  return <div key={`empty-${index}`} className={`${styles.calendarCell} ${styles.empty}`.trim()} />
                 }
                 const iso = toIsoDate(cell)
                 const count = dailyCountMap[iso] || 0
@@ -116,7 +118,7 @@ export default function AdminAttendanceCalendarPage() {
                   <button
                     key={iso}
                     type="button"
-                    className={`calendar-cell day${isSelected ? ' selected' : ''}`}
+                    className={`${styles.calendarCell} ${styles.day} ${isSelected ? styles.selected : ''}`.trim()}
                     onClick={() => setSelectedDate(iso)}
                   >
                     <span>{cell.getDate()}</span>
@@ -134,9 +136,9 @@ export default function AdminAttendanceCalendarPage() {
             <DataEmpty message="No records on this day." />
           ) : null}
           {!isDayLoading && selectedRecords.length > 0 ? (
-            <div className="session-list">
+            <div>
               {selectedRecords.map((record) => (
-                <article key={record.id} className="session-item">
+                <article key={record.id} className={common.sessionItem}>
                   <div>
                     <h3>
                       {record.user_first_name} {record.user_last_name}
@@ -145,7 +147,7 @@ export default function AdminAttendanceCalendarPage() {
                       {record.session_name} | {record.attendance_type}
                     </p>
                   </div>
-                  <div className="chip">{formatDateTime(record.check_time)}</div>
+                  <div className={common.chip}>{formatDateTime(record.check_time)}</div>
                 </article>
               ))}
             </div>

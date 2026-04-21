@@ -1,109 +1,122 @@
-import { useMemo, useState } from 'react'
-import AdminPanel from '../components/admin/AdminPanel'
-import FormField from '../components/FormField'
-import LayoutPageMeta from '../components/layout/LayoutPageMeta'
-import MessageBanner from '../components/MessageBanner'
-import { createAttendanceSession } from '../services/attendanceApi'
-import { getApiErrorMessage } from '../utils/apiError'
+import { useMemo, useState } from "react";
+import AdminPanel from "../components/admin/AdminPanel";
+import FormField from "../components/FormField";
+import LayoutPageMeta from "../components/layout/LayoutPageMeta";
+import MessageBanner from "../components/MessageBanner";
+import { createAttendanceSession } from "../services/attendanceApi";
+import { getApiErrorMessage } from "../utils/apiError";
 import {
   buildSessionPayload,
   customWeekdayOptions,
   getRecurringPreviewCount,
   recurrenceOptions,
   validateSessionForm,
-} from '../utils/attendanceValidation'
+} from "../utils/attendanceValidation";
+import common from "../styles/common.module.css";
+import styles from "./AdminCreateSessionPage.module.css";
 
 export default function AdminCreateSessionPage() {
+  const [isAttendanceRulesOpen, setIsAttendanceRulesOpen] = useState(false);
   const [form, setForm] = useState({
-    title: '',
-    session_date: '',
-    scheduled_start_time: '',
-    check_in_start_time: '',
-    check_in_end_time: '',
-    late_threshold_time: '',
-    check_out_start_time: '',
-    check_out_end_time: '',
+    title: "",
+    session_date: "",
+    scheduled_start_time: "",
+    check_in_start_time: "",
+    check_in_end_time: "",
+    late_threshold_time: "",
+    check_out_start_time: "",
+    check_out_end_time: "",
     enable_check_in_window: false,
     enable_check_out_window: false,
-    session_end_time: '',
+    session_end_time: "",
     is_active: true,
     qr_refresh_interval_seconds: 30,
     is_recurring: false,
-    recurrence_pattern: 'weekdays',
+    recurrence_pattern: "weekdays",
     recurrence_days: [],
-    recurrence_start_date: '',
-    recurrence_end_date: '',
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [creationSummary, setCreationSummary] = useState(null)
+    recurrence_start_date: "",
+    recurrence_end_date: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [creationSummary, setCreationSummary] = useState(null);
 
   const updateField = (field) => (event) => {
-    const booleanFields = ['is_active', 'is_recurring', 'enable_check_in_window', 'enable_check_out_window']
-    const value = booleanFields.includes(field) ? event.target.checked : event.target.value
-    setForm((prev) => ({ ...prev, [field]: value }))
-  }
+    const booleanFields = [
+      "is_active",
+      "is_recurring",
+      "enable_check_in_window",
+      "enable_check_out_window",
+    ];
+    const value = booleanFields.includes(field)
+      ? event.target.checked
+      : event.target.value;
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const toggleRecurringWeekday = (weekdayValue) => {
     setForm((prev) => {
-      const exists = prev.recurrence_days.includes(weekdayValue)
+      const exists = prev.recurrence_days.includes(weekdayValue);
       return {
         ...prev,
         recurrence_days: exists
           ? prev.recurrence_days.filter((value) => value !== weekdayValue)
           : [...prev.recurrence_days, weekdayValue].sort((a, b) => a - b),
-      }
-    })
-  }
+      };
+    });
+  };
 
-  const recurringPreviewCount = useMemo(() => getRecurringPreviewCount(form), [form])
+  const recurringPreviewCount = useMemo(
+    () => getRecurringPreviewCount(form),
+    [form],
+  );
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setError('')
-    setSuccess('')
-    setCreationSummary(null)
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+    setSuccess("");
+    setCreationSummary(null);
 
     try {
-      const validationMessage = validateSessionForm(form)
+      const validationMessage = validateSessionForm(form);
       if (validationMessage) {
-        throw new Error(validationMessage)
+        throw new Error(validationMessage);
       }
 
-      const payload = buildSessionPayload(form)
-      const data = await createAttendanceSession(payload)
+      const payload = buildSessionPayload(form);
+      const data = await createAttendanceSession(payload);
 
       if (data.is_recurring) {
-        setSuccess('Recurring sessions created successfully.')
-        setCreationSummary(data.generation_summary || null)
+        setSuccess("Recurring sessions created successfully.");
+        setCreationSummary(data.generation_summary || null);
       } else {
-        setSuccess('Attendance session created successfully.')
+        setSuccess("Attendance session created successfully.");
       }
 
       // Keep recurrence mode and activation preferences, but clear generated rule values for the next entry.
       setForm((prev) => ({
         ...prev,
-        title: '',
-        session_date: '',
-        scheduled_start_time: '',
-        check_in_start_time: '',
-        check_in_end_time: '',
-        late_threshold_time: '',
-        check_out_start_time: '',
-        check_out_end_time: '',
-        session_end_time: '',
-        recurrence_start_date: '',
-        recurrence_end_date: '',
+        title: "",
+        session_date: "",
+        scheduled_start_time: "",
+        check_in_start_time: "",
+        check_in_end_time: "",
+        late_threshold_time: "",
+        check_out_start_time: "",
+        check_out_end_time: "",
+        session_end_time: "",
+        recurrence_start_date: "",
+        recurrence_end_date: "",
         recurrence_days: [],
-      }))
+      }));
     } catch (apiError) {
-      setError(getApiErrorMessage(apiError, 'Failed to create session.'))
+      setError(getApiErrorMessage(apiError, "Failed to create session."));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <>
@@ -112,122 +125,36 @@ export default function AdminCreateSessionPage() {
         subtitle="Create rule-based attendance sessions with check-in/check-out windows and recurrence."
       />
       <AdminPanel>
-        <form className="profile-form" onSubmit={handleSubmit}>
+        <form
+          className={`${common.profileForm} ${styles.profileForm}`.trim()}
+          onSubmit={handleSubmit}
+        >
           <FormField
             id="session_title"
             label="Session Title"
             value={form.title}
-            onChange={updateField('title')}
+            onChange={updateField("title")}
             placeholder="Example: Faculty Daily Attendance"
             disabled={isSubmitting}
           />
 
-          <label className="toggle-field" htmlFor="is_recurring">
+          <label className={common.switchField} htmlFor="is_recurring">
             <input
               id="is_recurring"
+              className={common.switchInput}
               type="checkbox"
               checked={form.is_recurring}
-              onChange={updateField('is_recurring')}
+              onChange={updateField("is_recurring")}
               disabled={isSubmitting}
             />
-            <span>Recurring Session</span>
+            <span className={common.switchControl} aria-hidden="true">
+              <span className={common.switchThumb} />
+            </span>
+            <span className={common.switchText}>
+              Recurring Session (Repeat session based on the selected date
+              range)
+            </span>
           </label>
-
-          {!form.is_recurring ? (
-            <FormField
-              id="session_date"
-              label="Session Date"
-              type="date"
-              value={form.session_date}
-              onChange={updateField('session_date')}
-              disabled={isSubmitting}
-            />
-          ) : null}
-
-          <FormField
-            id="scheduled_start_time"
-            label="Scheduled Start Time"
-            type="time"
-            value={form.scheduled_start_time}
-            onChange={updateField('scheduled_start_time')}
-            disabled={isSubmitting}
-          />
-          <label className="toggle-field" htmlFor="enable_check_in_window">
-            <input
-              id="enable_check_in_window"
-              type="checkbox"
-              checked={form.enable_check_in_window}
-              onChange={updateField('enable_check_in_window')}
-              disabled={isSubmitting}
-            />
-            <span>Enable Check-in Window</span>
-          </label>
-          {form.enable_check_in_window ? (
-            <>
-              <FormField
-                id="check_in_start_time"
-                label="Check-in Start Time"
-                type="time"
-                value={form.check_in_start_time}
-                onChange={updateField('check_in_start_time')}
-                disabled={isSubmitting}
-              />
-              <FormField
-                id="check_in_end_time"
-                label="Check-in End Time (Optional)"
-                type="time"
-                value={form.check_in_end_time}
-                onChange={updateField('check_in_end_time')}
-                disabled={isSubmitting}
-              />
-            </>
-          ) : null}
-          <FormField
-            id="late_threshold_time"
-            label="Late Threshold Time (Optional)"
-            type="time"
-            value={form.late_threshold_time}
-            onChange={updateField('late_threshold_time')}
-            disabled={isSubmitting}
-          />
-          <label className="toggle-field" htmlFor="enable_check_out_window">
-            <input
-              id="enable_check_out_window"
-              type="checkbox"
-              checked={form.enable_check_out_window}
-              onChange={updateField('enable_check_out_window')}
-              disabled={isSubmitting}
-            />
-            <span>Enable Check-out Window</span>
-          </label>
-          {form.enable_check_out_window ? (
-            <>
-              <FormField
-                id="check_out_start_time"
-                label="Check-out Start Time"
-                type="time"
-                value={form.check_out_start_time}
-                onChange={updateField('check_out_start_time')}
-                disabled={isSubmitting}
-              />
-              <FormField
-                id="check_out_end_time"
-                label="Check-out End Time (Optional)"
-                type="time"
-                value={form.check_out_end_time}
-                onChange={updateField('check_out_end_time')}
-                disabled={isSubmitting}
-              />
-            </>
-          ) : null}
-          <FormField
-            id="session_end_time"
-            label="Session End Time (Optional)"
-            type="time"
-            value={form.session_end_time}
-            onChange={updateField('session_end_time')}
-            disabled={isSubmitting}
-          />
 
           {form.is_recurring ? (
             <>
@@ -235,17 +162,17 @@ export default function AdminCreateSessionPage() {
                 id="recurrence_pattern"
                 label="Recurrence Pattern"
                 value={form.recurrence_pattern}
-                onChange={updateField('recurrence_pattern')}
+                onChange={updateField("recurrence_pattern")}
                 options={recurrenceOptions}
                 disabled={isSubmitting}
               />
 
-              {form.recurrence_pattern === 'custom' ? (
-                <label className="field-block">
-                  <span className="field-label">Custom Weekdays</span>
-                  <div className="calendar-actions">
+              {form.recurrence_pattern === "custom" ? (
+                <label className={common.fieldBlock}>
+                  <span className={common.fieldLabel}>Custom Weekdays</span>
+                  <div className={common.calendarActions}>
                     {customWeekdayOptions.map((weekday) => (
-                      <label key={weekday.value} className="toggle-field">
+                      <label key={weekday.value} className={common.toggleField}>
                         <input
                           type="checkbox"
                           checked={form.recurrence_days.includes(weekday.value)}
@@ -264,7 +191,7 @@ export default function AdminCreateSessionPage() {
                 label="Recurrence Start Date"
                 type="date"
                 value={form.recurrence_start_date}
-                onChange={updateField('recurrence_start_date')}
+                onChange={updateField("recurrence_start_date")}
                 disabled={isSubmitting}
               />
               <FormField
@@ -272,52 +199,220 @@ export default function AdminCreateSessionPage() {
                 label="Recurrence End Date"
                 type="date"
                 value={form.recurrence_end_date}
-                onChange={updateField('recurrence_end_date')}
+                onChange={updateField("recurrence_end_date")}
                 disabled={isSubmitting}
               />
 
-              <p className="subtle-note">
-                This will create approximately {recurringPreviewCount} scheduled occurrence
-                {recurringPreviewCount === 1 ? '' : 's'} in the selected date range.
+              <p className={common.subtleNote}>
+                This will create approximately {recurringPreviewCount} scheduled
+                occurrence
+                {recurringPreviewCount === 1 ? "" : "s"} in the selected date
+                range.
               </p>
             </>
           ) : null}
+
+          {!form.is_recurring ? (
+            <FormField
+              id="session_date"
+              label="Session Date"
+              type="date"
+              value={form.session_date}
+              onChange={updateField("session_date")}
+              disabled={isSubmitting}
+            />
+          ) : null}
+
+          <FormField
+            id="scheduled_start_time"
+            label="Scheduled Start Time"
+            type="time"
+            value={form.scheduled_start_time}
+            onChange={updateField("scheduled_start_time")}
+            disabled={isSubmitting}
+          />
+          <FormField
+            id="session_end_time"
+            label="Session End Time (Optional)"
+            type="time"
+            value={form.session_end_time}
+            onChange={updateField("session_end_time")}
+            disabled={isSubmitting}
+          />
+
+          <section className={styles.attendanceRulesCard}>
+            <button
+              type="button"
+              className={styles.attendanceRulesToggle}
+              onClick={() => setIsAttendanceRulesOpen((prev) => !prev)}
+              aria-expanded={isAttendanceRulesOpen}
+              aria-controls="attendance-rules-content"
+              disabled={isSubmitting}
+            >
+              <span className={styles.attendanceRulesHeading}>
+                Attendance Rules
+              </span>
+              <span className={styles.attendanceRulesHint}>
+                Optional advanced attendance timing settings
+              </span>
+              <span
+                className={`${styles.attendanceRulesChevron} ${
+                  isAttendanceRulesOpen ? styles.attendanceRulesChevronOpen : ""
+                }`.trim()}
+                aria-hidden="true"
+              >
+                &#9662;
+              </span>
+            </button>
+
+            {isAttendanceRulesOpen ? (
+              <div
+                id="attendance-rules-content"
+                className={styles.attendanceRulesContent}
+              >
+                <label
+                  className={common.switchField}
+                  htmlFor="enable_check_in_window"
+                >
+                  <input
+                    id="enable_check_in_window"
+                    className={common.switchInput}
+                    type="checkbox"
+                    checked={form.enable_check_in_window}
+                    onChange={updateField("enable_check_in_window")}
+                    disabled={isSubmitting}
+                  />
+                  <span className={common.switchControl} aria-hidden="true">
+                    <span className={common.switchThumb} />
+                  </span>
+                  <span className={common.switchText}>
+                    Enable Check-in Window
+                  </span>
+                </label>
+
+                {form.enable_check_in_window ? (
+                  <>
+                    <FormField
+                      id="check_in_start_time"
+                      label="Check-in Start Time"
+                      type="time"
+                      value={form.check_in_start_time}
+                      onChange={updateField("check_in_start_time")}
+                      disabled={isSubmitting}
+                    />
+                    <FormField
+                      id="check_in_end_time"
+                      label="Check-in End Time (Optional)"
+                      type="time"
+                      value={form.check_in_end_time}
+                      onChange={updateField("check_in_end_time")}
+                      disabled={isSubmitting}
+                    />
+                    <FormField
+                      id="late_threshold_time"
+                      label="Late Threshold Time (Optional)"
+                      type="time"
+                      value={form.late_threshold_time}
+                      onChange={updateField("late_threshold_time")}
+                      disabled={isSubmitting}
+                    />
+                  </>
+                ) : null}
+
+                <label
+                  className={common.switchField}
+                  htmlFor="enable_check_out_window"
+                >
+                  <input
+                    id="enable_check_out_window"
+                    className={common.switchInput}
+                    type="checkbox"
+                    checked={form.enable_check_out_window}
+                    onChange={updateField("enable_check_out_window")}
+                    disabled={isSubmitting}
+                  />
+                  <span className={common.switchControl} aria-hidden="true">
+                    <span className={common.switchThumb} />
+                  </span>
+                  <span className={common.switchText}>
+                    Enable Check-out Window
+                  </span>
+                </label>
+
+                {form.enable_check_out_window ? (
+                  <>
+                    <FormField
+                      id="check_out_start_time"
+                      label="Check-out Start Time"
+                      type="time"
+                      value={form.check_out_start_time}
+                      onChange={updateField("check_out_start_time")}
+                      disabled={isSubmitting}
+                    />
+                    <FormField
+                      id="check_out_end_time"
+                      label="Check-out End Time (Optional)"
+                      type="time"
+                      value={form.check_out_end_time}
+                      onChange={updateField("check_out_end_time")}
+                      disabled={isSubmitting}
+                    />
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+          </section>
 
           <FormField
             id="qr_refresh_interval_seconds"
             label="QR Refresh Interval (seconds)"
             type="number"
             value={form.qr_refresh_interval_seconds}
-            onChange={updateField('qr_refresh_interval_seconds')}
+            onChange={updateField("qr_refresh_interval_seconds")}
             placeholder="30"
             disabled={isSubmitting}
           />
 
-          <label className="toggle-field" htmlFor="is_active">
+          <label className={common.switchField} htmlFor="is_active">
             <input
               id="is_active"
+              className={common.switchInput}
               type="checkbox"
               checked={form.is_active}
-              onChange={updateField('is_active')}
+              onChange={updateField("is_active")}
               disabled={isSubmitting}
             />
-            <span>Activate session immediately</span>
+            <span className={common.switchControl} aria-hidden="true">
+              <span className={common.switchThumb} />
+            </span>
+            <span className={common.switchText}>
+              Activate session immediately
+            </span>
           </label>
 
           <MessageBanner type="error" message={error} />
           <MessageBanner type="info" message={success} />
 
           {creationSummary ? (
-            <p className="subtle-note">
-              Created: {creationSummary.created_count} | Skipped duplicates: {creationSummary.skipped_duplicates}
+            <p className={common.subtleNote}>
+              Created: {creationSummary.created_count} | Skipped duplicates:{" "}
+              {creationSummary.skipped_duplicates}
             </p>
           ) : null}
 
-          <button className="primary-btn" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : form.is_recurring ? 'Create Recurring Sessions' : 'Create Session'}
+          <button
+            className={common.primaryBtn}
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? "Creating..."
+              : form.is_recurring
+                ? "Create Recurring Sessions"
+                : "Create Session"}
           </button>
         </form>
       </AdminPanel>
     </>
-  )
+  );
 }

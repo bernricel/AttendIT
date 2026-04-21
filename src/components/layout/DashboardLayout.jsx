@@ -5,6 +5,8 @@ import { clearAuthSession, getStoredAuth } from "../../services/authStorage";
 import { useResponsiveSidebar } from "../../hooks/useResponsiveSidebar";
 import { getDisplayName } from "../../utils/userName";
 import { ROUTES } from "../../constants/routes";
+import styles from "./DashboardLayout.module.css";
+import common from "../../styles/common.module.css";
 
 // Branding asset path served from `public`.
 const citLogo = "/CIT.png";
@@ -25,15 +27,17 @@ export default function DashboardLayout({
   const { isMobileViewport, isSidebarOpen, closeSidebar, toggleSidebar } =
     useResponsiveSidebar();
 
-  const shellClassName = `${variant}-shell`;
-  const sidebarClassName = `${variant}-sidebar`;
-  const brandClassName = `${variant}-brand`;
-  const navClassName = `${variant}-nav`;
-  const navItemClassName = `${variant}-nav-item`;
-  const mainClassName = `${variant}-main`;
-  const topbarClassName = `${variant}-topbar`;
-  const topbarRightClassName = `${variant}-topbar-right`;
-  const userBadgeClassName = `${variant}-user-badge`;
+  const shellClassName = variant === "admin" ? styles.adminShell : styles.facultyShell;
+  const sidebarClassName = variant === "admin" ? styles.adminSidebar : styles.facultySidebar;
+  const brandClassName = variant === "admin" ? styles.adminBrand : styles.facultyBrand;
+  const navClassName = variant === "admin" ? styles.adminNav : styles.facultyNav;
+  const navItemClassName = variant === "admin" ? styles.adminNavItem : styles.facultyNavItem;
+  const mainClassName = variant === "admin" ? styles.adminMain : styles.facultyMain;
+  const topbarClassName = variant === "admin" ? styles.adminTopbar : styles.facultyTopbar;
+  const topbarRightClassName = variant === "admin" ? styles.adminTopbarRight : styles.facultyTopbarRight;
+  const userBadgeClassName = variant === "admin" ? styles.adminUserBadge : styles.facultyUserBadge;
+  const actionClassName = variant === "admin" ? styles.adminActions : styles.facultyActions;
+  const contentClassName = variant === "admin" ? styles.adminContent : styles.facultyContent;
 
   const userSubtitle = useMemo(
     () => userSubtitleResolver(user),
@@ -61,18 +65,18 @@ export default function DashboardLayout({
   return (
     <div className={shellClassName}>
       <div
-        className={`layout-backdrop ${isSidebarOpen ? "show" : ""}`}
+        className={`${styles.layoutBackdrop} ${isSidebarOpen ? styles.show : ""}`.trim()}
         onClick={closeSidebar}
         aria-hidden="true"
       />
 
       <aside
         id={sidebarId}
-        className={`${sidebarClassName} ${isSidebarOpen ? "is-open" : ""}`}
+        className={`${sidebarClassName} ${isSidebarOpen ? styles.isOpen : ""}`}
       >
         <div className={brandClassName}>
-          <img src={citLogo} alt="CIT logo" className="brand-logo" />
-          <div className="brand-copy">
+          <img src={citLogo} alt="CIT logo" className={styles.brandLogo} />
+          <div className={styles.brandCopy}>
             <strong>AttendIT</strong>
             <span>{brandSubtitle}</span>
           </div>
@@ -83,11 +87,13 @@ export default function DashboardLayout({
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `${navItemClassName}${isActive ? " active" : ""}`
+                `${navItemClassName} ${isActive ? styles.active : ""}`
               }
               onClick={closeSidebar}
             >
-              <span className={`nav-icon ${item.colorClass}`}>{item.icon}</span>
+              <span className={`${styles.navIcon} ${styles[item.colorClass] || ""}`}>
+                {item.icon}
+              </span>
               {item.label}
             </NavLink>
           ))}
@@ -96,11 +102,11 @@ export default function DashboardLayout({
 
       <section className={mainClassName}>
         <header className={topbarClassName}>
-          <div className="topbar-title-wrap">
-            <div className="topbar-title-row">
+          <div className={styles.topbarTitleWrap}>
+            <div className={styles.topbarTitleRow}>
               <button
                 type="button"
-                className="sidebar-toggle"
+                className={styles.sidebarToggle}
                 onClick={toggleSidebar}
                 aria-label="Toggle navigation menu"
                 aria-expanded={isSidebarOpen}
@@ -108,7 +114,7 @@ export default function DashboardLayout({
               >
                 <FiMenu />
               </button>
-              <div className="topbar-branding">
+              <div className={styles.topbarBranding}>
                 <span>CIT Faculty Attendance</span>
               </div>
             </div>
@@ -123,7 +129,7 @@ export default function DashboardLayout({
             </div>
             <button
               type="button"
-              className="ghost-btn compact"
+              className={`${common.ghostBtn} ${common.compact}`.trim()}
               onClick={handleLogout}
             >
               Logout
@@ -132,11 +138,11 @@ export default function DashboardLayout({
         </header>
 
         {pageMeta.actions ? (
-          <div className={`${variant}-actions`}>{pageMeta.actions}</div>
+          <div className={actionClassName}>{pageMeta.actions}</div>
         ) : null}
-        <div className={`${variant}-content`}>
+        <div className={contentClassName}>
           <div
-            className="page-transition"
+            className={styles.pageTransition}
             key={`${location.pathname}${location.search}`}
           >
             {/*

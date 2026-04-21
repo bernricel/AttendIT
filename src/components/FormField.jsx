@@ -1,3 +1,6 @@
+import styles from './FormField.module.css'
+import common from '../styles/common.module.css'
+
 export default function FormField({
   id,
   label,
@@ -9,10 +12,16 @@ export default function FormField({
   disabled = false,
 }) {
   return (
-    <label className="field-block" htmlFor={id}>
-      <span className="field-label">{label}</span>
+    <label className={`${common.fieldBlock} ${styles.fieldBlock}`.trim()} htmlFor={id}>
+      <span className={`${common.fieldLabel} ${styles.fieldLabel}`.trim()}>{label}</span>
       {options ? (
-        <select id={id} value={value} onChange={onChange} disabled={disabled}>
+        <select
+          id={id}
+          className={`${common.inputControl} ${styles.inputControl}`.trim()}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+        >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -22,6 +31,7 @@ export default function FormField({
       ) : (
         <input
           id={id}
+          className={`${common.inputControl} ${styles.inputControl}`.trim()}
           type={type}
           value={value}
           onChange={onChange}

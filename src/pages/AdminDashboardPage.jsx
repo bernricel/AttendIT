@@ -6,6 +6,8 @@ import LayoutPageMeta from '../components/layout/LayoutPageMeta'
 import { getAdminSessions, getAttendanceByDate } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime, toIsoDate } from '../utils/dateTime'
+import styles from './AdminDashboardPage.module.css'
+import common from '../styles/common.module.css'
 
 export default function AdminDashboardPage() {
   const [sessions, setSessions] = useState([])
@@ -58,32 +60,32 @@ export default function AdminDashboardPage() {
 
       {!isLoading && !error ? (
         <>
-          <section className="admin-stats-grid">
+          <section className={styles.adminStatsGrid}>
             <AdminStatCard label="Total Sessions" value={sessions.length} />
             <AdminStatCard label="Active Sessions" value={activeSessions} tone="yellow" />
             <AdminStatCard label="Today's Check-ins" value={checkInsToday} />
             <AdminStatCard label="Today's Check-outs" value={checkOutsToday} tone="red" />
           </section>
 
-          <div className="admin-two-col">
+          <div className={common.adminTwoCol}>
             <AdminPanel title="Recent Attendance Sessions" subtitle="Latest 6 sessions">
               {sessions.length === 0 ? (
                 <DataEmpty message="No attendance sessions yet." />
               ) : (
-                <div className="session-list">
+                <div>
                   {sessions.slice(0, 6).map((session) => (
-                    <article key={session.id} className="session-item">
+                    <article key={session.id} className={common.sessionItem}>
                       <div>
                         <h3>{session.name}</h3>
                         <p>{session.session_type}</p>
                       </div>
                       <div
-                        className={`chip ${
+                        className={`${common.chip} ${
                           session.lifecycle_status === 'ACTIVE'
-                            ? 'ok'
+                            ? common.ok
                             : session.lifecycle_status === 'UPCOMING'
                               ? ''
-                              : 'muted'
+                              : common.muted
                         }`}
                       >
                         {session.lifecycle_status || 'UNKNOWN'}
@@ -98,16 +100,16 @@ export default function AdminDashboardPage() {
               {todayRecords.length === 0 ? (
                 <DataEmpty message="No attendance records for today yet." />
               ) : (
-                <div className="session-list">
+                <div>
                   {todayRecords.slice(0, 6).map((record) => (
-                    <article key={record.id} className="session-item">
+                    <article key={record.id} className={common.sessionItem}>
                       <div>
                         <h3>
                           {record.user_first_name} {record.user_last_name}
                         </h3>
                         <p>{record.session_name}</p>
                       </div>
-                      <div className="chip">{formatDateTime(record.check_time)}</div>
+                      <div className={common.chip}>{formatDateTime(record.check_time)}</div>
                     </article>
                   ))}
                 </div>

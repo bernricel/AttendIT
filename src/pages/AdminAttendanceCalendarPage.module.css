@@ -1,0 +1,72 @@
+.calendarLayout {
+  min-height: 518px;
+}
+
+.monthLabel {
+  min-width: 140px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--ua-gold);
+}
+
+.calendarGrid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calendarCell {
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  min-height: 68px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.weekday {
+  min-height: auto;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--ua-gold);
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.day {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.day small {
+  font-size: 0.73rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.day:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.selected {
+  border-color: var(--ua-gold);
+  background: rgba(253, 185, 19, 0.15);
+  box-shadow: 0 0 10px rgba(253, 185, 19, 0.2);
+}
+
+.empty {
+  background: transparent;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}

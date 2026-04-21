@@ -1,0 +1,73 @@
+.authCard {
+  width: min(100%, 480px);
+  background: rgba(0, 30, 65, 0.7);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 36px 32px;
+  text-align: left;
+  position: relative;
+}
+
+.authCardHeader {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 20px;
+}
+
+.authCardBody {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+}
+
+.authCardHeader h2 {
+  margin: 0;
+  font-size: 1.95rem;
+  font-weight: 700;
+  color: #f2f6fd;
+  letter-spacing: -0.01em;
+  text-shadow: none;
+}
+
+.authCardHeader p {
+  margin: 8px 0 0;
+  color: rgba(222, 233, 247, 0.92);
+  font-size: 0.98rem;
+  line-height: 1.5;
+  max-width: 36ch;
+}
+
+.authCard form {
+  gap: 12px;
+}
+
+.authCard label {
+  gap: 6px;
+}
+
+.authCard input,
+.authCard select {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.authCard input:focus,
+.authCard select:focus {
+  border-color: var(--ua-gold);
+  box-shadow: 0 0 0 3px rgba(255, 183, 27, 0.18);
+}
+
+.authCard button,
+.authCard a {
+  min-height: 44px;
+  border-radius: 10px;
+  width: 100%;
+}

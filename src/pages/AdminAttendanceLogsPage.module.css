@@ -1,0 +1,92 @@
+.logsDatePicker {
+}
+
+.responsiveBlock {
+  width: 100%;
+}
+
+.desktopOnly {
+  display: block;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+.mobileCards {
+  display: grid;
+  gap: 12px;
+}
+
+.mobileCard {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.mobileCardToggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 14px;
+  text-align: left;
+  display: grid;
+  gap: 8px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.mobileCardToggle:focus-visible {
+  outline: 2px solid var(--ua-gold);
+  outline-offset: -2px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cardMeta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.cardSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cardTime {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.cardDetail {
+  border-top: 1px solid var(--glass-border);
+  padding: 12px 14px 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.cardDetail p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1023px) {
+  .desktopOnly {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: block;
+  }
+}

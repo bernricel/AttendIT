@@ -14,6 +14,8 @@ import {
 } from "../services/authStorage";
 import { getApiErrorMessage } from "../utils/apiError";
 import { decodeJwt } from "../utils/decodeJwt";
+import styles from "./LoginPage.module.css";
+import common from "../styles/common.module.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -110,13 +112,13 @@ export default function LoginPage() {
         description="Access the CIT Faculty Attendance System."
       >
         {isLoading ? (
-          <div className="loader-line">Authenticating...</div>
+          <div className={styles.loaderLine}>Authenticating...</div>
         ) : null}
         <MessageBanner type="error" message={error} />
         <MessageBanner type="info" message={statusText} />
 
         {hasGoogleClientId ? (
-          <div className="google-btn-wrap">
+          <div className={styles.googleBtnWrap}>
             <GoogleLogin
               onSuccess={handleGoogleLogin}
               onError={() => setError("Google sign in was canceled or failed.")}
@@ -134,10 +136,10 @@ export default function LoginPage() {
           />
         )}
 
-        <div className="auth-divider" role="presentation">
+        <div className={styles.authDivider} role="presentation">
           <span>or</span>
         </div>
-        <Link className="ghost-btn auth-link-btn" to={ROUTES.ADMIN_LOGIN}>
+        <Link className={`${common.ghostBtn} ${common.authLinkBtn}`.trim()} to={ROUTES.ADMIN_LOGIN}>
           Admin Login
         </Link>
       </AuthCard>

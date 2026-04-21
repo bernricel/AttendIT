@@ -1,0 +1,68 @@
+.profileForm {
+}
+
+.attendanceRulesCard {
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.attendanceRulesToggle {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 14px 16px;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.attendanceRulesToggle:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.attendanceRulesToggle:focus-visible {
+  outline: 2px solid var(--ua-gold);
+  outline-offset: -2px;
+}
+
+.attendanceRulesToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.attendanceRulesHeading {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.attendanceRulesHint {
+  font-size: 0.84rem;
+  color: var(--muted);
+  padding-right: 28px;
+}
+
+.attendanceRulesChevron {
+  justify-self: end;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--muted);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.attendanceRulesChevronOpen {
+  transform: rotate(180deg);
+  color: var(--ua-gold);
+}
+
+.attendanceRulesContent {
+  border-top: 1px solid var(--glass-border);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}

@@ -1,0 +1,63 @@
+.facultyPanel {
+  background: var(--panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.responsiveBlock {
+  width: 100%;
+}
+
+.desktopOnly {
+  display: block;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+.mobileCards {
+  display: grid;
+  gap: 12px;
+}
+
+.mobileCard {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cardMeta,
+.cardLine {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.cardLine {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 1023px) {
+  .desktopOnly {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: block;
+  }
+}

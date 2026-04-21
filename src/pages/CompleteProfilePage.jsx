@@ -8,6 +8,8 @@ import { ROUTES } from '../constants/routes'
 import { completeProfile } from '../services/authApi'
 import { clearAuthSession, updateStoredUser } from '../services/authStorage'
 import { getApiErrorMessage } from '../utils/apiError'
+import common from '../styles/common.module.css'
+import styles from './CompleteProfilePage.module.css'
 
 export default function CompleteProfilePage() {
   const navigate = useNavigate()
@@ -65,7 +67,7 @@ export default function CompleteProfilePage() {
       sideNote={<p>This information will be used across attendance records and reporting.</p>}
     >
       <AuthCard title="Complete Your Profile">
-        <form className="profile-form" onSubmit={handleSubmit}>
+        <form className={`${common.profileForm} ${styles.profileForm}`.trim()} onSubmit={handleSubmit}>
           <FormField
             id="first_name"
             label="First Name"
@@ -95,7 +97,7 @@ export default function CompleteProfilePage() {
 
           <MessageBanner type="error" message={error} />
 
-          <button className="primary-btn" type="submit" disabled={isSubmitting || !isValid}>
+          <button className={common.primaryBtn} type="submit" disabled={isSubmitting || !isValid}>
             {isSubmitting ? 'Saving Profile...' : 'Save and Continue'}
           </button>
         </form>

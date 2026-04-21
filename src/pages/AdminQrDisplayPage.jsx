@@ -8,6 +8,8 @@ import { useSessionQrStatus } from '../hooks/useSessionQrStatus'
 import { deleteAttendanceSession, endAttendanceSession, getAdminSessions } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatDateTime } from '../utils/dateTime'
+import styles from './AdminQrDisplayPage.module.css'
+import common from '../styles/common.module.css'
 
 export default function AdminQrDisplayPage() {
   const [sessions, setSessions] = useState([])
@@ -145,17 +147,18 @@ export default function AdminQrDisplayPage() {
         {isLoading ? <DataLoading message="Loading sessions..." /> : null}
         {error ? <DataError message={error} /> : null}
         {qrError ? <DataError message={qrError} /> : null}
-        {deleteSuccess ? <p className="data-state loading">{deleteSuccess}</p> : null}
+        {deleteSuccess ? <p className={`${common.dataState} ${common.loading}`.trim()}>{deleteSuccess}</p> : null}
         {!isLoading && !error && sessions.length === 0 ? (
           <DataEmpty message="No sessions available. Create a session first." />
         ) : null}
 
         {!isLoading && !error && sessions.length > 0 ? (
           <>
-            <label className="field-block" htmlFor="session_picker">
-              <span className="field-label">Attendance Session</span>
+            <label className={common.fieldBlock} htmlFor="session_picker">
+              <span className={common.fieldLabel}>Attendance Session</span>
               <select
                 id="session_picker"
+                className={common.inputControl}
                 value={selectedId}
                 onChange={(event) => setSelectedId(event.target.value)}
               >
@@ -168,8 +171,8 @@ export default function AdminQrDisplayPage() {
             </label>
 
             {selectedSession ? (
-              <div className="qr-stage">
-                <div className="qr-box">
+              <div className={styles.qrStage}>
+                <div className={styles.qrBox}>
                   {canAcceptAttendance ? (
                     <QRCodeCanvas
                       // Render QR from the scan URL that includes the current token.
@@ -179,10 +182,10 @@ export default function AdminQrDisplayPage() {
                       includeMargin
                     />
                   ) : (
-                    <p className="subtle-note">Session Ended. Attendance is closed.</p>
+                    <p className={common.subtleNote}>Session Ended. Attendance is closed.</p>
                   )}
                 </div>
-                <div className="qr-meta">
+                <div className={styles.qrMeta}>
                   <h3>{selectedSession.name}</h3>
                   {selectedSession.department ? <p>Department: {selectedSession.department}</p> : null}
                   <p>Type: {selectedSession.session_type}</p>
@@ -198,10 +201,10 @@ export default function AdminQrDisplayPage() {
                     s
                   </p>
                   <p>Next Rotation In: {canAcceptAttendance ? `${secondsRemaining}s` : 'Closed'}</p>
-                  <div className="qr-meta-actions">
+                  <div className={styles.qrMetaActions}>
                     {/* Dedicated admin-protected route can be shown on another screen without dashboard controls. */}
                     <a
-                      className="ghost-btn link-button"
+                      className={`${common.ghostBtn} ${common.linkButton} ${styles.qrMetaActionBtn}`.trim()}
                       href={separateDisplayUrl}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -209,7 +212,7 @@ export default function AdminQrDisplayPage() {
                       Open Separate QR Display
                     </a>
                     <button
-                      className="ghost-btn"
+                      className={`${common.ghostBtn} ${styles.qrMetaActionBtn}`.trim()}
                       type="button"
                       onClick={handleEndSession}
                       disabled={isEnding || !canAcceptAttendance}
@@ -217,7 +220,7 @@ export default function AdminQrDisplayPage() {
                       {isEnding ? 'Ending...' : 'End Session'}
                     </button>
                     <button
-                      className="ghost-btn danger-btn"
+                      className={`${common.ghostBtn} ${styles.qrMetaActionBtn} ${styles.dangerBtn}`.trim()}
                       type="button"
                       onClick={() => {
                         setDeleteError('')
@@ -228,7 +231,7 @@ export default function AdminQrDisplayPage() {
                       Delete Session
                     </button>
                   </div>
-                  <p className="subtle-note">
+                  <p className={common.subtleNote}>
                     Rotating QR codes improve security by limiting reuse of old screenshots.
                   </p>
                 </div>
@@ -239,17 +242,18 @@ export default function AdminQrDisplayPage() {
       </AdminPanel>
 
       {isDeleteModalOpen ? (
-        <div className="confirm-modal-backdrop" role="presentation">
-          <div className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete_modal_title">
+        <div className={styles.confirmModalBackdrop} role="presentation">
+          <div className={styles.confirmModal} role="dialog" aria-modal="true" aria-labelledby="delete_modal_title">
             <h3 id="delete_modal_title">Confirm Session Deletion</h3>
-            <p className="danger-text">This action is permanent.</p>
-            <p className="danger-text">
+            <p className={styles.dangerText}>This action is permanent.</p>
+            <p className={styles.dangerText}>
               Deleting this session will also delete all related attendance records.
             </p>
-            <label className="field-block" htmlFor="admin_delete_password">
-              <span className="field-label">Enter your admin password to continue</span>
+            <label className={common.fieldBlock} htmlFor="admin_delete_password">
+              <span className={common.fieldLabel}>Enter your admin password to continue</span>
               <input
                 id="admin_delete_password"
+                className={common.inputControl}
                 type="password"
                 value={deletePassword}
                 onChange={(event) => setDeletePassword(event.target.value)}
@@ -258,9 +262,9 @@ export default function AdminQrDisplayPage() {
               />
             </label>
             {deleteError ? <DataError message={deleteError} /> : null}
-            <div className="confirm-modal-actions">
+            <div className={styles.confirmModalActions}>
               <button
-                className="ghost-btn"
+                className={common.ghostBtn}
                 type="button"
                 onClick={() => {
                   setIsDeleteModalOpen(false)
@@ -272,7 +276,7 @@ export default function AdminQrDisplayPage() {
                 Cancel
               </button>
               <button
-                className="primary-btn danger-confirm-btn"
+                className={`${common.primaryBtn} ${styles.dangerConfirmBtn}`.trim()}
                 type="button"
                 onClick={handleDeleteSession}
                 disabled={isDeleting || !deletePassword.trim()}

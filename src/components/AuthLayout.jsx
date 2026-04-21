@@ -1,13 +1,15 @@
+import styles from './AuthLayout.module.css'
+
 export default function AuthLayout({ title, subtitle, children, sideNote }) {
   return (
-    <main className="auth-page">
-      <section className="auth-brand-panel">
-        <span className="brand-tag">Faculty Attendance System</span>
+    <main className={styles.authPage}>
+      <section className={styles.authBrandPanel}>
+        <span className={styles.brandTag}>Faculty Attendance System</span>
         <h1>{title}</h1>
         <p>{subtitle}</p>
-        {sideNote ? <div className="brand-side-note">{sideNote}</div> : null}
+        {sideNote ? <div className={styles.brandSideNote}>{sideNote}</div> : null}
       </section>
-      <section className="auth-form-panel">{children}</section>
+      <section className={styles.authFormPanel}>{children}</section>
     </main>
   )
 }
