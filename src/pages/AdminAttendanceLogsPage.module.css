@@ -20,7 +20,7 @@
 .secondaryFilters {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  grid-template-columns: repeat(4, minmax(170px, 1fr));
 }
 
 .actionsRow {

@@ -1,201 +1,202 @@
-﻿import { useEffect, useMemo, useState } from 'react'
-import AdminPanel from '../components/admin/AdminPanel'
-import { DataEmpty, DataError, DataLoading } from '../components/admin/DataState'
-import LayoutPageMeta from '../components/layout/LayoutPageMeta'
+﻿import { useEffect, useMemo, useState } from "react";
+import AdminPanel from "../components/admin/AdminPanel";
+import {
+  DataEmpty,
+  DataError,
+  DataLoading,
+} from "../components/admin/DataState";
+import LayoutPageMeta from "../components/layout/LayoutPageMeta";
 import {
   exportAdminAttendanceSheetCsv,
   getAdminAttendanceSheet,
   getAdminSessions,
-  getFacultyAttendanceRecords,
-} from '../services/attendanceApi'
-import { getApiErrorMessage } from '../utils/apiError'
-import { formatDateTime, formatIsoDate } from '../utils/dateTime'
-import common from '../styles/common.module.css'
-import styles from './AdminAttendanceLogsPage.module.css'
+} from "../services/attendanceApi";
+import { getApiErrorMessage } from "../utils/apiError";
+import { formatDateTime, formatIsoDate } from "../utils/dateTime";
+import common from "../styles/common.module.css";
+import styles from "./AdminAttendanceLogsPage.module.css";
 
 const ATTENDANCE_STATUS_OPTIONS = [
-  { value: '', label: 'All attendance statuses' },
-  { value: 'on_time', label: 'On Time' },
-  { value: 'late', label: 'Late' },
-  { value: 'checked_out', label: 'Checked Out' },
-  { value: 'incomplete', label: 'Incomplete' },
-]
+  { value: "", label: "All attendance statuses" },
+  { value: "on_time", label: "On Time" },
+  { value: "late", label: "Late" },
+  { value: "checked_out", label: "Checked Out" },
+  { value: "incomplete", label: "Incomplete" },
+];
 
 const SIGNATURE_STATUS_OPTIONS = [
-  { value: '', label: 'All signature statuses' },
-  { value: 'valid', label: 'Valid' },
-  { value: 'invalid', label: 'Invalid' },
-]
+  { value: "", label: "All signature statuses" },
+  { value: "valid", label: "Valid" },
+  { value: "invalid", label: "Invalid" },
+];
 
 const SORT_BY_OPTIONS = [
-  { value: 'time_in', label: 'Time In' },
-  { value: 'time_out', label: 'Time Out' },
-  { value: 'attendance_status', label: 'Attendance Status' },
-  { value: 'signature_status', label: 'Signature Status' },
-  { value: 'session', label: 'Session' },
-]
+  { value: "time_in", label: "Time In" },
+  { value: "time_out", label: "Time Out" },
+  { value: "attendance_status", label: "Attendance Status" },
+  { value: "signature_status", label: "Signature Status" },
+  { value: "session", label: "Session" },
+];
 
 function toSessionLabel(session) {
-  const startDate = formatIsoDate(session.start_time)
-  return `${session.name} (${startDate})`
+  const startDate = formatIsoDate(session.start_time);
+  return `${session.name} (${startDate})`;
 }
 
 function normalizeFilename(contentDisposition) {
-  const match = /filename="?([^\"]+)"?/i.exec(contentDisposition || '')
-  return match ? match[1] : 'attendance_sheet.csv'
+  const match = /filename="?([^\"]+)"?/i.exec(contentDisposition || "");
+  return match ? match[1] : "attendance_sheet.csv";
 }
 
 function downloadBlob(blob, fileName) {
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = fileName
-  document.body.appendChild(anchor)
-  anchor.click()
-  document.body.removeChild(anchor)
-  URL.revokeObjectURL(url)
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
 }
 
 export default function AdminAttendanceLogsPage() {
-  const [sessions, setSessions] = useState([])
-  const [faculties, setFaculties] = useState([])
-  const [selectedSessionId, setSelectedSessionId] = useState('')
-  const [selectedDate, setSelectedDate] = useState('')
-  const [selectedFacultyId, setSelectedFacultyId] = useState('')
-  const [attendanceStatusFilter, setAttendanceStatusFilter] = useState('')
-  const [signatureStatusFilter, setSignatureStatusFilter] = useState('')
-  const [sortBy, setSortBy] = useState('time_in')
-  const [sortOrder, setSortOrder] = useState('asc')
-  const [rows, setRows] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [isExporting, setIsExporting] = useState(false)
+  const [sessions, setSessions] = useState([]);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [attendanceStatusFilter, setAttendanceStatusFilter] = useState("");
+  const [signatureStatusFilter, setSignatureStatusFilter] = useState("");
+  const [sortBy, setSortBy] = useState("time_in");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [rows, setRows] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const loadMetadata = async () => {
-      setIsLoading(true)
-      setError('')
+      setIsLoading(true);
+      setError("");
       try {
-        const [sessionsData, facultiesData] = await Promise.all([
-          getAdminSessions(),
-          getFacultyAttendanceRecords(),
-        ])
+        const sessionsData = await getAdminSessions();
 
-        const fetchedSessions = sessionsData.sessions || []
-        const fetchedFaculties = facultiesData.faculties || []
-        setSessions(fetchedSessions)
-        setFaculties(fetchedFaculties)
+        const fetchedSessions = sessionsData.sessions || [];
+        setSessions(fetchedSessions);
 
         if (fetchedSessions.length > 0) {
-          setSelectedSessionId(String(fetchedSessions[0].id))
+          setSelectedSessionId(String(fetchedSessions[0].id));
         }
       } catch (apiError) {
-        setError(getApiErrorMessage(apiError, 'Failed to load session and faculty options.'))
+        setError(
+          getApiErrorMessage(
+            apiError,
+            "Failed to load session options.",
+          ),
+        );
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadMetadata()
-  }, [])
+    loadMetadata();
+  }, []);
 
   useEffect(() => {
-    if (!selectedSessionId && !selectedDate && !selectedFacultyId && sessions.length > 0) {
-      return
+    if (!selectedSessionId && sessions.length > 0) {
+      return;
     }
 
     const loadAttendanceSheet = async () => {
-      setIsLoading(true)
-      setError('')
+      setIsLoading(true);
+      setError("");
       try {
         const params = {
           sort_by: sortBy,
           sort_order: sortOrder,
-        }
-        if (selectedSessionId) params.session_id = selectedSessionId
-        if (selectedDate) params.date = selectedDate
-        if (selectedFacultyId) params.faculty_id = selectedFacultyId
-        if (attendanceStatusFilter) params.attendance_status = attendanceStatusFilter
-        if (signatureStatusFilter) params.signature_status = signatureStatusFilter
+        };
+        if (selectedSessionId) params.session_id = selectedSessionId;
+        if (attendanceStatusFilter)
+          params.attendance_status = attendanceStatusFilter;
+        if (signatureStatusFilter)
+          params.signature_status = signatureStatusFilter;
 
-        const data = await getAdminAttendanceSheet(params)
-        setRows(data.rows || [])
+        const data = await getAdminAttendanceSheet(params);
+        setRows(data.rows || []);
       } catch (apiError) {
-        setRows([])
-        setError(getApiErrorMessage(apiError, 'Failed to load attendance sheet.'))
+        setRows([]);
+        setError(
+          getApiErrorMessage(apiError, "Failed to load attendance sheet."),
+        );
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadAttendanceSheet()
+    loadAttendanceSheet();
   }, [
     selectedSessionId,
-    selectedDate,
-    selectedFacultyId,
     attendanceStatusFilter,
     signatureStatusFilter,
     sortBy,
     sortOrder,
     sessions.length,
-  ])
+  ]);
 
   const selectedSession = useMemo(
-    () => sessions.find((session) => String(session.id) === String(selectedSessionId)) || null,
+    () =>
+      sessions.find(
+        (session) => String(session.id) === String(selectedSessionId),
+      ) || null,
     [sessions, selectedSessionId],
-  )
+  );
 
-  const hasRows = rows.length > 0
+  const hasRows = rows.length > 0;
 
   const handleExport = async () => {
-    setIsExporting(true)
-    setError('')
+    setIsExporting(true);
+    setError("");
     try {
       const params = {
         sort_by: sortBy,
         sort_order: sortOrder,
-      }
-      if (selectedSessionId) params.session_id = selectedSessionId
-      if (selectedDate) params.date = selectedDate
-      if (selectedFacultyId) params.faculty_id = selectedFacultyId
-      if (attendanceStatusFilter) params.attendance_status = attendanceStatusFilter
-      if (signatureStatusFilter) params.signature_status = signatureStatusFilter
+      };
+      if (selectedSessionId) params.session_id = selectedSessionId;
+      if (attendanceStatusFilter)
+        params.attendance_status = attendanceStatusFilter;
+      if (signatureStatusFilter)
+        params.signature_status = signatureStatusFilter;
 
-      const result = await exportAdminAttendanceSheetCsv(params)
-      downloadBlob(result.blob, normalizeFilename(result.contentDisposition))
+      const result = await exportAdminAttendanceSheetCsv(params);
+      downloadBlob(result.blob, normalizeFilename(result.contentDisposition));
     } catch (apiError) {
-      setError(getApiErrorMessage(apiError, 'Failed to export CSV.'))
+      setError(getApiErrorMessage(apiError, "Failed to export CSV."));
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
 
   const applyQuickFilter = (filterName) => {
-    if (filterName === 'late') {
-      setAttendanceStatusFilter('late')
-      return
+    if (filterName === "late") {
+      setAttendanceStatusFilter("late");
+      return;
     }
-    if (filterName === 'on_time') {
-      setAttendanceStatusFilter('on_time')
-      return
+    if (filterName === "on_time") {
+      setAttendanceStatusFilter("on_time");
+      return;
     }
-    if (filterName === 'missing_checkout') {
-      setAttendanceStatusFilter('incomplete')
-      return
+    if (filterName === "missing_checkout") {
+      setAttendanceStatusFilter("incomplete");
+      return;
     }
-    if (filterName === 'valid_signature') {
-      setSignatureStatusFilter('valid')
+    if (filterName === "valid_signature") {
+      setSignatureStatusFilter("valid");
     }
-  }
+  };
 
   const resetSecondaryFilters = () => {
-    setSelectedDate('')
-    setSelectedFacultyId('')
-    setAttendanceStatusFilter('')
-    setSignatureStatusFilter('')
-    setSortBy('time_in')
-    setSortOrder('asc')
-  }
+    setAttendanceStatusFilter("");
+    setSignatureStatusFilter("");
+    setSortBy("time_in");
+    setSortOrder("asc");
+  };
 
   return (
     <>
@@ -223,48 +224,27 @@ export default function AdminAttendanceLogsPage() {
               </select>
             </label>
             {selectedSession ? (
-              <p className={styles.sessionHint}>Reviewing: {toSessionLabel(selectedSession)}</p>
+              <p className={styles.sessionHint}>
+                Reviewing: {toSessionLabel(selectedSession)}
+              </p>
             ) : (
               <p className={styles.sessionHint}>Showing all sessions.</p>
             )}
           </div>
 
           <div className={styles.secondaryFilters}>
-            <label className={common.fieldBlock} htmlFor="logs_date_filter">
-              <span className={common.fieldLabel}>Date</span>
-              <input
-                id="logs_date_filter"
-                className={common.inputControl}
-                type="date"
-                value={selectedDate}
-                onChange={(event) => setSelectedDate(event.target.value)}
-              />
-            </label>
-
-            <label className={common.fieldBlock} htmlFor="faculty_filter">
-              <span className={common.fieldLabel}>Faculty</span>
-              <select
-                id="faculty_filter"
-                className={common.inputControl}
-                value={selectedFacultyId}
-                onChange={(event) => setSelectedFacultyId(event.target.value)}
-              >
-                <option value="">All faculty</option>
-                {faculties.map((faculty) => (
-                  <option key={faculty.id} value={faculty.id}>
-                    {faculty.full_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={common.fieldBlock} htmlFor="attendance_status_filter">
+            <label
+              className={common.fieldBlock}
+              htmlFor="attendance_status_filter"
+            >
               <span className={common.fieldLabel}>Attendance Status</span>
               <select
                 id="attendance_status_filter"
                 className={common.inputControl}
                 value={attendanceStatusFilter}
-                onChange={(event) => setAttendanceStatusFilter(event.target.value)}
+                onChange={(event) =>
+                  setAttendanceStatusFilter(event.target.value)
+                }
               >
                 {ATTENDANCE_STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -274,13 +254,18 @@ export default function AdminAttendanceLogsPage() {
               </select>
             </label>
 
-            <label className={common.fieldBlock} htmlFor="signature_status_filter">
+            <label
+              className={common.fieldBlock}
+              htmlFor="signature_status_filter"
+            >
               <span className={common.fieldLabel}>Signature Status</span>
               <select
                 id="signature_status_filter"
                 className={common.inputControl}
                 value={signatureStatusFilter}
-                onChange={(event) => setSignatureStatusFilter(event.target.value)}
+                onChange={(event) =>
+                  setSignatureStatusFilter(event.target.value)
+                }
               >
                 {SIGNATURE_STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -311,15 +296,15 @@ export default function AdminAttendanceLogsPage() {
               <div className={styles.orderToggle}>
                 <button
                   type="button"
-                  className={`${common.ghostBtn} ${common.compact} ${sortOrder === 'asc' ? styles.orderActive : ''}`.trim()}
-                  onClick={() => setSortOrder('asc')}
+                  className={`${common.ghostBtn} ${common.compact} ${sortOrder === "asc" ? styles.orderActive : ""}`.trim()}
+                  onClick={() => setSortOrder("asc")}
                 >
                   Ascending
                 </button>
                 <button
                   type="button"
-                  className={`${common.ghostBtn} ${common.compact} ${sortOrder === 'desc' ? styles.orderActive : ''}`.trim()}
-                  onClick={() => setSortOrder('desc')}
+                  className={`${common.ghostBtn} ${common.compact} ${sortOrder === "desc" ? styles.orderActive : ""}`.trim()}
+                  onClick={() => setSortOrder("desc")}
                 >
                   Descending
                 </button>
@@ -329,23 +314,31 @@ export default function AdminAttendanceLogsPage() {
 
           <div className={styles.actionsRow}>
             <div className={styles.quickFilterRow}>
-              <button type="button" className={`${common.ghostBtn} ${common.compact}`.trim()} onClick={() => applyQuickFilter('late')}>
+              <button
+                type="button"
+                className={`${common.ghostBtn} ${common.compact}`.trim()}
+                onClick={() => applyQuickFilter("late")}
+              >
                 Late only
               </button>
-              <button type="button" className={`${common.ghostBtn} ${common.compact}`.trim()} onClick={() => applyQuickFilter('on_time')}>
+              <button
+                type="button"
+                className={`${common.ghostBtn} ${common.compact}`.trim()}
+                onClick={() => applyQuickFilter("on_time")}
+              >
                 On time only
               </button>
               <button
                 type="button"
                 className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => applyQuickFilter('missing_checkout')}
+                onClick={() => applyQuickFilter("missing_checkout")}
               >
                 Missing check-out
               </button>
               <button
                 type="button"
                 className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => applyQuickFilter('valid_signature')}
+                onClick={() => applyQuickFilter("valid_signature")}
               >
                 Valid signature only
               </button>
@@ -364,20 +357,22 @@ export default function AdminAttendanceLogsPage() {
                 onClick={handleExport}
                 disabled={isExporting || isLoading}
               >
-                {isExporting ? 'Exporting...' : 'Export CSV'}
+                {isExporting ? "Exporting..." : "Export CSV"}
               </button>
             </div>
           </div>
         </div>
 
-        {isLoading ? <DataLoading message="Loading attendance sheet..." /> : null}
+        {isLoading ? (
+          <DataLoading message="Loading attendance sheet..." />
+        ) : null}
         {error ? <DataError message={error} /> : null}
         {!isLoading && !error && !hasRows ? (
           <DataEmpty
             message={
               selectedSessionId
-                ? 'No attendance records match the selected session and filters.'
-                : 'No attendance records found for the selected filters.'
+                ? "No attendance records match the selected session and filters."
+                : "No attendance records found for the selected filters."
             }
           />
         ) : null}
@@ -401,22 +396,30 @@ export default function AdminAttendanceLogsPage() {
                     {rows.map((row) => (
                       <tr key={`${row.session_id}-${row.faculty_id}`}>
                         <td>
-                          <p className={styles.facultyName}>{row.faculty_name}</p>
+                          <p className={styles.facultyName}>
+                            {row.faculty_name}
+                          </p>
                           <p className={styles.facultyEmail}>{row.email}</p>
                         </td>
                         <td>
-                          <p className={styles.sessionName}>{row.session_name}</p>
+                          <p className={styles.sessionName}>
+                            {row.session_name}
+                          </p>
                           <p className={styles.sessionDate}>{row.date}</p>
                         </td>
                         <td>{formatDateTime(row.time_in)}</td>
                         <td>{formatDateTime(row.time_out)}</td>
                         <td>
-                          <span className={`${common.chip} ${styles[row.attendance_status.toLowerCase().replace(' ', '_')] || ''}`.trim()}>
+                          <span
+                            className={`${common.chip} ${styles[row.attendance_status.toLowerCase().replace(" ", "_")] || ""}`.trim()}
+                          >
                             {row.attendance_status}
                           </span>
                         </td>
                         <td>
-                          <span className={`${common.chip} ${common[row.signature_status] || ''}`.trim()}>
+                          <span
+                            className={`${common.chip} ${common[row.signature_status] || ""}`.trim()}
+                          >
                             {row.signature_status}
                           </span>
                         </td>
@@ -430,7 +433,10 @@ export default function AdminAttendanceLogsPage() {
             <div className={styles.mobileOnly}>
               <div className={styles.mobileCards}>
                 {rows.map((row) => (
-                  <article key={`${row.session_id}-${row.faculty_id}`} className={styles.mobileCard}>
+                  <article
+                    key={`${row.session_id}-${row.faculty_id}`}
+                    className={styles.mobileCard}
+                  >
                     <p className={styles.cardTitle}>{row.faculty_name}</p>
                     <p className={styles.cardMeta}>{row.email}</p>
                     <p className={styles.cardMeta}>{row.session_name}</p>
@@ -440,13 +446,16 @@ export default function AdminAttendanceLogsPage() {
                         <strong>Time In:</strong> {formatDateTime(row.time_in)}
                       </p>
                       <p>
-                        <strong>Time Out:</strong> {formatDateTime(row.time_out)}
+                        <strong>Time Out:</strong>{" "}
+                        {formatDateTime(row.time_out)}
                       </p>
                       <p>
-                        <strong>Attendance Status:</strong> {row.attendance_status}
+                        <strong>Attendance Status:</strong>{" "}
+                        {row.attendance_status}
                       </p>
                       <p>
-                        <strong>Signature Status:</strong> {row.signature_status}
+                        <strong>Signature Status:</strong>{" "}
+                        {row.signature_status}
                       </p>
                     </div>
                   </article>
@@ -457,6 +466,5 @@ export default function AdminAttendanceLogsPage() {
         ) : null}
       </AdminPanel>
     </>
-  )
+  );
 }
-
