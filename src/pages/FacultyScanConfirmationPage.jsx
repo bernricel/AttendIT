@@ -65,16 +65,20 @@ export default function FacultyScanConfirmationPage() {
   }, [qrToken, token])
 
   const handleConfirm = async () => {
-    if (!qrToken || !session) return
+    if (!qrToken || !session?.next_valid_action) return
     setIsConfirming(true)
     setError('')
     setWarning('')
     setSuccess('')
     try {
-      // Let the backend resolve check-in vs check-out from the active rule windows.
-      // This POST is the actual attendance record action for the scanned QR.
-      const data = await scanAttendance(qrToken)
-      setSuccess(data?.message || 'Attendance recorded successfully.')
+      // Submit the exact action surfaced by preview (check-in or check-out).
+      await scanAttendance(qrToken, session.next_valid_action)
+      const isCheckInAction = session.next_valid_action === 'check-in'
+      setSuccess(
+        isCheckInAction
+          ? 'Check-in recorded successfully. Please scan again when you are ready to check out.'
+          : 'Check-out recorded successfully. You have already completed attendance for this session.',
+      )
     } catch (apiError) {
       const apiMessage = getApiErrorMessage(apiError, 'Unable to process attendance request.')
       const statusCode = apiError?.response?.status
@@ -93,6 +97,9 @@ export default function FacultyScanConfirmationPage() {
   }
   // Disable action if backend indicates session is no longer accepting attendance.
   const isSessionClosed = session?.can_accept_attendance === false || session?.lifecycle_status === 'ENDED'
+  const actionLabel = session?.next_valid_action === 'check-out' ? 'Check Out' : 'Check In'
+  const hasAction = Boolean(session?.next_valid_action)
+  const isActionDisabled = isConfirming || Boolean(success) || isSessionClosed || !hasAction
   const checkInWindowLabel = useMemo(() => {
     if (!session) return ''
     if (!session.enable_check_in_window) return 'Anytime while session is active'
@@ -123,6 +130,7 @@ export default function FacultyScanConfirmationPage() {
         {isLoading ? <p className={`${common.dataState} ${common.loading}`.trim()}>Loading session details...</p> : null}
         {!isLoading && warning ? <p className={`${common.dataState} ${common.error}`.trim()}>{warning}</p> : null}
         {!isLoading && error ? <MessageBanner type="error" message={error} /> : null}
+        {!isLoading && session?.action_message ? <MessageBanner type="info" message={session.action_message} /> : null}
         {!isLoading && success ? <MessageBanner type="info" message={success} /> : null}
 
         {!isLoading && session ? (
@@ -162,15 +170,17 @@ export default function FacultyScanConfirmationPage() {
               type="button"
               className={common.primaryBtn}
               onClick={handleConfirm}
-              disabled={isConfirming || Boolean(success) || isSessionClosed}
+              disabled={isActionDisabled}
             >
               {isSessionClosed
                 ? 'Session Closed'
                 : isConfirming
-                  ? 'Confirming...'
+                  ? `${actionLabel}...`
                   : success
                     ? 'Attendance Confirmed'
-                    : 'Confirm Attendance'}
+                    : hasAction
+                      ? actionLabel
+                      : 'Attendance Complete'}
             </button>
           </div>
         ) : null}
