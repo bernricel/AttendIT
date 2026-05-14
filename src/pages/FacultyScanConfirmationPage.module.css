@@ -9,6 +9,17 @@
 }
 
 .windowValue {
-  word-break: normal;
+  display: block;
+  max-width: 100%;
+  word-break: keep-all;
   overflow-wrap: break-word;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+@media (max-width: 430px) {
+  .windowValue {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
 }
