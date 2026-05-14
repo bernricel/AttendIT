@@ -154,11 +154,11 @@ export default function FacultyScanConfirmationPage() {
               </div>
               <div className={common.summaryItem}>
                 <span>Check-in Window</span>
-                <strong>{checkInWindowLabel}</strong>
+                <strong className={styles.windowValue}>{checkInWindowLabel}</strong>
               </div>
               <div className={common.summaryItem}>
                 <span>Check-out Window</span>
-                <strong>{checkOutWindowLabel}</strong>
+                <strong className={styles.windowValue}>{checkOutWindowLabel}</strong>
               </div>
               <div className={common.summaryItem}>
                 <span>Status</span>
