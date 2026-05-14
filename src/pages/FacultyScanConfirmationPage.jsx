@@ -1,34 +1,43 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import LayoutPageMeta from '../components/layout/LayoutPageMeta'
-import MessageBanner from '../components/MessageBanner'
-import { ROUTES } from '../constants/routes'
-import { getFacultySessionPreview, scanAttendance } from '../services/attendanceApi'
-import { getStoredAuth } from '../services/authStorage'
-import { getApiErrorMessage } from '../utils/apiError'
-import { formatDateTime } from '../utils/dateTime'
-import styles from './FacultyScanConfirmationPage.module.css'
-import common from '../styles/common.module.css'
+import { useEffect, useMemo, useState } from "react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import LayoutPageMeta from "../components/layout/LayoutPageMeta";
+import MessageBanner from "../components/MessageBanner";
+import { ROUTES } from "../constants/routes";
+import {
+  getFacultySessionPreview,
+  scanAttendance,
+} from "../services/attendanceApi";
+import { getStoredAuth } from "../services/authStorage";
+import { getApiErrorMessage } from "../utils/apiError";
+import { formatDateTime } from "../utils/dateTime";
+import styles from "./FacultyScanConfirmationPage.module.css";
+import common from "../styles/common.module.css";
 
 export default function FacultyScanConfirmationPage() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const params = useParams()
-  const [searchParams] = useSearchParams()
-  const { token } = getStoredAuth()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const params = useParams();
+  const [searchParams] = useSearchParams();
+  const { token } = getStoredAuth();
 
   const qrToken = useMemo(
     // Token may come from route param (/scan/:qrToken) or query string (?token=...).
-    () => params.qrToken || searchParams.get('token') || '',
+    () => params.qrToken || searchParams.get("token") || "",
     [params.qrToken, searchParams],
-  )
+  );
 
-  const [session, setSession] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [error, setError] = useState('')
-  const [warning, setWarning] = useState('')
-  const [success, setSuccess] = useState('')
+  const [session, setSession] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     // QR links can be opened directly; redirect to login if user is not authenticated.
@@ -36,84 +45,99 @@ export default function FacultyScanConfirmationPage() {
       navigate(ROUTES.LOGIN, {
         replace: true,
         state: { from: `${location.pathname}${location.search}` },
-      })
+      });
     }
-  }, [location.pathname, location.search, navigate, token])
+  }, [location.pathname, location.search, navigate, token]);
 
   useEffect(() => {
     const loadSession = async () => {
-      if (!token) return
+      if (!token) return;
       if (!qrToken) {
-        setError('Missing QR token. Please scan a valid QR link.')
-        setIsLoading(false)
-        return
+        setError("Missing QR token. Please scan a valid QR link.");
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(true)
-      setError('')
-      setWarning('')
+      setIsLoading(true);
+      setError("");
+      setWarning("");
       try {
         // Preview call validates token/session state before final confirmation.
-        const data = await getFacultySessionPreview(qrToken)
-        setSession(data.session)
+        const data = await getFacultySessionPreview(qrToken);
+        setSession(data.session);
       } catch (apiError) {
-        setError(getApiErrorMessage(apiError, 'Unable to load session details.'))
+        setError(
+          getApiErrorMessage(apiError, "Unable to load session details."),
+        );
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    loadSession()
-  }, [qrToken, token])
+    };
+    loadSession();
+  }, [qrToken, token]);
 
   const handleConfirm = async () => {
-    if (!qrToken || !session?.next_valid_action) return
-    setIsConfirming(true)
-    setError('')
-    setWarning('')
-    setSuccess('')
+    if (!qrToken || !session?.next_valid_action) return;
+    setIsConfirming(true);
+    setError("");
+    setWarning("");
+    setSuccess("");
     try {
       // Submit the exact action surfaced by preview (check-in or check-out).
-      await scanAttendance(qrToken, session.next_valid_action)
-      const isCheckInAction = session.next_valid_action === 'check-in'
+      await scanAttendance(qrToken, session.next_valid_action);
+      const isCheckInAction = session.next_valid_action === "check-in";
       setSuccess(
         isCheckInAction
-          ? 'Check-in recorded successfully. Please scan again when you are ready to check out.'
-          : 'Check-out recorded successfully. You have already completed attendance for this session.',
-      )
+          ? "Check-in recorded successfully. Please scan again when you are ready to check out."
+          : "Check-out recorded successfully. You have already completed attendance for this session.",
+      );
     } catch (apiError) {
-      const apiMessage = getApiErrorMessage(apiError, 'Unable to process attendance request.')
-      const statusCode = apiError?.response?.status
+      const apiMessage = getApiErrorMessage(
+        apiError,
+        "Unable to process attendance request.",
+      );
+      const statusCode = apiError?.response?.status;
 
       // Keep duplicate-check prevention behavior, but show a clear user-facing warning.
       if (statusCode === 409) {
         setWarning(
-          apiMessage || 'You have already checked in for this session.',
-        )
+          apiMessage || "You have already checked in for this session.",
+        );
       } else {
-        setError(apiMessage)
+        setError(apiMessage);
       }
     } finally {
-      setIsConfirming(false)
+      setIsConfirming(false);
     }
-  }
+  };
   // Disable action if backend indicates session is no longer accepting attendance.
-  const isSessionClosed = session?.can_accept_attendance === false || session?.lifecycle_status === 'ENDED'
-  const actionLabel = session?.next_valid_action === 'check-out' ? 'Check Out' : 'Check In'
-  const hasAction = Boolean(session?.next_valid_action)
-  const isActionDisabled = isConfirming || Boolean(success) || isSessionClosed || !hasAction
+  const isSessionClosed =
+    session?.can_accept_attendance === false ||
+    session?.lifecycle_status === "ENDED";
+  const actionLabel =
+    session?.next_valid_action === "check-out" ? "Check Out" : "Check In";
+  const hasAction = Boolean(session?.next_valid_action);
+  const isActionDisabled =
+    isConfirming || Boolean(success) || isSessionClosed || !hasAction;
   const checkInWindowLabel = useMemo(() => {
-    if (!session) return ''
-    if (!session.enable_check_in_window) return 'Anytime while session is active'
-    const startLabel = formatDateTime(session.check_in_start_time)
-    const endLabel = session.check_in_end_time ? formatDateTime(session.check_in_end_time) : 'No end time'
-    return `${startLabel} to ${endLabel}`
-  }, [session])
+    if (!session) return "";
+    if (!session.enable_check_in_window)
+      return "Anytime while session is active";
+    const startLabel = formatDateTime(session.check_in_start_time);
+    const endLabel = session.check_in_end_time
+      ? formatDateTime(session.check_in_end_time)
+      : "No end time";
+    return `${startLabel} to ${endLabel}`;
+  }, [session]);
   const checkOutWindowLabel = useMemo(() => {
-    if (!session) return ''
-    if (!session.enable_check_out_window) return 'Anytime while session is active'
-    const startLabel = formatDateTime(session.check_out_start_time)
-    const endLabel = session.check_out_end_time ? formatDateTime(session.check_out_end_time) : 'No end time'
-    return `${startLabel} to ${endLabel}`
-  }, [session])
+    if (!session) return "";
+    if (!session.enable_check_out_window)
+      return "Anytime while session is active";
+    const startLabel = formatDateTime(session.check_out_start_time);
+    const endLabel = session.check_out_end_time
+      ? formatDateTime(session.check_out_end_time)
+      : "No end time";
+    return `${startLabel} to ${endLabel}`;
+  }, [session]);
 
   return (
     <>
@@ -121,48 +145,65 @@ export default function FacultyScanConfirmationPage() {
         title="Attendance Confirmation"
         subtitle="Review session details before confirming your attendance."
         actions={
-          <Link className={`${common.ghostBtn} ${common.compact} ${common.linkButton}`.trim()} to={ROUTES.FACULTY_HISTORY}>
+          <Link
+            className={`${common.ghostBtn} ${common.compact} ${common.linkButton}`.trim()}
+            to={ROUTES.FACULTY_HISTORY}
+          >
             View My History
           </Link>
         }
       />
       <section className={styles.facultyPanel}>
-        {isLoading ? <p className={`${common.dataState} ${common.loading}`.trim()}>Loading session details...</p> : null}
-        {!isLoading && warning ? <p className={`${common.dataState} ${common.error}`.trim()}>{warning}</p> : null}
-        {!isLoading && error ? <MessageBanner type="error" message={error} /> : null}
-        {!isLoading && session?.action_message ? <MessageBanner type="info" message={session.action_message} /> : null}
-        {!isLoading && success ? <MessageBanner type="info" message={success} /> : null}
+        {isLoading ? (
+          <p className={`${common.dataState} ${common.loading}`.trim()}>
+            Loading session details...
+          </p>
+        ) : null}
+        {!isLoading && warning ? (
+          <p className={`${common.dataState} ${common.error}`.trim()}>
+            {warning}
+          </p>
+        ) : null}
+        {!isLoading && error ? (
+          <MessageBanner type="error" message={error} />
+        ) : null}
+        {!isLoading && session?.action_message ? (
+          <MessageBanner type="info" message={session.action_message} />
+        ) : null}
+        {!isLoading && success ? (
+          <MessageBanner type="info" message={success} />
+        ) : null}
 
         {!isLoading && session ? (
           <div className={common.scanConfirmGrid}>
             <div className={common.summaryGrid}>
               <div className={common.summaryItem}>
                 <span>Session Name</span>
-                <strong>{session.name}</strong>
+                <p>{session.name}</p>
               </div>
               <div className={common.summaryItem}>
                 <span>Department</span>
-                <strong>{session.department || 'N/A'}</strong>
+                <p>{session.department || "N/A"}</p>
               </div>
               <div className={common.summaryItem}>
                 <span>Scheduled Start</span>
-                <strong>{formatDateTime(session.start_time)}</strong>
+                <p>{formatDateTime(session.start_time)}</p>
               </div>
               <div className={common.summaryItem}>
                 <span>Scheduled End</span>
-                <strong>{formatDateTime(session.end_time)}</strong>
+                <p>{formatDateTime(session.end_time)}</p>
               </div>
               <div className={common.summaryItem}>
                 <span>Check-in Window</span>
-                <strong className={styles.windowValue}>{checkInWindowLabel}</strong>
+                <p className={styles.windowValue}>{checkInWindowLabel}</p>
               </div>
               <div className={common.summaryItem}>
                 <span>Check-out Window</span>
-                <strong className={styles.windowValue}>{checkOutWindowLabel}</strong>
+                <p className={styles.windowValue}>{checkOutWindowLabel}</p>
               </div>
               <div className={common.summaryItem}>
                 <span>Status</span>
-                <strong>{session.lifecycle_status || 'UNKNOWN'}</strong>
+                <p>{session.lifecycle_status || "UNKNOWN"}</p>
               </div>
             </div>
 
@@ -173,18 +214,18 @@ export default function FacultyScanConfirmationPage() {
               disabled={isActionDisabled}
             >
               {isSessionClosed
-                ? 'Session Closed'
+                ? "Session Closed"
                 : isConfirming
                   ? `${actionLabel}...`
                   : success
-                    ? 'Attendance Confirmed'
+                    ? "Attendance Confirmed"
                     : hasAction
                       ? actionLabel
-                      : 'Attendance Complete'}
+                      : "Attendance Complete"}
             </button>
           </div>
         ) : null}
       </section>
     </>
-  )
+  );
 }
