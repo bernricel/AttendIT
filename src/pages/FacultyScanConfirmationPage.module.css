@@ -10,11 +10,16 @@
 
 .windowValue {
   display: block;
-  max-width: 100%;
-  word-break: keep-all;
-  overflow-wrap: break-word;
+  width: 100%;
+  min-width: 0;
   white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
   line-height: 1.35;
+}
+
+.summaryItem {
+  min-width: 0;
 }
 
 @media (max-width: 430px) {
