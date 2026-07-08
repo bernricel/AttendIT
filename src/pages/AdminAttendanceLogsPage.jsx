@@ -1,4 +1,6 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { FiCalendar, FiFileText, FiSearch } from "react-icons/fi";
+
 import AdminPanel from "../components/admin/AdminPanel";
 import {
   DataEmpty,
@@ -11,9 +13,10 @@ import {
   getAdminAttendanceSheet,
   getAdminSessions,
 } from "../services/attendanceApi";
-import { getApiErrorMessage } from "../utils/apiError";
-import { formatDateTime, formatIsoDate } from "../utils/dateTime";
 import common from "../styles/common.module.css";
+import { getApiErrorMessage } from "../utils/apiError";
+import { exportAttendanceLogsPdf } from "../utils/attendancePdf";
+import { formatDateTime, formatIsoDate } from "../utils/dateTime";
 import styles from "./AdminAttendanceLogsPage.module.css";
 
 const ATTENDANCE_STATUS_OPTIONS = [
@@ -38,11 +41,6 @@ const SORT_BY_OPTIONS = [
   { value: "session", label: "Session" },
 ];
 
-function toSessionLabel(session) {
-  const startDate = formatIsoDate(session.start_time);
-  return `${session.name} (${startDate})`;
-}
-
 function normalizeFilename(contentDisposition) {
   const match = /filename="?([^\"]+)"?/i.exec(contentDisposition || "");
   return match ? match[1] : "attendance_sheet.csv";
@@ -59,40 +57,82 @@ function downloadBlob(blob, fileName) {
   URL.revokeObjectURL(url);
 }
 
+function formatLongDate(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function normalizeStatus(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+}
+
+function getSessionStatus(session) {
+  if (session?.lifecycle_status) return session.lifecycle_status;
+  return session?.is_active ? "Active" : "Ended";
+}
+
+function matchesSession(session, searchTerm, dateFilter) {
+  const sessionName = String(session?.name || "").toLowerCase();
+  const matchesSearch = !searchTerm || sessionName.includes(searchTerm);
+  const matchesDate =
+    !dateFilter || formatIsoDate(session?.start_time) === dateFilter;
+  return matchesSearch && matchesDate;
+}
+
+function getLateStatusLabel(row) {
+  const normalizedStatus = normalizeStatus(row.attendance_status);
+  if (normalizedStatus === "late") return "Late";
+  if (normalizedStatus === "on_time") return "On Time";
+  return "N/A";
+}
+
 export default function AdminAttendanceLogsPage() {
   const [sessions, setSessions] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [sessionSearchInput, setSessionSearchInput] = useState("");
+  const [sessionSearchTerm, setSessionSearchTerm] = useState("");
+  const [sessionDateFilter, setSessionDateFilter] = useState("");
   const [attendanceStatusFilter, setAttendanceStatusFilter] = useState("");
   const [signatureStatusFilter, setSignatureStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("time_in");
   const [sortOrder, setSortOrder] = useState("asc");
   const [rows, setRows] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [isExporting, setIsExporting] = useState(false);
+  const [isSessionsLoading, setIsSessionsLoading] = useState(true);
+  const [isRowsLoading, setIsRowsLoading] = useState(false);
+  const [sessionError, setSessionError] = useState("");
+  const [rowsError, setRowsError] = useState("");
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const browserScrollYRef = useRef(null);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSessionSearchTerm(sessionSearchInput.trim().toLowerCase());
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [sessionSearchInput]);
 
   useEffect(() => {
     const loadMetadata = async () => {
-      setIsLoading(true);
-      setError("");
+      setIsSessionsLoading(true);
+      setSessionError("");
       try {
         const sessionsData = await getAdminSessions();
-
-        const fetchedSessions = sessionsData.sessions || [];
-        setSessions(fetchedSessions);
-
-        if (fetchedSessions.length > 0) {
-          setSelectedSessionId(String(fetchedSessions[0].id));
-        }
+        setSessions(sessionsData.sessions || []);
       } catch (apiError) {
-        setError(
-          getApiErrorMessage(
-            apiError,
-            "Failed to load session options.",
-          ),
+        setSessionError(
+          getApiErrorMessage(apiError, "Failed to load session browser."),
         );
       } finally {
-        setIsLoading(false);
+        setIsSessionsLoading(false);
       }
     };
 
@@ -100,33 +140,38 @@ export default function AdminAttendanceLogsPage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedSessionId && sessions.length > 0) {
+    if (!selectedSessionId) {
+      setRows([]);
+      setRowsError("");
+      setIsRowsLoading(false);
       return;
     }
 
     const loadAttendanceSheet = async () => {
-      setIsLoading(true);
-      setError("");
+      setIsRowsLoading(true);
+      setRowsError("");
       try {
         const params = {
+          session_id: selectedSessionId,
           sort_by: sortBy,
           sort_order: sortOrder,
         };
-        if (selectedSessionId) params.session_id = selectedSessionId;
-        if (attendanceStatusFilter)
+        if (attendanceStatusFilter) {
           params.attendance_status = attendanceStatusFilter;
-        if (signatureStatusFilter)
+        }
+        if (signatureStatusFilter) {
           params.signature_status = signatureStatusFilter;
+        }
 
         const data = await getAdminAttendanceSheet(params);
         setRows(data.rows || []);
       } catch (apiError) {
         setRows([]);
-        setError(
+        setRowsError(
           getApiErrorMessage(apiError, "Failed to load attendance sheet."),
         );
       } finally {
-        setIsLoading(false);
+        setIsRowsLoading(false);
       }
     };
 
@@ -137,7 +182,6 @@ export default function AdminAttendanceLogsPage() {
     signatureStatusFilter,
     sortBy,
     sortOrder,
-    sessions.length,
   ]);
 
   const selectedSession = useMemo(
@@ -148,28 +192,83 @@ export default function AdminAttendanceLogsPage() {
     [sessions, selectedSessionId],
   );
 
-  const hasRows = rows.length > 0;
+  const filteredSessions = useMemo(
+    () =>
+      sessions.filter((session) =>
+        matchesSession(session, sessionSearchTerm, sessionDateFilter),
+      ),
+    [sessions, sessionSearchTerm, sessionDateFilter],
+  );
 
-  const handleExport = async () => {
-    setIsExporting(true);
-    setError("");
+  const hasRows = rows.length > 0;
+  const isShowingBrowser = !selectedSessionId;
+
+  useEffect(() => {
+    if (!isShowingBrowser || browserScrollYRef.current == null) return;
+
+    const scrollY = browserScrollYRef.current;
+    browserScrollYRef.current = null;
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: scrollY, behavior: "auto" });
+    });
+  }, [isShowingBrowser]);
+
+  const handleExportCsv = async () => {
+    if (!selectedSessionId) return;
+
+    setIsExportingCsv(true);
+    setRowsError("");
     try {
       const params = {
+        session_id: selectedSessionId,
         sort_by: sortBy,
         sort_order: sortOrder,
       };
-      if (selectedSessionId) params.session_id = selectedSessionId;
-      if (attendanceStatusFilter)
+      if (attendanceStatusFilter) {
         params.attendance_status = attendanceStatusFilter;
-      if (signatureStatusFilter)
+      }
+      if (signatureStatusFilter) {
         params.signature_status = signatureStatusFilter;
+      }
 
       const result = await exportAdminAttendanceSheetCsv(params);
       downloadBlob(result.blob, normalizeFilename(result.contentDisposition));
     } catch (apiError) {
-      setError(getApiErrorMessage(apiError, "Failed to export CSV."));
+      setRowsError(getApiErrorMessage(apiError, "Failed to export CSV."));
     } finally {
-      setIsExporting(false);
+      setIsExportingCsv(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!selectedSession) return;
+
+    setIsExportingPdf(true);
+    setRowsError("");
+    try {
+      exportAttendanceLogsPdf({
+        session: selectedSession,
+        rows,
+        filters: {
+          attendanceStatus:
+            ATTENDANCE_STATUS_OPTIONS.find(
+              (option) => option.value === attendanceStatusFilter,
+            )?.label || "",
+          signatureStatus:
+            SIGNATURE_STATUS_OPTIONS.find(
+              (option) => option.value === signatureStatusFilter,
+            )?.label || "",
+          sortBy:
+            SORT_BY_OPTIONS.find((option) => option.value === sortBy)?.label ||
+            sortBy,
+          sortOrder,
+        },
+      });
+    } catch (apiError) {
+      setRowsError(getApiErrorMessage(apiError, "Failed to export PDF."));
+    } finally {
+      setIsExportingPdf(false);
     }
   };
 
@@ -198,271 +297,383 @@ export default function AdminAttendanceLogsPage() {
     setSortOrder("asc");
   };
 
+  const handleSelectSession = (sessionId) => {
+    browserScrollYRef.current = window.scrollY;
+    setSelectedSessionId(String(sessionId));
+  };
+
+  const handleBackToBrowser = () => {
+    setSelectedSessionId("");
+  };
+
   return (
     <>
       <LayoutPageMeta
         title="Attendance Logs"
-        subtitle="Session-based attendance sheet with export-ready records."
+        subtitle="Search sessions, review attendance records, and export session logs."
       />
       <AdminPanel>
-        <div className={styles.controlsWrap}>
-          <div className={styles.primaryFilter}>
-            <label className={common.fieldBlock} htmlFor="session_picker">
-              <span className={common.fieldLabel}>Session</span>
-              <select
-                id="session_picker"
-                className={common.inputControl}
-                value={selectedSessionId}
-                onChange={(event) => setSelectedSessionId(event.target.value)}
+        {isShowingBrowser ? (
+          <section className={styles.browserSection}>
+            <div className={styles.browserHeader}>
+              <div>
+                <p className={styles.eyebrow}>Attendance Logs</p>
+                <h2 className={styles.browserTitle}>Session Browser</h2>
+                <p className={styles.browserSubtitle}>
+                  Search by session title, narrow by date, and open one session
+                  at a time for detailed attendance review.
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.searchRow}>
+              <label className={common.fieldBlock} htmlFor="session_search">
+                <span className={common.fieldLabel}>Search Sessions</span>
+                <div className={styles.inputWithIcon}>
+                  <FiSearch aria-hidden="true" />
+                  <input
+                    id="session_search"
+                    className={common.inputControl}
+                    type="search"
+                    placeholder="Search sessions..."
+                    value={sessionSearchInput}
+                    onChange={(event) =>
+                      setSessionSearchInput(event.target.value)
+                    }
+                  />
+                </div>
+              </label>
+
+              <label
+                className={common.fieldBlock}
+                htmlFor="session_date_filter"
               >
-                <option value="">All sessions</option>
-                {sessions.map((session) => (
-                  <option key={session.id} value={session.id}>
-                    {toSessionLabel(session)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {selectedSession ? (
-              <p className={styles.sessionHint}>
-                Reviewing: {toSessionLabel(selectedSession)}
+                <span className={common.fieldLabel}>Date Filter</span>
+                <div className={styles.inputWithIcon}>
+                  <FiCalendar aria-hidden="true" />
+                  <input
+                    id="session_date_filter"
+                    className={common.inputControl}
+                    type="date"
+                    value={sessionDateFilter}
+                    onChange={(event) =>
+                      setSessionDateFilter(event.target.value)
+                    }
+                  />
+                </div>
+              </label>
+            </div>
+
+            <div className={styles.browserMetaRow}>
+              <p className={styles.browserMeta}>
+                {filteredSessions.length} session
+                {filteredSessions.length === 1 ? "" : "s"} found
               </p>
-            ) : (
-              <p className={styles.sessionHint}>Showing all sessions.</p>
-            )}
-          </div>
+            </div>
 
-          <div className={styles.secondaryFilters}>
-            <label
-              className={common.fieldBlock}
-              htmlFor="attendance_status_filter"
-            >
-              <span className={common.fieldLabel}>Attendance Status</span>
-              <select
-                id="attendance_status_filter"
-                className={common.inputControl}
-                value={attendanceStatusFilter}
-                onChange={(event) =>
-                  setAttendanceStatusFilter(event.target.value)
-                }
+            {isSessionsLoading ? (
+              <DataLoading message="Loading session browser..." />
+            ) : null}
+            {sessionError ? <DataError message={sessionError} /> : null}
+
+            {!isSessionsLoading && !sessionError ? (
+              filteredSessions.length > 0 ? (
+                <div className={styles.sessionGrid}>
+                  {filteredSessions.map((session) => (
+                    <button
+                      key={session.id}
+                      type="button"
+                      className={styles.sessionCard}
+                      onClick={() => handleSelectSession(session.id)}
+                    >
+                      <div className={styles.sessionCardTop}>
+                        <span
+                          className={`${styles.statusBadge} ${session.is_active ? styles.statusActive : styles.statusEnded}`.trim()}
+                        >
+                          {getSessionStatus(session)}
+                        </span>
+                        <span className={styles.sessionCount}>
+                          {session.attendance_count || 0} records
+                        </span>
+                      </div>
+
+                      <div className={styles.sessionCardBody}>
+                        <h3 className={styles.sessionCardTitle}>
+                          {session.name}
+                        </h3>
+                        <p className={styles.sessionCardDate}>
+                          {formatLongDate(session.start_time)}
+                        </p>
+                      </div>
+
+                      <dl className={styles.sessionCardMeta}>
+                        <div>
+                          <dt>Department</dt>
+                          <dd>{session.department || "-"}</dd>
+                        </div>
+                        <div>
+                          <dt>Session ID</dt>
+                          <dd>{session.id}</dd>
+                        </div>
+                      </dl>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <DataEmpty message="No sessions match the current search and date filters." />
+              )
+            ) : null}
+          </section>
+        ) : null}
+
+        {selectedSession ? (
+          <section className={styles.selectedSection}>
+            <div className={styles.summaryPanel}>
+              <button
+                type="button"
+                className={`${common.ghostBtn} ${common.compact}`.trim()}
+                onClick={handleBackToBrowser}
               >
-                {ATTENDANCE_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label
-              className={common.fieldBlock}
-              htmlFor="signature_status_filter"
-            >
-              <span className={common.fieldLabel}>Signature Status</span>
-              <select
-                id="signature_status_filter"
-                className={common.inputControl}
-                value={signatureStatusFilter}
-                onChange={(event) =>
-                  setSignatureStatusFilter(event.target.value)
-                }
-              >
-                {SIGNATURE_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={common.fieldBlock} htmlFor="sort_by_filter">
-              <span className={common.fieldLabel}>Sort</span>
-              <select
-                id="sort_by_filter"
-                className={common.inputControl}
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
-              >
-                {SORT_BY_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <div className={common.fieldBlock}>
-              <span className={common.fieldLabel}>Order</span>
-              <div className={styles.orderToggle}>
-                <button
-                  type="button"
-                  className={`${common.ghostBtn} ${common.compact} ${sortOrder === "asc" ? styles.orderActive : ""}`.trim()}
-                  onClick={() => setSortOrder("asc")}
-                >
-                  Ascending
-                </button>
-                <button
-                  type="button"
-                  className={`${common.ghostBtn} ${common.compact} ${sortOrder === "desc" ? styles.orderActive : ""}`.trim()}
-                  onClick={() => setSortOrder("desc")}
-                >
-                  Descending
-                </button>
+                Back to Session Browser
+              </button>
+              <div>
+                <p className={styles.eyebrow}>Selected Session</p>
+                <h2 className={styles.summaryTitle}>{selectedSession.name}</h2>
+                <p className={styles.summaryDate}>
+                  {formatLongDate(selectedSession.start_time)}
+                </p>
               </div>
-            </div>
-          </div>
 
-          <div className={styles.actionsRow}>
-            <div className={styles.quickFilterRow}>
-              <button
-                type="button"
-                className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => applyQuickFilter("late")}
-              >
-                Late only
-              </button>
-              <button
-                type="button"
-                className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => applyQuickFilter("on_time")}
-              >
-                On time only
-              </button>
-              <button
-                type="button"
-                className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => applyQuickFilter("missing_checkout")}
-              >
-                Missing check-out
-              </button>
-              <button
-                type="button"
-                className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => applyQuickFilter("valid_signature")}
-              >
-                Valid signature only
-              </button>
-            </div>
-            <div className={styles.actionButtons}>
-              <button
-                type="button"
-                className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={resetSecondaryFilters}
-              >
-                Reset filters
-              </button>
-              <button
-                type="button"
-                className={`${common.primaryBtn} ${common.compact}`.trim()}
-                onClick={handleExport}
-                disabled={isExporting || isLoading}
-              >
-                {isExporting ? "Exporting..." : "Export CSV"}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <DataLoading message="Loading attendance sheet..." />
-        ) : null}
-        {error ? <DataError message={error} /> : null}
-        {!isLoading && !error && !hasRows ? (
-          <DataEmpty
-            message={
-              selectedSessionId
-                ? "No attendance records match the selected session and filters."
-                : "No attendance records found for the selected filters."
-            }
-          />
-        ) : null}
-
-        {!isLoading && !error && hasRows ? (
-          <div className={styles.responsiveBlock}>
-            <div className={styles.desktopOnly}>
-              <div className={common.tableWrap}>
-                <table className={common.adminTable}>
-                  <thead>
-                    <tr>
-                      <th>Faculty Name</th>
-                      <th>Session</th>
-                      <th>Time In</th>
-                      <th>Time Out</th>
-                      <th>Attendance Status</th>
-                      <th>Signature Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={`${row.session_id}-${row.faculty_id}`}>
-                        <td>
-                          <p className={styles.facultyName}>
-                            {row.faculty_name}
-                          </p>
-                          <p className={styles.facultyEmail}>{row.email}</p>
-                        </td>
-                        <td>
-                          <p className={styles.sessionName}>
-                            {row.session_name}
-                          </p>
-                          <p className={styles.sessionDate}>{row.date}</p>
-                        </td>
-                        <td>{formatDateTime(row.time_in)}</td>
-                        <td>{formatDateTime(row.time_out)}</td>
-                        <td>
-                          <span
-                            className={`${common.chip} ${styles[row.attendance_status.toLowerCase().replace(" ", "_")] || ""}`.trim()}
-                          >
-                            {row.attendance_status}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`${common.chip} ${common[row.signature_status] || ""}`.trim()}
-                          >
-                            {row.signature_status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className={styles.summaryStats}>
+                <div className={styles.summaryStat}>
+                  <span>Attendance Records</span>
+                  <strong>{selectedSession.attendance_count || 0}</strong>
+                </div>
+                <div className={styles.summaryStat}>
+                  <span>Status</span>
+                  <strong>{getSessionStatus(selectedSession)}</strong>
+                </div>
+                <div className={styles.summaryStat}>
+                  <span>Department</span>
+                  <strong>{selectedSession.department || "-"}</strong>
+                </div>
               </div>
             </div>
 
-            <div className={styles.mobileOnly}>
-              <div className={styles.mobileCards}>
-                {rows.map((row) => (
-                  <article
-                    key={`${row.session_id}-${row.faculty_id}`}
-                    className={styles.mobileCard}
+            <div className={styles.controlsWrap}>
+              <div className={styles.secondaryFilters}>
+                <label
+                  className={common.fieldBlock}
+                  htmlFor="attendance_status_filter"
+                >
+                  <span className={common.fieldLabel}>Attendance Status</span>
+                  <select
+                    id="attendance_status_filter"
+                    className={common.inputControl}
+                    value={attendanceStatusFilter}
+                    onChange={(event) =>
+                      setAttendanceStatusFilter(event.target.value)
+                    }
                   >
-                    <p className={styles.cardTitle}>{row.faculty_name}</p>
-                    <p className={styles.cardMeta}>{row.email}</p>
-                    <p className={styles.cardMeta}>{row.session_name}</p>
-                    <p className={styles.cardMeta}>{row.date}</p>
-                    <div className={styles.cardDetailGrid}>
-                      <p>
-                        <strong>Time In:</strong> {formatDateTime(row.time_in)}
-                      </p>
-                      <p>
-                        <strong>Time Out:</strong>{" "}
-                        {formatDateTime(row.time_out)}
-                      </p>
-                      <p>
-                        <strong>Attendance Status:</strong>{" "}
-                        {row.attendance_status}
-                      </p>
-                      <p>
-                        <strong>Signature Status:</strong>{" "}
-                        {row.signature_status}
-                      </p>
-                    </div>
-                  </article>
-                ))}
+                    {ATTENDANCE_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label
+                  className={common.fieldBlock}
+                  htmlFor="signature_status_filter"
+                >
+                  <span className={common.fieldLabel}>Signature Status</span>
+                  <select
+                    id="signature_status_filter"
+                    className={common.inputControl}
+                    value={signatureStatusFilter}
+                    onChange={(event) =>
+                      setSignatureStatusFilter(event.target.value)
+                    }
+                  >
+                    {SIGNATURE_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={common.fieldBlock} htmlFor="sort_by_filter">
+                  <span className={common.fieldLabel}>Sort</span>
+                  <select
+                    id="sort_by_filter"
+                    className={common.inputControl}
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value)}
+                  >
+                    {SORT_BY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className={common.fieldBlock}>
+                  <span className={common.fieldLabel}>Order</span>
+                  <div className={styles.orderToggle}>
+                    <button
+                      type="button"
+                      className={`${common.ghostBtn} ${common.compact} ${sortOrder === "asc" ? styles.orderActive : ""}`.trim()}
+                      onClick={() => setSortOrder("asc")}
+                    >
+                      Ascending
+                    </button>
+                    <button
+                      type="button"
+                      className={`${common.ghostBtn} ${common.compact} ${sortOrder === "desc" ? styles.orderActive : ""}`.trim()}
+                      onClick={() => setSortOrder("desc")}
+                    >
+                      Descending
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.actionsRow}>
+                <div className={styles.actionButtons}>
+                  <button
+                    type="button"
+                    className={`${common.ghostBtn} ${common.compact}`.trim()}
+                    onClick={resetSecondaryFilters}
+                  >
+                    Reset filters
+                  </button>
+                  <button
+                    type="button"
+                    className={`${common.ghostBtn} ${common.compact}`.trim()}
+                    onClick={handleExportPdf}
+                    disabled={isExportingPdf || isRowsLoading || !hasRows}
+                  >
+                    <FiFileText aria-hidden="true" />
+                    {isExportingPdf ? "Exporting..." : "Export PDF"}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${common.primaryBtn} ${common.compact}`.trim()}
+                    onClick={handleExportCsv}
+                    disabled={isExportingCsv || isRowsLoading}
+                  >
+                    {isExportingCsv ? "Exporting..." : "Export CSV"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+
+            {isRowsLoading ? (
+              <DataLoading message="Loading attendance sheet..." />
+            ) : null}
+            {rowsError ? <DataError message={rowsError} /> : null}
+            {!isRowsLoading && !rowsError && !hasRows ? (
+              <DataEmpty message="No attendance records match the selected session and filters." />
+            ) : null}
+
+            {!isRowsLoading && !rowsError && hasRows ? (
+              <div className={styles.responsiveBlock}>
+                <div className={styles.desktopOnly}>
+                  <div className={common.tableWrap}>
+                    <table className={common.adminTable}>
+                      <thead>
+                        <tr>
+                          <th>Faculty Name</th>
+                          <th>Session</th>
+                          <th>Time In</th>
+                          <th>Time Out</th>
+                          <th>Attendance Status</th>
+                          <th>Signature Status</th>
+                          <th>Late Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((row) => (
+                          <tr key={`${row.session_id}-${row.faculty_id}`}>
+                            <td>
+                              <p className={styles.facultyName}>
+                                {row.faculty_name}
+                              </p>
+                              <p className={styles.facultyEmail}>{row.email}</p>
+                            </td>
+                            <td>
+                              <p className={styles.sessionName}>
+                                {row.session_name}
+                              </p>
+                              <p className={styles.sessionDate}>{row.date}</p>
+                            </td>
+                            <td>{formatDateTime(row.time_in)}</td>
+                            <td>{formatDateTime(row.time_out)}</td>
+                            <td>
+                              <span
+                                className={`${common.chip} ${styles[normalizeStatus(row.attendance_status)] || ""}`.trim()}
+                              >
+                                {row.attendance_status}
+                              </span>
+                            </td>
+                            <td>
+                              <span
+                                className={`${common.chip} ${common[row.signature_status] || ""}`.trim()}
+                              >
+                                {row.signature_status}
+                              </span>
+                            </td>
+                            <td>{getLateStatusLabel(row)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className={styles.mobileOnly}>
+                  <div className={styles.mobileCards}>
+                    {rows.map((row) => (
+                      <article
+                        key={`${row.session_id}-${row.faculty_id}`}
+                        className={styles.mobileCard}
+                      >
+                        <p className={styles.cardTitle}>{row.faculty_name}</p>
+                        <p className={styles.cardMeta}>{row.email}</p>
+                        <p className={styles.cardMeta}>{row.session_name}</p>
+                        <p className={styles.cardMeta}>{row.date}</p>
+                        <div className={styles.cardDetailGrid}>
+                          <p>
+                            <strong>Time In:</strong>{" "}
+                            {formatDateTime(row.time_in)}
+                          </p>
+                          <p>
+                            <strong>Time Out:</strong>{" "}
+                            {formatDateTime(row.time_out)}
+                          </p>
+                          <p>
+                            <strong>Attendance Status:</strong>{" "}
+                            {row.attendance_status}
+                          </p>
+                          <p>
+                            <strong>Signature Status:</strong>{" "}
+                            {row.signature_status}
+                          </p>
+                          <p>
+                            <strong>Late Status:</strong>{" "}
+                            {getLateStatusLabel(row)}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </section>
         ) : null}
       </AdminPanel>
     </>
