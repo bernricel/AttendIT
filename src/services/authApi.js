@@ -14,3 +14,8 @@ export async function completeProfile(payload) {
   const response = await api.post('/auth/complete-profile/', payload)
   return response.data
 }
+
+export async function getActiveDepartments() {
+  const response = await api.get('/auth/departments/')
+  return response.data
+}

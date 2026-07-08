@@ -1,0 +1,32 @@
+.layout {
+  display: grid;
+  gap: 18px;
+}
+
+.formCard,
+.listCard {
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 14px;
+}
+
+.formCard h3 {
+  margin: 0;
+  color: #fff;
+}
+
+.toolbar,
+.formActions,
+.actionsCell {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.actionsCell {
+  align-items: center;
+}

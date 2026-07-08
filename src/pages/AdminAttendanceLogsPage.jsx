@@ -41,6 +41,8 @@ const SORT_BY_OPTIONS = [
   { value: "session", label: "Session" },
 ];
 
+const SESSION_PAGE_SIZE = 6;
+
 function normalizeFilename(contentDisposition) {
   const match = /filename="?([^\"]+)"?/i.exec(contentDisposition || "");
   return match ? match[1] : "attendance_sheet.csv";
@@ -78,14 +80,6 @@ function getSessionStatus(session) {
   return session?.is_active ? "Active" : "Ended";
 }
 
-function matchesSession(session, searchTerm, dateFilter) {
-  const sessionName = String(session?.name || "").toLowerCase();
-  const matchesSearch = !searchTerm || sessionName.includes(searchTerm);
-  const matchesDate =
-    !dateFilter || formatIsoDate(session?.start_time) === dateFilter;
-  return matchesSearch && matchesDate;
-}
-
 function getLateStatusLabel(row) {
   const normalizedStatus = normalizeStatus(row.attendance_status);
   if (normalizedStatus === "late") return "Late";
@@ -99,6 +93,16 @@ export default function AdminAttendanceLogsPage() {
   const [sessionSearchInput, setSessionSearchInput] = useState("");
   const [sessionSearchTerm, setSessionSearchTerm] = useState("");
   const [sessionDateFilter, setSessionDateFilter] = useState("");
+  const [sessionPage, setSessionPage] = useState(1);
+  const [sessionPagination, setSessionPagination] = useState({
+    page: 1,
+    total_pages: 1,
+    total_sessions: 0,
+    has_previous: false,
+    has_next: false,
+    start_index: 0,
+    end_index: 0,
+  });
   const [attendanceStatusFilter, setAttendanceStatusFilter] = useState("");
   const [signatureStatusFilter, setSignatureStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("time_in");
@@ -115,6 +119,7 @@ export default function AdminAttendanceLogsPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setSessionSearchTerm(sessionSearchInput.trim().toLowerCase());
+      setSessionPage(1);
     }, 300);
 
     return () => window.clearTimeout(timeoutId);
@@ -125,8 +130,30 @@ export default function AdminAttendanceLogsPage() {
       setIsSessionsLoading(true);
       setSessionError("");
       try {
-        const sessionsData = await getAdminSessions();
+        const params = {
+          page: sessionPage,
+          page_size: SESSION_PAGE_SIZE,
+        };
+        if (sessionSearchTerm) {
+          params.search = sessionSearchTerm;
+        }
+        if (sessionDateFilter) {
+          params.date = sessionDateFilter;
+        }
+
+        const sessionsData = await getAdminSessions(params);
         setSessions(sessionsData.sessions || []);
+        setSessionPagination(
+          sessionsData.pagination || {
+            page: 1,
+            total_pages: 1,
+            total_sessions: 0,
+            has_previous: false,
+            has_next: false,
+            start_index: 0,
+            end_index: 0,
+          },
+        );
       } catch (apiError) {
         setSessionError(
           getApiErrorMessage(apiError, "Failed to load session browser."),
@@ -137,7 +164,7 @@ export default function AdminAttendanceLogsPage() {
     };
 
     loadMetadata();
-  }, []);
+  }, [sessionDateFilter, sessionPage, sessionSearchTerm]);
 
   useEffect(() => {
     if (!selectedSessionId) {
@@ -190,14 +217,6 @@ export default function AdminAttendanceLogsPage() {
         (session) => String(session.id) === String(selectedSessionId),
       ) || null,
     [sessions, selectedSessionId],
-  );
-
-  const filteredSessions = useMemo(
-    () =>
-      sessions.filter((session) =>
-        matchesSession(session, sessionSearchTerm, sessionDateFilter),
-      ),
-    [sessions, sessionSearchTerm, sessionDateFilter],
   );
 
   const hasRows = rows.length > 0;
@@ -356,9 +375,10 @@ export default function AdminAttendanceLogsPage() {
                     className={common.inputControl}
                     type="date"
                     value={sessionDateFilter}
-                    onChange={(event) =>
-                      setSessionDateFilter(event.target.value)
-                    }
+                    onChange={(event) => {
+                      setSessionDateFilter(event.target.value);
+                      setSessionPage(1);
+                    }}
                   />
                 </div>
               </label>
@@ -366,8 +386,12 @@ export default function AdminAttendanceLogsPage() {
 
             <div className={styles.browserMetaRow}>
               <p className={styles.browserMeta}>
-                {filteredSessions.length} session
-                {filteredSessions.length === 1 ? "" : "s"} found
+                Showing {sessionPagination.start_index}-
+                {sessionPagination.end_index} of{" "}
+                {sessionPagination.total_sessions} sessions
+              </p>
+              <p className={styles.browserMeta}>
+                Page {sessionPagination.page} of {sessionPagination.total_pages}
               </p>
             </div>
 
@@ -377,48 +401,79 @@ export default function AdminAttendanceLogsPage() {
             {sessionError ? <DataError message={sessionError} /> : null}
 
             {!isSessionsLoading && !sessionError ? (
-              filteredSessions.length > 0 ? (
-                <div className={styles.sessionGrid}>
-                  {filteredSessions.map((session) => (
+              sessions.length > 0 ? (
+                <>
+                  <div className={styles.sessionGrid}>
+                    {sessions.map((session) => (
+                      <button
+                        key={session.id}
+                        type="button"
+                        className={styles.sessionCard}
+                        onClick={() => handleSelectSession(session.id)}
+                      >
+                        <div className={styles.sessionCardTop}>
+                          <span
+                            className={`${styles.statusBadge} ${session.is_active ? styles.statusActive : styles.statusEnded}`.trim()}
+                          >
+                            {getSessionStatus(session)}
+                          </span>
+                          <span className={styles.sessionCount}>
+                            {session.attendance_count || 0} records
+                          </span>
+                        </div>
+
+                        <div className={styles.sessionCardBody}>
+                          <h3 className={styles.sessionCardTitle}>
+                            {session.name}
+                          </h3>
+                          <p className={styles.sessionCardDate}>
+                            {formatLongDate(session.start_time)}
+                          </p>
+                        </div>
+
+                        <dl className={styles.sessionCardMeta}>
+                          <div>
+                            <dt>Department</dt>
+                            <dd>{session.department || "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Session ID</dt>
+                            <dd>{session.id}</dd>
+                          </div>
+                        </dl>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className={styles.browserMetaRow}>
                     <button
-                      key={session.id}
                       type="button"
-                      className={styles.sessionCard}
-                      onClick={() => handleSelectSession(session.id)}
+                      className={`${common.ghostBtn} ${common.compact}`.trim()}
+                      onClick={() =>
+                        setSessionPage((prev) => Math.max(1, prev - 1))
+                      }
+                      disabled={!sessionPagination.has_previous}
                     >
-                      <div className={styles.sessionCardTop}>
-                        <span
-                          className={`${styles.statusBadge} ${session.is_active ? styles.statusActive : styles.statusEnded}`.trim()}
-                        >
-                          {getSessionStatus(session)}
-                        </span>
-                        <span className={styles.sessionCount}>
-                          {session.attendance_count || 0} records
-                        </span>
-                      </div>
-
-                      <div className={styles.sessionCardBody}>
-                        <h3 className={styles.sessionCardTitle}>
-                          {session.name}
-                        </h3>
-                        <p className={styles.sessionCardDate}>
-                          {formatLongDate(session.start_time)}
-                        </p>
-                      </div>
-
-                      <dl className={styles.sessionCardMeta}>
-                        <div>
-                          <dt>Department</dt>
-                          <dd>{session.department || "-"}</dd>
-                        </div>
-                        <div>
-                          <dt>Session ID</dt>
-                          <dd>{session.id}</dd>
-                        </div>
-                      </dl>
+                      Previous
                     </button>
-                  ))}
-                </div>
+                    <p className={styles.browserMeta}>
+                      Page {sessionPagination.page} of{" "}
+                      {sessionPagination.total_pages}
+                    </p>
+                    <button
+                      type="button"
+                      className={`${common.ghostBtn} ${common.compact}`.trim()}
+                      onClick={() =>
+                        setSessionPage((prev) =>
+                          Math.min(sessionPagination.total_pages, prev + 1),
+                        )
+                      }
+                      disabled={!sessionPagination.has_next}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </>
               ) : (
                 <DataEmpty message="No sessions match the current search and date filters." />
               )

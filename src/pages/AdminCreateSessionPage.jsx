@@ -1,9 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import AdminPanel from "../components/admin/AdminPanel";
 import FormField from "../components/FormField";
 import LayoutPageMeta from "../components/layout/LayoutPageMeta";
 import MessageBanner from "../components/MessageBanner";
-import { createAttendanceSession } from "../services/attendanceApi";
+import { ROUTES } from "../constants/routes";
+import {
+  createAttendanceSession,
+  getAdminDepartments,
+} from "../services/attendanceApi";
 import { getApiErrorMessage } from "../utils/apiError";
 import {
   buildSessionPayload,
@@ -19,6 +24,7 @@ export default function AdminCreateSessionPage() {
   const [isAttendanceRulesOpen, setIsAttendanceRulesOpen] = useState(false);
   const [form, setForm] = useState({
     title: "",
+    department_id: "",
     session_date: "",
     scheduled_start_time: "",
     check_in_start_time: "",
@@ -38,6 +44,10 @@ export default function AdminCreateSessionPage() {
     recurrence_end_date: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [departmentOptions, setDepartmentOptions] = useState([
+    { value: "", label: "All Departments" },
+  ]);
+  const [isDepartmentsLoading, setIsDepartmentsLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [creationSummary, setCreationSummary] = useState(null);
@@ -71,6 +81,28 @@ export default function AdminCreateSessionPage() {
     () => getRecurringPreviewCount(form),
     [form],
   );
+
+  useEffect(() => {
+    const loadDepartments = async () => {
+      setIsDepartmentsLoading(true);
+      try {
+        const data = await getAdminDepartments({ active_only: 1 });
+        setDepartmentOptions([
+          { value: "", label: "All Departments" },
+          ...((data.departments || []).map((department) => ({
+            value: String(department.id),
+            label: department.name,
+          }))),
+        ]);
+      } catch (apiError) {
+        setError(getApiErrorMessage(apiError, "Failed to load departments."));
+      } finally {
+        setIsDepartmentsLoading(false);
+      }
+    };
+
+    loadDepartments();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -137,6 +169,18 @@ export default function AdminCreateSessionPage() {
             placeholder="Example: Faculty Daily Attendance"
             disabled={isSubmitting}
           />
+
+          <FormField
+            id="department_id"
+            label="Department"
+            value={form.department_id}
+            onChange={updateField("department_id")}
+            options={departmentOptions}
+            disabled={isSubmitting || isDepartmentsLoading}
+          />
+          <Link className={common.subtleNote} to={ROUTES.ADMIN_DEPARTMENTS}>
+            Manage Departments
+          </Link>
 
           <label className={common.switchField} htmlFor="is_recurring">
             <input

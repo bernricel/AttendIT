@@ -9,7 +9,7 @@ import styles from "./DashboardLayout.module.css";
 import common from "../../styles/common.module.css";
 
 // Branding asset path served from `public`.
-const citLogo = "/CIT.png";
+const uaLogo = "/UA-LOGO.png";
 
 export default function DashboardLayout({
   variant,
@@ -27,17 +27,28 @@ export default function DashboardLayout({
   const { isMobileViewport, isSidebarOpen, closeSidebar, toggleSidebar } =
     useResponsiveSidebar();
 
-  const shellClassName = variant === "admin" ? styles.adminShell : styles.facultyShell;
-  const sidebarClassName = variant === "admin" ? styles.adminSidebar : styles.facultySidebar;
-  const brandClassName = variant === "admin" ? styles.adminBrand : styles.facultyBrand;
-  const navClassName = variant === "admin" ? styles.adminNav : styles.facultyNav;
-  const navItemClassName = variant === "admin" ? styles.adminNavItem : styles.facultyNavItem;
-  const mainClassName = variant === "admin" ? styles.adminMain : styles.facultyMain;
-  const topbarClassName = variant === "admin" ? styles.adminTopbar : styles.facultyTopbar;
-  const topbarRightClassName = variant === "admin" ? styles.adminTopbarRight : styles.facultyTopbarRight;
-  const userBadgeClassName = variant === "admin" ? styles.adminUserBadge : styles.facultyUserBadge;
-  const actionClassName = variant === "admin" ? styles.adminActions : styles.facultyActions;
-  const contentClassName = variant === "admin" ? styles.adminContent : styles.facultyContent;
+  const shellClassName =
+    variant === "admin" ? styles.adminShell : styles.facultyShell;
+  const sidebarClassName =
+    variant === "admin" ? styles.adminSidebar : styles.facultySidebar;
+  const brandClassName =
+    variant === "admin" ? styles.adminBrand : styles.facultyBrand;
+  const navClassName =
+    variant === "admin" ? styles.adminNav : styles.facultyNav;
+  const navItemClassName =
+    variant === "admin" ? styles.adminNavItem : styles.facultyNavItem;
+  const mainClassName =
+    variant === "admin" ? styles.adminMain : styles.facultyMain;
+  const topbarClassName =
+    variant === "admin" ? styles.adminTopbar : styles.facultyTopbar;
+  const topbarRightClassName =
+    variant === "admin" ? styles.adminTopbarRight : styles.facultyTopbarRight;
+  const userBadgeClassName =
+    variant === "admin" ? styles.adminUserBadge : styles.facultyUserBadge;
+  const actionClassName =
+    variant === "admin" ? styles.adminActions : styles.facultyActions;
+  const contentClassName =
+    variant === "admin" ? styles.adminContent : styles.facultyContent;
 
   const userSubtitle = useMemo(
     () => userSubtitleResolver(user),
@@ -75,9 +86,9 @@ export default function DashboardLayout({
         className={`${sidebarClassName} ${isSidebarOpen ? styles.isOpen : ""}`}
       >
         <div className={brandClassName}>
-          <img src={citLogo} alt="CIT logo" className={styles.brandLogo} />
+          <img src={uaLogo} alt="UA logo" className={styles.brandLogo} />
           <div className={styles.brandCopy}>
-            <strong>AttendIT</strong>
+            <strong>UACheckIN</strong>
             <span>{brandSubtitle}</span>
           </div>
         </div>
@@ -91,7 +102,9 @@ export default function DashboardLayout({
               }
               onClick={closeSidebar}
             >
-              <span className={`${styles.navIcon} ${styles[item.colorClass] || ""}`}>
+              <span
+                className={`${styles.navIcon} ${styles[item.colorClass] || ""}`}
+              >
                 {item.icon}
               </span>
               {item.label}
@@ -115,7 +128,7 @@ export default function DashboardLayout({
                 <FiMenu />
               </button>
               <div className={styles.topbarBranding}>
-                <span>CIT Faculty Attendance</span>
+                <span>UAFaculty Attendance</span>
               </div>
             </div>
             <h1>{pageMeta.title}</h1>

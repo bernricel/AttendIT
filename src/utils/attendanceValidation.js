@@ -101,6 +101,7 @@ export function buildSessionPayload(form) {
   const optionalTime = (value) => (value ? `${value}:00` : null)
   const basePayload = {
     title: form.title,
+    department_id: form.department_id ? Number(form.department_id) : null,
     scheduled_start_time: optionalTime(form.scheduled_start_time),
     check_in_start_time: form.enable_check_in_window ? optionalTime(form.check_in_start_time) : null,
     check_in_end_time: form.enable_check_in_window ? optionalTime(form.check_in_end_time) : null,

@@ -99,8 +99,8 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="AttendIT - CIT Faculty Attendance Portal"
-      subtitle="Secure sign-in for CIT faculty and administrators."
+      title="UACheckIN - UA Faculty Attendance Portal"
+      subtitle="Secure sign-in for UA faculty and administrators."
       sideNote={
         <p>
           Access is limited to accounts ending with <strong>@ua.edu.ph</strong>.
@@ -109,7 +109,7 @@ export default function LoginPage() {
     >
       <AuthCard
         title="Login"
-        description="Access the CIT Faculty Attendance System."
+        description="Access the UA Faculty Attendance System."
       >
         {isLoading ? (
           <div className={styles.loaderLine}>Authenticating...</div>
@@ -139,7 +139,10 @@ export default function LoginPage() {
         <div className={styles.authDivider} role="presentation">
           <span>or</span>
         </div>
-        <Link className={`${common.ghostBtn} ${common.authLinkBtn}`.trim()} to={ROUTES.ADMIN_LOGIN}>
+        <Link
+          className={`${common.ghostBtn} ${common.authLinkBtn}`.trim()}
+          to={ROUTES.ADMIN_LOGIN}
+        >
           Admin Login
         </Link>
       </AuthCard>

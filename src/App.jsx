@@ -9,6 +9,7 @@ import {
 import AdminAttendanceCalendarPage from './pages/AdminAttendanceCalendarPage'
 import AdminAttendanceLogsPage from './pages/AdminAttendanceLogsPage'
 import AdminCreateSessionPage from './pages/AdminCreateSessionPage'
+import AdminDepartmentsPage from './pages/AdminDepartmentsPage'
 import { getDefaultRouteForUser, getStoredAuth } from './services/authStorage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminQrPresentationPage from './pages/AdminQrPresentationPage'
@@ -85,6 +86,7 @@ function App() {
       >
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="create-session" element={<AdminCreateSessionPage />} />
+        <Route path="departments" element={<AdminDepartmentsPage />} />
         <Route path="qr-display" element={<AdminQrDisplayPage />} />
         <Route path="logs" element={<AdminAttendanceLogsPage />} />
         <Route path="calendar" element={<AdminAttendanceCalendarPage />} />

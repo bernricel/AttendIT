@@ -10,6 +10,7 @@ export const ROUTES = {
 
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_CREATE_SESSION: '/admin/create-session',
+  ADMIN_DEPARTMENTS: '/admin/departments',
   ADMIN_QR_DISPLAY: '/admin/qr-display',
   ADMIN_QR_PRESENTATION: '/qr-display/:sessionId',
   ADMIN_LOGS: '/admin/logs',

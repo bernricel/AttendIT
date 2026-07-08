@@ -2,6 +2,7 @@ import {
   // FiCalendar,
   FiEdit3,
   FiGrid,
+  FiLayers,
   FiMaximize,
   FiPieChart,
 } from "react-icons/fi";
@@ -20,6 +21,12 @@ const adminNavItems = [
     label: "Create Session",
     icon: <FiEdit3 />,
     colorClass: "iconYellow",
+  },
+  {
+    to: ROUTES.ADMIN_DEPARTMENTS,
+    label: "Departments",
+    icon: <FiLayers />,
+    colorClass: "iconPurple",
   },
   {
     to: ROUTES.ADMIN_QR_DISPLAY,
@@ -44,7 +51,7 @@ export default function AdminLayout() {
       brandSubtitle="Administrator Portal"
       navItems={adminNavItems}
       fallbackUserLabel="Administrator"
-      userSubtitleResolver={(user) => user?.email || "CIT Administrator"}
+      userSubtitleResolver={(user) => user?.email || "Administrator"}
       defaultMeta={{
         title: "Admin Dashboard",
         subtitle: "Overview of attendance sessions and activity today.",

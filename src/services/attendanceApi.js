@@ -6,9 +6,24 @@ export async function createAttendanceSession(payload) {
   return response.data
 }
 
-export async function getAdminSessions() {
+export async function getAdminSessions(params = {}) {
   // Fetch session list for admin dashboards and QR screens.
-  const response = await api.get('/admin/sessions')
+  const response = await api.get('/admin/sessions', { params })
+  return response.data
+}
+
+export async function getAdminDepartments(params = {}) {
+  const response = await api.get('/admin/departments', { params })
+  return response.data
+}
+
+export async function createAdminDepartment(payload) {
+  const response = await api.post('/admin/departments', payload)
+  return response.data
+}
+
+export async function updateAdminDepartment(departmentId, payload) {
+  const response = await api.patch(`/admin/departments/${departmentId}`, payload)
   return response.data
 }
 

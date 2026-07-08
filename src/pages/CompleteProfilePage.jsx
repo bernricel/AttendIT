@@ -1,78 +1,119 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import AuthCard from '../components/AuthCard'
-import AuthLayout from '../components/AuthLayout'
-import FormField from '../components/FormField'
-import MessageBanner from '../components/MessageBanner'
-import { ROUTES } from '../constants/routes'
-import { completeProfile } from '../services/authApi'
-import { clearAuthSession, updateStoredUser } from '../services/authStorage'
-import { getApiErrorMessage } from '../utils/apiError'
-import common from '../styles/common.module.css'
-import styles from './CompleteProfilePage.module.css'
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AuthCard from "../components/AuthCard";
+import AuthLayout from "../components/AuthLayout";
+import FormField from "../components/FormField";
+import MessageBanner from "../components/MessageBanner";
+import { ROUTES } from "../constants/routes";
+import { completeProfile, getActiveDepartments } from "../services/authApi";
+import { clearAuthSession, updateStoredUser } from "../services/authStorage";
+import { getApiErrorMessage } from "../utils/apiError";
+import common from "../styles/common.module.css";
+import styles from "./CompleteProfilePage.module.css";
 
 export default function CompleteProfilePage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
-    school_id: '',
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
+    first_name: "",
+    last_name: "",
+    school_id: "",
+    department_id: "",
+  });
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDepartmentsLoading, setIsDepartmentsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadDepartments = async () => {
+      setIsDepartmentsLoading(true);
+      try {
+        const data = await getActiveDepartments();
+        setDepartmentOptions([
+          { value: "", label: "Select a department" },
+          ...(data.departments || []).map((department) => ({
+            value: String(department.id),
+            label: department.name,
+          })),
+        ]);
+      } catch (apiError) {
+        setError(getApiErrorMessage(apiError, "Could not load departments."));
+      } finally {
+        setIsDepartmentsLoading(false);
+      }
+    };
+
+    loadDepartments();
+  }, []);
 
   const isValid = useMemo(
     () =>
       form.first_name.trim() &&
       form.last_name.trim() &&
-      form.school_id.trim(),
+      form.school_id.trim() &&
+      form.department_id,
     [form],
-  )
+  );
 
   const updateField = (field) => (event) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }))
-  }
+    setForm((prev) => ({ ...prev, [field]: event.target.value }));
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError('')
+    event.preventDefault();
+    setError("");
 
     if (!isValid) {
-      setError('Please complete all fields before continuing.')
-      return
+      setError("Please complete all fields before continuing.");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
-      const data = await completeProfile(form)
-      updateStoredUser(data.user)
-      navigate(ROUTES.FACULTY_DASHBOARD, { replace: true })
+      const data = await completeProfile({
+        ...form,
+        department_id: Number(form.department_id),
+      });
+      updateStoredUser(data.user);
+      navigate(ROUTES.FACULTY_DASHBOARD, { replace: true });
     } catch (apiError) {
       if (apiError?.response?.status === 401) {
-        clearAuthSession()
-        navigate(ROUTES.LOGIN, { replace: true })
-        return
+        clearAuthSession();
+        navigate(ROUTES.LOGIN, { replace: true });
+        return;
       }
-      setError(getApiErrorMessage(apiError, 'Could not complete profile. Please review your fields and try again.'))
+      setError(
+        getApiErrorMessage(
+          apiError,
+          "Could not complete profile. Please review your fields and try again.",
+        ),
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <AuthLayout
       title="Profile Completion"
-      subtitle="One more step before entering the CIT Faculty Attendance System."
-      sideNote={<p>This information will be used across attendance records and reporting.</p>}
+      subtitle="One more step before entering the UA Faculty Attendance System."
+      sideNote={
+        <p>
+          This information will be used across attendance records and reporting.
+        </p>
+      }
     >
       <AuthCard title="Complete Your Profile">
-        <form className={`${common.profileForm} ${styles.profileForm}`.trim()} onSubmit={handleSubmit}>
+        <form
+          className={`${common.profileForm} ${styles.profileForm}`.trim()}
+          onSubmit={handleSubmit}
+        >
           <FormField
             id="first_name"
             label="First Name"
             value={form.first_name}
-            onChange={updateField('first_name')}
+            onChange={updateField("first_name")}
             placeholder="Enter your first name"
             disabled={isSubmitting}
           />
@@ -81,7 +122,7 @@ export default function CompleteProfilePage() {
             id="last_name"
             label="Last Name"
             value={form.last_name}
-            onChange={updateField('last_name')}
+            onChange={updateField("last_name")}
             placeholder="Enter your last name"
             disabled={isSubmitting}
           />
@@ -90,18 +131,31 @@ export default function CompleteProfilePage() {
             id="school_id"
             label="School ID"
             value={form.school_id}
-            onChange={updateField('school_id')}
+            onChange={updateField("school_id")}
             placeholder="Enter your school ID"
             disabled={isSubmitting}
           />
 
+          <FormField
+            id="department_id"
+            label="Department"
+            value={form.department_id}
+            onChange={updateField("department_id")}
+            options={departmentOptions}
+            disabled={isSubmitting || isDepartmentsLoading}
+          />
+
           <MessageBanner type="error" message={error} />
 
-          <button className={common.primaryBtn} type="submit" disabled={isSubmitting || !isValid}>
-            {isSubmitting ? 'Saving Profile...' : 'Save and Continue'}
+          <button
+            className={common.primaryBtn}
+            type="submit"
+            disabled={isSubmitting || !isValid}
+          >
+            {isSubmitting ? "Saving Profile..." : "Save and Continue"}
           </button>
         </form>
       </AuthCard>
     </AuthLayout>
-  )
+  );
 }
