@@ -30,6 +30,17 @@
   transition: all 0.2s ease;
 }
 
+.selectControl {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 44px;
+  background:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.75) 50%) calc(100% - 18px) calc(50% - 2px) / 7px 7px no-repeat,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.75) 50%, transparent 50%) calc(100% - 13px) calc(50% - 2px) / 7px 7px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05));
+}
+
 .inputControl:focus {
   border-color: var(--ua-gold);
   background: rgba(255, 255, 255, 0.1);

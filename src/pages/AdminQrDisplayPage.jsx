@@ -1,35 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { useSearchParams } from "react-router-dom";
+
 import AdminPanel from "../components/admin/AdminPanel";
-import {
-  DataEmpty,
-  DataError,
-  DataLoading,
-} from "../components/admin/DataState";
+import SessionBrowser from "../components/admin/SessionBrowser";
+import { DataError } from "../components/admin/DataState";
 import LayoutPageMeta from "../components/layout/LayoutPageMeta";
 import { buildAdminQrPresentationRoute } from "../constants/routes";
 import { useSessionQrStatus } from "../hooks/useSessionQrStatus";
-import {
-  deleteAttendanceSession,
-  endAttendanceSession,
-  getAdminSessions,
-} from "../services/attendanceApi";
+import { deleteAttendanceSession, endAttendanceSession } from "../services/attendanceApi";
 import { getApiErrorMessage } from "../utils/apiError";
-import { formatDateTime, formatIsoDate } from "../utils/dateTime";
+import { formatDateTime } from "../utils/dateTime";
 import styles from "./AdminQrDisplayPage.module.css";
 import common from "../styles/common.module.css";
 
-function toSessionLabel(session) {
-  const startDate = formatIsoDate(session.start_time);
-  return `${session.name} (${startDate})`;
-}
-
 export default function AdminQrDisplayPage() {
-  const [searchParams] = useSearchParams();
-  const [sessions, setSessions] = useState([]);
+  const [selectedSession, setSelectedSession] = useState(null);
   const [selectedId, setSelectedId] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [sessionSearchInput, setSessionSearchInput] = useState("");
+  const [sessionDateFilter, setSessionDateFilter] = useState("");
+  const [sessionPage, setSessionPage] = useState(1);
   const [error, setError] = useState("");
   const [deleteSuccess, setDeleteSuccess] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -37,81 +26,32 @@ export default function AdminQrDisplayPage() {
   const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
-  const { qrStatus, qrError, secondsRemaining } =
-    useSessionQrStatus(selectedId);
+  const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(selectedId);
 
   useEffect(() => {
-    const loadSessions = async () => {
-      // Load all sessions so admin can choose which QR to display.
-      setIsLoading(true);
-      setError("");
-      setDeleteSuccess("");
-      try {
-        const data = await getAdminSessions();
-        const fetchedSessions = data.sessions || [];
-        setSessions(fetchedSessions);
-        if (fetchedSessions.length) {
-          const preferredId =
-            searchParams.get("sessionId") || searchParams.get("session_id");
-          const preferredSession = preferredId
-            ? fetchedSessions.find(
-                (session) => String(session.id) === String(preferredId),
-              )
-            : null;
-          // Default selection: first available session.
-          setSelectedId(String(preferredSession?.id || fetchedSessions[0].id));
-        }
-      } catch (apiError) {
-        setError(getApiErrorMessage(apiError, "Failed to load sessions."));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadSessions();
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (!selectedId || !qrStatus) {
+    if (!selectedSession || !qrStatus) {
       return;
     }
 
-    // Keep selected session row in sync with latest token/status from polling hook.
-    setSessions((prev) =>
-      prev.map((session) =>
-        String(session.id) === String(selectedId)
-          ? {
-              ...session,
-              qr_token: qrStatus.qr_token,
-              qr_refresh_interval_seconds: qrStatus.qr_refresh_interval_seconds,
-              lifecycle_status: qrStatus.lifecycle_status,
-              can_accept_attendance: qrStatus.can_accept_attendance,
-            }
-          : session,
-      ),
+    setSelectedSession((prev) =>
+      prev
+        ? {
+            ...prev,
+            qr_token: qrStatus.qr_token,
+            qr_refresh_interval_seconds: qrStatus.qr_refresh_interval_seconds,
+            lifecycle_status: qrStatus.lifecycle_status,
+            can_accept_attendance: qrStatus.can_accept_attendance,
+          }
+        : prev,
     );
-  }, [qrStatus, selectedId]);
+  }, [qrStatus, selectedSession]);
 
-  const selectedSession = useMemo(
-    // Resolve selected session object for rendering details and QR metadata.
-    () => sessions.find((session) => String(session.id) === String(selectedId)),
-    [sessions, selectedId],
-  );
   const currentQrToken = qrStatus?.qr_token || selectedSession?.qr_token || "";
-  const qrUrl = currentQrToken
-    ? // Faculty scans this URL; token is embedded in the route.
-      `${window.location.origin}/faculty/scan/${currentQrToken}`
-    : "";
-  const separateDisplayUrl = selectedSession
-    ? buildAdminQrPresentationRoute(selectedSession.id)
-    : "";
-  const sessionLifecycleStatus =
-    qrStatus?.lifecycle_status ||
-    selectedSession?.lifecycle_status ||
-    "UNKNOWN";
+  const qrUrl = currentQrToken ? `${window.location.origin}/faculty/scan/${currentQrToken}` : "";
+  const separateDisplayUrl = selectedSession ? buildAdminQrPresentationRoute(selectedSession.id) : "";
+  const sessionLifecycleStatus = qrStatus?.lifecycle_status || selectedSession?.lifecycle_status || "UNKNOWN";
   const canAcceptAttendance =
-    qrStatus?.can_accept_attendance ??
-    selectedSession?.can_accept_attendance ??
-    false;
+    qrStatus?.can_accept_attendance ?? selectedSession?.can_accept_attendance ?? false;
 
   const handleDeleteSession = async () => {
     if (!selectedSession) {
@@ -121,28 +61,16 @@ export default function AdminQrDisplayPage() {
     setDeleteError("");
     setDeleteSuccess("");
     try {
-      const response = await deleteAttendanceSession(
-        selectedSession.id,
-        deletePassword,
-      );
-      setSessions((prev) =>
-        prev.filter((session) => session.id !== selectedSession.id),
-      );
+      const response = await deleteAttendanceSession(selectedSession.id, deletePassword);
       setDeleteSuccess(
         `${response.session_name} was deleted. ${response.deleted_attendance_records} related attendance record(s) were removed.`,
       );
-      const remainingSessions = sessions.filter(
-        (session) => session.id !== selectedSession.id,
-      );
-      setSelectedId(
-        remainingSessions.length > 0 ? String(remainingSessions[0].id) : "",
-      );
+      setSelectedSession(null);
+      setSelectedId("");
       setDeletePassword("");
       setIsDeleteModalOpen(false);
     } catch (apiError) {
-      setDeleteError(
-        getApiErrorMessage(apiError, "Failed to delete the session."),
-      );
+      setDeleteError(getApiErrorMessage(apiError, "Failed to delete the session."));
     } finally {
       setIsDeleting(false);
     }
@@ -157,21 +85,17 @@ export default function AdminQrDisplayPage() {
     setDeleteSuccess("");
     try {
       const response = await endAttendanceSession(selectedSession.id);
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === selectedSession.id
-            ? {
-                ...session,
-                ...response.session,
-                lifecycle_status: response.session?.lifecycle_status || "ENDED",
-                can_accept_attendance: false,
-              }
-            : session,
-        ),
+      setSelectedSession((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...response.session,
+              lifecycle_status: response.session?.lifecycle_status || "ENDED",
+              can_accept_attendance: false,
+            }
+          : prev,
       );
-      setDeleteSuccess(
-        `${response.session?.name || selectedSession.name} was ended. Attendance is now closed.`,
-      );
+      setDeleteSuccess(`${response.session?.name || selectedSession.name} was ended. Attendance is now closed.`);
     } catch (apiError) {
       setError(getApiErrorMessage(apiError, "Failed to end the session."));
     } finally {
@@ -186,144 +110,112 @@ export default function AdminQrDisplayPage() {
         subtitle="Select a session and display a full-size QR for faculty scanning."
       />
       <AdminPanel>
-        {isLoading ? <DataLoading message="Loading sessions..." /> : null}
         {error ? <DataError message={error} /> : null}
         {qrError ? <DataError message={qrError} /> : null}
-        {deleteSuccess ? (
-          <p className={`${common.dataState} ${common.loading}`.trim()}>
-            {deleteSuccess}
-          </p>
-        ) : null}
-        {!isLoading && !error && sessions.length === 0 ? (
-          <DataEmpty message="No sessions available. Create a session first." />
-        ) : null}
+        {deleteSuccess ? <p className={`${common.dataState} ${common.loading}`.trim()}>{deleteSuccess}</p> : null}
 
-        {!isLoading && !error && sessions.length > 0 ? (
+        {!selectedSession ? (
+          <SessionBrowser
+            title="Session Browser"
+            subtitle="Search sessions, filter by date, and open one session to display its live QR code."
+            searchInput={sessionSearchInput}
+            onSearchInputChange={(value) => {
+              setSessionSearchInput(value);
+              setSessionPage(1);
+            }}
+            dateFilter={sessionDateFilter}
+            onDateFilterChange={(value) => {
+              setSessionDateFilter(value);
+              setSessionPage(1);
+            }}
+            page={sessionPage}
+            onPageChange={setSessionPage}
+            onSessionSelect={(session) => {
+              setSelectedSession(session);
+              setSelectedId(String(session.id));
+            }}
+          />
+        ) : (
           <>
-            <label className={common.fieldBlock} htmlFor="session_picker">
-              <span className={common.fieldLabel}>Attendance Session</span>
-              <select
-                id="session_picker"
-                className={common.inputControl}
-                value={selectedId}
-                onChange={(event) => setSelectedId(event.target.value)}
-              >
-                {sessions.map((session) => (
-                  <option key={session.id} value={session.id}>
-                    {toSessionLabel(session)}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <button
+              type="button"
+              className={`${common.ghostBtn} ${common.compact}`.trim()}
+              onClick={() => {
+                setSelectedSession(null);
+                setSelectedId("");
+              }}
+            >
+              Back to Session Browser
+            </button>
 
-            {selectedSession ? (
-              <div className={styles.qrStage}>
-                <div className={styles.qrBox}>
-                  {canAcceptAttendance ? (
-                    <QRCodeCanvas
-                      // Render QR from the scan URL that includes the current token.
-                      value={qrUrl}
-                      size={320}
-                      level="H"
-                      includeMargin
-                    />
-                  ) : (
-                    <p className={common.subtleNote}>
-                      Session Ended. Attendance is closed.
-                    </p>
-                  )}
-                </div>
-                <div className={styles.qrMeta}>
-                  <h3>{selectedSession.name}</h3>
-                  {selectedSession.department ? (
-                    <p>Department: {selectedSession.department}</p>
-                  ) : null}
-                  <p>Type: {selectedSession.session_type}</p>
-                  <p>Status: {sessionLifecycleStatus}</p>
-                  <p>Start: {formatDateTime(selectedSession.start_time)}</p>
-                  <p>
-                    End:{" "}
-                    {formatDateTime(
-                      selectedSession.session_end_time ||
-                        selectedSession.end_time,
-                    )}
-                  </p>
-                  {canAcceptAttendance ? (
-                    <p>QR Token: {currentQrToken}</p>
-                  ) : null}
-                  <p>
-                    Refresh Interval:{" "}
-                    {qrStatus?.qr_refresh_interval_seconds ??
-                      selectedSession.qr_refresh_interval_seconds ??
-                      30}
-                    s
-                  </p>
-                  <p>
-                    Next Rotation In:{" "}
-                    {canAcceptAttendance ? `${secondsRemaining}s` : "Closed"}
-                  </p>
-                  <div className={styles.qrMetaActions}>
-                    {/* Dedicated admin-protected route can be shown on another screen without dashboard controls. */}
-                    <a
-                      className={`${common.ghostBtn} ${common.linkButton} ${styles.qrMetaActionBtn}`.trim()}
-                      href={separateDisplayUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open Separate QR Display
-                    </a>
-                    <button
-                      className={`${common.ghostBtn} ${styles.qrMetaActionBtn}`.trim()}
-                      type="button"
-                      onClick={handleEndSession}
-                      disabled={isEnding || !canAcceptAttendance}
-                    >
-                      {isEnding ? "Ending..." : "End Session"}
-                    </button>
-                    <button
-                      className={`${common.ghostBtn} ${styles.qrMetaActionBtn} ${styles.dangerBtn}`.trim()}
-                      type="button"
-                      onClick={() => {
-                        setDeleteError("");
-                        setDeletePassword("");
-                        setIsDeleteModalOpen(true);
-                      }}
-                    >
-                      Delete Session
-                    </button>
-                  </div>
-                  <p className={common.subtleNote}>
-                    Rotating QR codes improve security by limiting reuse of old
-                    screenshots.
-                  </p>
-                </div>
+            <div className={styles.qrStage}>
+              <div className={styles.qrBox}>
+                {canAcceptAttendance ? (
+                  <QRCodeCanvas value={qrUrl} size={320} level="H" includeMargin />
+                ) : (
+                  <p className={common.subtleNote}>Session Ended. Attendance is closed.</p>
+                )}
               </div>
-            ) : null}
+              <div className={styles.qrMeta}>
+                <h3>{selectedSession.name}</h3>
+                {selectedSession.department ? <p>Department: {selectedSession.department}</p> : null}
+                <p>Type: {selectedSession.session_type}</p>
+                <p>Status: {sessionLifecycleStatus}</p>
+                <p>Start: {formatDateTime(selectedSession.start_time)}</p>
+                <p>End: {formatDateTime(selectedSession.session_end_time || selectedSession.end_time)}</p>
+                {canAcceptAttendance ? <p>QR Token: {currentQrToken}</p> : null}
+                <p>
+                  Refresh Interval: {qrStatus?.qr_refresh_interval_seconds ?? selectedSession.qr_refresh_interval_seconds ?? 30}s
+                </p>
+                <p>Next Rotation In: {canAcceptAttendance ? `${secondsRemaining}s` : "Closed"}</p>
+                <div className={styles.qrMetaActions}>
+                  <a
+                    className={`${common.ghostBtn} ${common.linkButton} ${styles.qrMetaActionBtn}`.trim()}
+                    href={separateDisplayUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Open Separate QR Display
+                  </a>
+                  <button
+                    className={`${common.ghostBtn} ${styles.qrMetaActionBtn}`.trim()}
+                    type="button"
+                    onClick={handleEndSession}
+                    disabled={isEnding || !canAcceptAttendance}
+                  >
+                    {isEnding ? "Ending..." : "End Session"}
+                  </button>
+                  <button
+                    className={`${common.ghostBtn} ${styles.qrMetaActionBtn} ${styles.dangerBtn}`.trim()}
+                    type="button"
+                    onClick={() => {
+                      setDeleteError("");
+                      setDeletePassword("");
+                      setIsDeleteModalOpen(true);
+                    }}
+                  >
+                    Delete Session
+                  </button>
+                </div>
+                <p className={common.subtleNote}>
+                  Rotating QR codes improve security by limiting reuse of old screenshots.
+                </p>
+              </div>
+            </div>
           </>
-        ) : null}
+        )}
       </AdminPanel>
 
       {isDeleteModalOpen ? (
         <div className={styles.confirmModalBackdrop} role="presentation">
-          <div
-            className={styles.confirmModal}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete_modal_title"
-          >
+          <div className={styles.confirmModal} role="dialog" aria-modal="true" aria-labelledby="delete_modal_title">
             <h3 id="delete_modal_title">Confirm Session Deletion</h3>
             <p className={styles.dangerText}>This action is permanent.</p>
             <p className={styles.dangerText}>
-              Deleting this session will also delete all related attendance
-              records.
+              Deleting this session will also delete all related attendance records.
             </p>
-            <label
-              className={common.fieldBlock}
-              htmlFor="admin_delete_password"
-            >
-              <span className={common.fieldLabel}>
-                Enter your admin password to continue
-              </span>
+            <label className={common.fieldBlock} htmlFor="admin_delete_password">
+              <span className={common.fieldLabel}>Enter your admin password to continue</span>
               <input
                 id="admin_delete_password"
                 className={common.inputControl}

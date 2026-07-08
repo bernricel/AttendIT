@@ -1,22 +1,15 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { FiCalendar, FiFileText, FiSearch } from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
+import { FiFileText } from "react-icons/fi";
 
 import AdminPanel from "../components/admin/AdminPanel";
-import {
-  DataEmpty,
-  DataError,
-  DataLoading,
-} from "../components/admin/DataState";
+import SessionBrowser from "../components/admin/SessionBrowser";
+import { DataEmpty, DataError, DataLoading } from "../components/admin/DataState";
 import LayoutPageMeta from "../components/layout/LayoutPageMeta";
-import {
-  exportAdminAttendanceSheetCsv,
-  getAdminAttendanceSheet,
-  getAdminSessions,
-} from "../services/attendanceApi";
+import { exportAdminAttendanceSheetCsv, getAdminAttendanceSheet } from "../services/attendanceApi";
 import common from "../styles/common.module.css";
 import { getApiErrorMessage } from "../utils/apiError";
 import { exportAttendanceLogsPdf } from "../utils/attendancePdf";
-import { formatDateTime, formatIsoDate } from "../utils/dateTime";
+import { formatDateTime } from "../utils/dateTime";
 import styles from "./AdminAttendanceLogsPage.module.css";
 
 const ATTENDANCE_STATUS_OPTIONS = [
@@ -40,8 +33,6 @@ const SORT_BY_OPTIONS = [
   { value: "signature_status", label: "Signature Status" },
   { value: "session", label: "Session" },
 ];
-
-const SESSION_PAGE_SIZE = 6;
 
 function normalizeFilename(contentDisposition) {
   const match = /filename="?([^\"]+)"?/i.exec(contentDisposition || "");
@@ -69,10 +60,7 @@ function formatLongDate(value) {
 }
 
 function normalizeStatus(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "_");
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, "_");
 }
 
 function getSessionStatus(session) {
@@ -88,83 +76,21 @@ function getLateStatusLabel(row) {
 }
 
 export default function AdminAttendanceLogsPage() {
-  const [sessions, setSessions] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [selectedSession, setSelectedSession] = useState(null);
   const [sessionSearchInput, setSessionSearchInput] = useState("");
-  const [sessionSearchTerm, setSessionSearchTerm] = useState("");
   const [sessionDateFilter, setSessionDateFilter] = useState("");
   const [sessionPage, setSessionPage] = useState(1);
-  const [sessionPagination, setSessionPagination] = useState({
-    page: 1,
-    total_pages: 1,
-    total_sessions: 0,
-    has_previous: false,
-    has_next: false,
-    start_index: 0,
-    end_index: 0,
-  });
   const [attendanceStatusFilter, setAttendanceStatusFilter] = useState("");
   const [signatureStatusFilter, setSignatureStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("time_in");
   const [sortOrder, setSortOrder] = useState("asc");
   const [rows, setRows] = useState([]);
-  const [isSessionsLoading, setIsSessionsLoading] = useState(true);
   const [isRowsLoading, setIsRowsLoading] = useState(false);
-  const [sessionError, setSessionError] = useState("");
   const [rowsError, setRowsError] = useState("");
   const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const browserScrollYRef = useRef(null);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setSessionSearchTerm(sessionSearchInput.trim().toLowerCase());
-      setSessionPage(1);
-    }, 300);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [sessionSearchInput]);
-
-  useEffect(() => {
-    const loadMetadata = async () => {
-      setIsSessionsLoading(true);
-      setSessionError("");
-      try {
-        const params = {
-          page: sessionPage,
-          page_size: SESSION_PAGE_SIZE,
-        };
-        if (sessionSearchTerm) {
-          params.search = sessionSearchTerm;
-        }
-        if (sessionDateFilter) {
-          params.date = sessionDateFilter;
-        }
-
-        const sessionsData = await getAdminSessions(params);
-        setSessions(sessionsData.sessions || []);
-        setSessionPagination(
-          sessionsData.pagination || {
-            page: 1,
-            total_pages: 1,
-            total_sessions: 0,
-            has_previous: false,
-            has_next: false,
-            start_index: 0,
-            end_index: 0,
-          },
-        );
-      } catch (apiError) {
-        setSessionError(
-          getApiErrorMessage(apiError, "Failed to load session browser."),
-        );
-      } finally {
-        setIsSessionsLoading(false);
-      }
-    };
-
-    loadMetadata();
-  }, [sessionDateFilter, sessionPage, sessionSearchTerm]);
 
   useEffect(() => {
     if (!selectedSessionId) {
@@ -194,44 +120,31 @@ export default function AdminAttendanceLogsPage() {
         setRows(data.rows || []);
       } catch (apiError) {
         setRows([]);
-        setRowsError(
-          getApiErrorMessage(apiError, "Failed to load attendance sheet."),
-        );
+        setRowsError(getApiErrorMessage(apiError, "Failed to load attendance sheet."));
       } finally {
         setIsRowsLoading(false);
       }
     };
 
     loadAttendanceSheet();
-  }, [
-    selectedSessionId,
-    attendanceStatusFilter,
-    signatureStatusFilter,
-    sortBy,
-    sortOrder,
-  ]);
-
-  const selectedSession = useMemo(
-    () =>
-      sessions.find(
-        (session) => String(session.id) === String(selectedSessionId),
-      ) || null,
-    [sessions, selectedSessionId],
-  );
-
-  const hasRows = rows.length > 0;
-  const isShowingBrowser = !selectedSessionId;
+  }, [selectedSessionId, attendanceStatusFilter, signatureStatusFilter, sortBy, sortOrder]);
 
   useEffect(() => {
-    if (!isShowingBrowser || browserScrollYRef.current == null) return;
+    if (!selectedSessionId || browserScrollYRef.current == null) return;
+    return undefined;
+  }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (selectedSessionId || browserScrollYRef.current == null) return;
 
     const scrollY = browserScrollYRef.current;
     browserScrollYRef.current = null;
-
     window.requestAnimationFrame(() => {
       window.scrollTo({ top: scrollY, behavior: "auto" });
     });
-  }, [isShowingBrowser]);
+  }, [selectedSessionId]);
+
+  const hasRows = rows.length > 0;
 
   const handleExportCsv = async () => {
     if (!selectedSessionId) return;
@@ -271,16 +184,10 @@ export default function AdminAttendanceLogsPage() {
         rows,
         filters: {
           attendanceStatus:
-            ATTENDANCE_STATUS_OPTIONS.find(
-              (option) => option.value === attendanceStatusFilter,
-            )?.label || "",
+            ATTENDANCE_STATUS_OPTIONS.find((option) => option.value === attendanceStatusFilter)?.label || "",
           signatureStatus:
-            SIGNATURE_STATUS_OPTIONS.find(
-              (option) => option.value === signatureStatusFilter,
-            )?.label || "",
-          sortBy:
-            SORT_BY_OPTIONS.find((option) => option.value === sortBy)?.label ||
-            sortBy,
+            SIGNATURE_STATUS_OPTIONS.find((option) => option.value === signatureStatusFilter)?.label || "",
+          sortBy: SORT_BY_OPTIONS.find((option) => option.value === sortBy)?.label || sortBy,
           sortOrder,
         },
       });
@@ -291,38 +198,11 @@ export default function AdminAttendanceLogsPage() {
     }
   };
 
-  const applyQuickFilter = (filterName) => {
-    if (filterName === "late") {
-      setAttendanceStatusFilter("late");
-      return;
-    }
-    if (filterName === "on_time") {
-      setAttendanceStatusFilter("on_time");
-      return;
-    }
-    if (filterName === "missing_checkout") {
-      setAttendanceStatusFilter("incomplete");
-      return;
-    }
-    if (filterName === "valid_signature") {
-      setSignatureStatusFilter("valid");
-    }
-  };
-
   const resetSecondaryFilters = () => {
     setAttendanceStatusFilter("");
     setSignatureStatusFilter("");
     setSortBy("time_in");
     setSortOrder("asc");
-  };
-
-  const handleSelectSession = (sessionId) => {
-    browserScrollYRef.current = window.scrollY;
-    setSelectedSessionId(String(sessionId));
-  };
-
-  const handleBackToBrowser = () => {
-    setSelectedSessionId("");
   };
 
   return (
@@ -332,153 +212,28 @@ export default function AdminAttendanceLogsPage() {
         subtitle="Search sessions, review attendance records, and export session logs."
       />
       <AdminPanel>
-        {isShowingBrowser ? (
-          <section className={styles.browserSection}>
-            <div className={styles.browserHeader}>
-              <div>
-                <p className={styles.eyebrow}>Attendance Logs</p>
-                <h2 className={styles.browserTitle}>Session Browser</h2>
-                <p className={styles.browserSubtitle}>
-                  Search by session title, narrow by date, and open one session
-                  at a time for detailed attendance review.
-                </p>
-              </div>
-            </div>
-
-            <div className={styles.searchRow}>
-              <label className={common.fieldBlock} htmlFor="session_search">
-                <span className={common.fieldLabel}>Search Sessions</span>
-                <div className={styles.inputWithIcon}>
-                  <FiSearch aria-hidden="true" />
-                  <input
-                    id="session_search"
-                    className={common.inputControl}
-                    type="search"
-                    placeholder="Search sessions..."
-                    value={sessionSearchInput}
-                    onChange={(event) =>
-                      setSessionSearchInput(event.target.value)
-                    }
-                  />
-                </div>
-              </label>
-
-              <label
-                className={common.fieldBlock}
-                htmlFor="session_date_filter"
-              >
-                <span className={common.fieldLabel}>Date Filter</span>
-                <div className={styles.inputWithIcon}>
-                  <FiCalendar aria-hidden="true" />
-                  <input
-                    id="session_date_filter"
-                    className={common.inputControl}
-                    type="date"
-                    value={sessionDateFilter}
-                    onChange={(event) => {
-                      setSessionDateFilter(event.target.value);
-                      setSessionPage(1);
-                    }}
-                  />
-                </div>
-              </label>
-            </div>
-
-            <div className={styles.browserMetaRow}>
-              <p className={styles.browserMeta}>
-                Showing {sessionPagination.start_index}-
-                {sessionPagination.end_index} of{" "}
-                {sessionPagination.total_sessions} sessions
-              </p>
-              <p className={styles.browserMeta}>
-                Page {sessionPagination.page} of {sessionPagination.total_pages}
-              </p>
-            </div>
-
-            {isSessionsLoading ? (
-              <DataLoading message="Loading session browser..." />
-            ) : null}
-            {sessionError ? <DataError message={sessionError} /> : null}
-
-            {!isSessionsLoading && !sessionError ? (
-              sessions.length > 0 ? (
-                <>
-                  <div className={styles.sessionGrid}>
-                    {sessions.map((session) => (
-                      <button
-                        key={session.id}
-                        type="button"
-                        className={styles.sessionCard}
-                        onClick={() => handleSelectSession(session.id)}
-                      >
-                        <div className={styles.sessionCardTop}>
-                          <span
-                            className={`${styles.statusBadge} ${session.is_active ? styles.statusActive : styles.statusEnded}`.trim()}
-                          >
-                            {getSessionStatus(session)}
-                          </span>
-                          <span className={styles.sessionCount}>
-                            {session.attendance_count || 0} records
-                          </span>
-                        </div>
-
-                        <div className={styles.sessionCardBody}>
-                          <h3 className={styles.sessionCardTitle}>
-                            {session.name}
-                          </h3>
-                          <p className={styles.sessionCardDate}>
-                            {formatLongDate(session.start_time)}
-                          </p>
-                        </div>
-
-                        <dl className={styles.sessionCardMeta}>
-                          <div>
-                            <dt>Department</dt>
-                            <dd>{session.department || "-"}</dd>
-                          </div>
-                          <div>
-                            <dt>Session ID</dt>
-                            <dd>{session.id}</dd>
-                          </div>
-                        </dl>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className={styles.browserMetaRow}>
-                    <button
-                      type="button"
-                      className={`${common.ghostBtn} ${common.compact}`.trim()}
-                      onClick={() =>
-                        setSessionPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={!sessionPagination.has_previous}
-                    >
-                      Previous
-                    </button>
-                    <p className={styles.browserMeta}>
-                      Page {sessionPagination.page} of{" "}
-                      {sessionPagination.total_pages}
-                    </p>
-                    <button
-                      type="button"
-                      className={`${common.ghostBtn} ${common.compact}`.trim()}
-                      onClick={() =>
-                        setSessionPage((prev) =>
-                          Math.min(sessionPagination.total_pages, prev + 1),
-                        )
-                      }
-                      disabled={!sessionPagination.has_next}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <DataEmpty message="No sessions match the current search and date filters." />
-              )
-            ) : null}
-          </section>
+        {!selectedSessionId ? (
+          <SessionBrowser
+            title="Session Browser"
+            subtitle="Search by session title, narrow by date, and open one session at a time for detailed attendance review."
+            searchInput={sessionSearchInput}
+            onSearchInputChange={(value) => {
+              setSessionSearchInput(value);
+              setSessionPage(1);
+            }}
+            dateFilter={sessionDateFilter}
+            onDateFilterChange={(value) => {
+              setSessionDateFilter(value);
+              setSessionPage(1);
+            }}
+            page={sessionPage}
+            onPageChange={setSessionPage}
+            onSessionSelect={(session) => {
+              browserScrollYRef.current = window.scrollY;
+              setSelectedSession(session);
+              setSelectedSessionId(String(session.id));
+            }}
+          />
         ) : null}
 
         {selectedSession ? (
@@ -487,16 +242,14 @@ export default function AdminAttendanceLogsPage() {
               <button
                 type="button"
                 className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={handleBackToBrowser}
+                onClick={() => setSelectedSessionId("")}
               >
                 Back to Session Browser
               </button>
               <div>
                 <p className={styles.eyebrow}>Selected Session</p>
                 <h2 className={styles.summaryTitle}>{selectedSession.name}</h2>
-                <p className={styles.summaryDate}>
-                  {formatLongDate(selectedSession.start_time)}
-                </p>
+                <p className={styles.summaryDate}>{formatLongDate(selectedSession.start_time)}</p>
               </div>
 
               <div className={styles.summaryStats}>
@@ -517,18 +270,13 @@ export default function AdminAttendanceLogsPage() {
 
             <div className={styles.controlsWrap}>
               <div className={styles.secondaryFilters}>
-                <label
-                  className={common.fieldBlock}
-                  htmlFor="attendance_status_filter"
-                >
+                <label className={common.fieldBlock} htmlFor="attendance_status_filter">
                   <span className={common.fieldLabel}>Attendance Status</span>
                   <select
                     id="attendance_status_filter"
-                    className={common.inputControl}
+                    className={`${common.inputControl} ${common.selectControl}`.trim()}
                     value={attendanceStatusFilter}
-                    onChange={(event) =>
-                      setAttendanceStatusFilter(event.target.value)
-                    }
+                    onChange={(event) => setAttendanceStatusFilter(event.target.value)}
                   >
                     {ATTENDANCE_STATUS_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -538,18 +286,13 @@ export default function AdminAttendanceLogsPage() {
                   </select>
                 </label>
 
-                <label
-                  className={common.fieldBlock}
-                  htmlFor="signature_status_filter"
-                >
+                <label className={common.fieldBlock} htmlFor="signature_status_filter">
                   <span className={common.fieldLabel}>Signature Status</span>
                   <select
                     id="signature_status_filter"
-                    className={common.inputControl}
+                    className={`${common.inputControl} ${common.selectControl}`.trim()}
                     value={signatureStatusFilter}
-                    onChange={(event) =>
-                      setSignatureStatusFilter(event.target.value)
-                    }
+                    onChange={(event) => setSignatureStatusFilter(event.target.value)}
                   >
                     {SIGNATURE_STATUS_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -563,7 +306,7 @@ export default function AdminAttendanceLogsPage() {
                   <span className={common.fieldLabel}>Sort</span>
                   <select
                     id="sort_by_filter"
-                    className={common.inputControl}
+                    className={`${common.inputControl} ${common.selectControl}`.trim()}
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
                   >
@@ -626,9 +369,7 @@ export default function AdminAttendanceLogsPage() {
               </div>
             </div>
 
-            {isRowsLoading ? (
-              <DataLoading message="Loading attendance sheet..." />
-            ) : null}
+            {isRowsLoading ? <DataLoading message="Loading attendance sheet..." /> : null}
             {rowsError ? <DataError message={rowsError} /> : null}
             {!isRowsLoading && !rowsError && !hasRows ? (
               <DataEmpty message="No attendance records match the selected session and filters." />
@@ -654,30 +395,22 @@ export default function AdminAttendanceLogsPage() {
                         {rows.map((row) => (
                           <tr key={`${row.session_id}-${row.faculty_id}`}>
                             <td>
-                              <p className={styles.facultyName}>
-                                {row.faculty_name}
-                              </p>
+                              <p className={styles.facultyName}>{row.faculty_name}</p>
                               <p className={styles.facultyEmail}>{row.email}</p>
                             </td>
                             <td>
-                              <p className={styles.sessionName}>
-                                {row.session_name}
-                              </p>
+                              <p className={styles.sessionName}>{row.session_name}</p>
                               <p className={styles.sessionDate}>{row.date}</p>
                             </td>
                             <td>{formatDateTime(row.time_in)}</td>
                             <td>{formatDateTime(row.time_out)}</td>
                             <td>
-                              <span
-                                className={`${common.chip} ${styles[normalizeStatus(row.attendance_status)] || ""}`.trim()}
-                              >
+                              <span className={`${common.chip} ${styles[normalizeStatus(row.attendance_status)] || ""}`.trim()}>
                                 {row.attendance_status}
                               </span>
                             </td>
                             <td>
-                              <span
-                                className={`${common.chip} ${common[row.signature_status] || ""}`.trim()}
-                              >
+                              <span className={`${common.chip} ${common[row.signature_status] || ""}`.trim()}>
                                 {row.signature_status}
                               </span>
                             </td>
@@ -692,35 +425,17 @@ export default function AdminAttendanceLogsPage() {
                 <div className={styles.mobileOnly}>
                   <div className={styles.mobileCards}>
                     {rows.map((row) => (
-                      <article
-                        key={`${row.session_id}-${row.faculty_id}`}
-                        className={styles.mobileCard}
-                      >
+                      <article key={`${row.session_id}-${row.faculty_id}`} className={styles.mobileCard}>
                         <p className={styles.cardTitle}>{row.faculty_name}</p>
                         <p className={styles.cardMeta}>{row.email}</p>
                         <p className={styles.cardMeta}>{row.session_name}</p>
                         <p className={styles.cardMeta}>{row.date}</p>
                         <div className={styles.cardDetailGrid}>
-                          <p>
-                            <strong>Time In:</strong>{" "}
-                            {formatDateTime(row.time_in)}
-                          </p>
-                          <p>
-                            <strong>Time Out:</strong>{" "}
-                            {formatDateTime(row.time_out)}
-                          </p>
-                          <p>
-                            <strong>Attendance Status:</strong>{" "}
-                            {row.attendance_status}
-                          </p>
-                          <p>
-                            <strong>Signature Status:</strong>{" "}
-                            {row.signature_status}
-                          </p>
-                          <p>
-                            <strong>Late Status:</strong>{" "}
-                            {getLateStatusLabel(row)}
-                          </p>
+                          <p><strong>Time In:</strong> {formatDateTime(row.time_in)}</p>
+                          <p><strong>Time Out:</strong> {formatDateTime(row.time_out)}</p>
+                          <p><strong>Attendance Status:</strong> {row.attendance_status}</p>
+                          <p><strong>Signature Status:</strong> {row.signature_status}</p>
+                          <p><strong>Late Status:</strong> {getLateStatusLabel(row)}</p>
                         </div>
                       </article>
                     ))}

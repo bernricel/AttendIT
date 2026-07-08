@@ -17,7 +17,7 @@ export default function FormField({
       {options ? (
         <select
           id={id}
-          className={`${common.inputControl} ${styles.inputControl}`.trim()}
+          className={`${common.inputControl} ${common.selectControl} ${styles.inputControl}`.trim()}
           value={value}
           onChange={onChange}
           disabled={disabled}
