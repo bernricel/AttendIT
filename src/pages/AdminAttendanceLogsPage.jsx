@@ -76,6 +76,7 @@ function getLateStatusLabel(row) {
 }
 
 export default function AdminAttendanceLogsPage() {
+  const [isBrowsingSessions, setIsBrowsingSessions] = useState(true);
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessionSearchInput, setSessionSearchInput] = useState("");
@@ -130,19 +131,14 @@ export default function AdminAttendanceLogsPage() {
   }, [selectedSessionId, attendanceStatusFilter, signatureStatusFilter, sortBy, sortOrder]);
 
   useEffect(() => {
-    if (!selectedSessionId || browserScrollYRef.current == null) return;
-    return undefined;
-  }, [selectedSessionId]);
-
-  useEffect(() => {
-    if (selectedSessionId || browserScrollYRef.current == null) return;
+    if (!isBrowsingSessions || browserScrollYRef.current == null) return;
 
     const scrollY = browserScrollYRef.current;
     browserScrollYRef.current = null;
     window.requestAnimationFrame(() => {
       window.scrollTo({ top: scrollY, behavior: "auto" });
     });
-  }, [selectedSessionId]);
+  }, [isBrowsingSessions]);
 
   const hasRows = rows.length > 0;
 
@@ -212,10 +208,11 @@ export default function AdminAttendanceLogsPage() {
         subtitle="Search sessions, review attendance records, and export session logs."
       />
       <AdminPanel>
-        {!selectedSessionId ? (
+        {isBrowsingSessions ? (
           <SessionBrowser
             title="Session Browser"
             subtitle="Search by session title, narrow by date, and open one session at a time for detailed attendance review."
+            excludedSessionId={selectedSessionId}
             searchInput={sessionSearchInput}
             onSearchInputChange={(value) => {
               setSessionSearchInput(value);
@@ -232,17 +229,18 @@ export default function AdminAttendanceLogsPage() {
               browserScrollYRef.current = window.scrollY;
               setSelectedSession(session);
               setSelectedSessionId(String(session.id));
+              setIsBrowsingSessions(false);
             }}
           />
         ) : null}
 
-        {selectedSession ? (
+        {selectedSession && !isBrowsingSessions ? (
           <section className={styles.selectedSection}>
             <div className={styles.summaryPanel}>
               <button
                 type="button"
                 className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => setSelectedSessionId("")}
+                onClick={() => setIsBrowsingSessions(true)}
               >
                 Back to Session Browser
               </button>

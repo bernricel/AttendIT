@@ -26,6 +26,7 @@ function getSessionStatus(session) {
 export default function SessionBrowser({
   title,
   subtitle,
+  excludedSessionId,
   searchInput,
   onSearchInputChange,
   dateFilter,
@@ -46,6 +47,7 @@ export default function SessionBrowser({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const visibleSessions = sessions.filter((session) => String(session.id) !== String(excludedSessionId || ""));
 
   useEffect(() => {
     const loadSessions = async () => {
@@ -141,10 +143,10 @@ export default function SessionBrowser({
       {error ? <DataError message={error} /> : null}
 
       {!isLoading && !error ? (
-        sessions.length > 0 ? (
+        visibleSessions.length > 0 ? (
           <>
             <div className={styles.sessionGrid}>
-              {sessions.map((session) => (
+              {visibleSessions.map((session) => (
                 <button
                   key={session.id}
                   type="button"
