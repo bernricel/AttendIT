@@ -1,9 +1,10 @@
 .loaderLine {
   margin-bottom: 10px;
-  color: var(--muted);
+  color: #64748b;
   font-size: 0.9rem;
 }
 
+/* --- GOOGLE BUTTON --- */
 .googleBtnWrap {
   position: relative;
   z-index: 1;
@@ -19,17 +20,18 @@
 }
 
 .googleBtnWrap > div {
-  width: 100%;
+  width: 100% !important;
   display: flex;
   justify-content: center;
 }
 
+/* --- DIVIDER --- */
 .authDivider {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 16px 0 10px;
-  color: #90a6c7;
+  margin: 20px 0 16px;
+  color: #64748b;
   font-size: 0.82rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -40,9 +42,30 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.08);
 }
 
 .authDivider span {
   padding: 0 10px;
+}
+
+/* --- HIGH-CONTRAST ROUNDED ADMIN LOGIN BUTTON (GHOST STYLE) --- */
+.authLinkBtn {
+  background: transparent !important;
+  color: #0f172a !important; 
+  border: 2px solid #0f172a !important; 
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important; 
+  min-height: 44px !important;
+  border-radius: 12px !important; 
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.authLinkBtn:hover {
+  background: rgba(15, 23, 42, 0.05) !important; 
+  border-color: #0f172a !important;
+  color: #0f172a !important;
 }

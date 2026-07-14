@@ -1,11 +1,55 @@
 .facultyPanel {
-  background: var(--panel);
+  margin-top: 24px;
+  border: 1px solid #ffffff;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+  padding: 26px;
+  color: #0f172a;
+}
+
+.scanConfirmGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.75fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summaryItem {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, #ffffff, #f8fafc),
+    radial-gradient(circle at 100% 0%, rgba(0, 75, 135, 0.06), transparent 32%);
+  padding: 15px 16px;
+}
+
+.summaryItem span:first-child {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.summaryItem p {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .windowValue {
@@ -15,16 +59,138 @@
   white-space: normal;
   word-break: normal;
   overflow-wrap: anywhere;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-.summaryItem {
-  min-width: 0;
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-@media (max-width: 430px) {
-  .windowValue {
-    font-size: 1rem;
-    line-height: 1.4;
+.statusOpen {
+  border: 1px solid #bbf7d0;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusClosed {
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.confirmPanel {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, #ffffff, #f8fafc),
+    radial-gradient(circle at 100% 0%, rgba(255, 183, 27, 0.14), transparent 34%);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
+  padding: 20px;
+}
+
+.confirmEyebrow {
+  margin: 0;
+  color: #f0a400;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.confirmPanel h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.2rem, 2vw, 1.45rem);
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.confirmPanel p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+.confirmButton {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 4px;
+  border-radius: 12px !important;
+  background: #004b87 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: #003b6d !important;
+}
+
+.confirmButton:disabled {
+  cursor: not-allowed;
+  background: #cbd5e1 !important;
+  color: #64748b !important;
+}
+
+.facultyPanel :global([class*="dataState"]) {
+  color: #0f172a;
+}
+
+:global(.message-banner),
+.facultyPanel :global([class*="Banner"]),
+.facultyPanel :global([class*="banner"]) {
+  border: 1px solid rgba(239, 68, 68, 0.25) !important;
+  border-left: 5px solid #ef4444 !important;
+  border-radius: 14px !important;
+  background: rgba(254, 242, 242, 0.96) !important;
+  color: #991b1b !important;
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.07) !important;
+  padding: 15px 18px !important;
+  font-size: 0.94rem !important;
+  font-weight: 700 !important;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.facultyPanel :global([class*="info"]),
+.facultyPanel :global([class*="success"]) {
+  border-color: rgba(16, 185, 129, 0.22) !important;
+  border-left-color: #10b981 !important;
+  background: rgba(240, 253, 250, 0.96) !important;
+  color: #047857 !important;
+}
+
+@media (max-width: 1100px) {
+  .scanConfirmGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmPanel {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .facultyPanel {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
   }
 }

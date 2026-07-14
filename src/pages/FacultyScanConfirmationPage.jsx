@@ -175,54 +175,83 @@ export default function FacultyScanConfirmationPage() {
         ) : null}
 
         {!isLoading && session ? (
-          <div className={common.scanConfirmGrid}>
-            <div className={common.summaryGrid}>
-              <div className={common.summaryItem}>
+          <div className={styles.scanConfirmGrid}>
+            <div className={styles.summaryGrid}>
+              <div className={styles.summaryItem}>
                 <span>Session Name</span>
                 <p>{session.name}</p>
               </div>
-              <div className={common.summaryItem}>
+              <div className={styles.summaryItem}>
                 <span>Department</span>
                 <p>{session.department || "N/A"}</p>
               </div>
-              <div className={common.summaryItem}>
+              <div className={styles.summaryItem}>
                 <span>Scheduled Start</span>
                 <p>{formatDateTime(session.start_time)}</p>
               </div>
-              <div className={common.summaryItem}>
+              <div className={styles.summaryItem}>
                 <span>Scheduled End</span>
                 <p>{formatDateTime(session.end_time)}</p>
               </div>
-              <div className={common.summaryItem}>
+              <div className={styles.summaryItem}>
                 <span>Check-in Window</span>
                 <p className={styles.windowValue}>{checkInWindowLabel}</p>
               </div>
-              <div className={common.summaryItem}>
+              <div className={styles.summaryItem}>
                 <span>Check-out Window</span>
                 <p className={styles.windowValue}>{checkOutWindowLabel}</p>
               </div>
-              <div className={common.summaryItem}>
+              <div className={styles.summaryItem}>
                 <span>Status</span>
-                <p>{session.lifecycle_status || "UNKNOWN"}</p>
+                <p>
+                  <span
+                    className={`${styles.statusPill} ${
+                      isSessionClosed ? styles.statusClosed : styles.statusOpen
+                    }`.trim()}
+                  >
+                    {session.lifecycle_status || "UNKNOWN"}
+                  </span>
+                </p>
               </div>
             </div>
 
-            <button
-              type="button"
-              className={common.primaryBtn}
-              onClick={handleConfirm}
-              disabled={isActionDisabled}
-            >
-              {isSessionClosed
-                ? "Session Closed"
-                : isConfirming
-                  ? `${actionLabel}...`
+            <div className={styles.confirmPanel}>
+              <p className={styles.confirmEyebrow}>Next Step</p>
+              <h2>
+                {isSessionClosed
+                  ? "Attendance is closed"
                   : success
-                    ? "Attendance Confirmed"
+                    ? "Attendance confirmed"
                     : hasAction
-                      ? actionLabel
-                      : "Attendance Complete"}
-            </button>
+                      ? `Ready to ${actionLabel.toLowerCase()}`
+                      : "Attendance complete"}
+              </h2>
+              <p>
+                {isSessionClosed
+                  ? "This session is no longer accepting attendance scans."
+                  : success
+                    ? success
+                    : hasAction
+                      ? "Review the session details, then confirm your attendance action."
+                      : "No additional attendance action is available for this session."}
+              </p>
+              <button
+                type="button"
+                className={`${common.primaryBtn} ${styles.confirmButton}`.trim()}
+                onClick={handleConfirm}
+                disabled={isActionDisabled}
+              >
+                {isSessionClosed
+                  ? "Session Closed"
+                  : isConfirming
+                    ? `${actionLabel}...`
+                    : success
+                      ? "Attendance Confirmed"
+                      : hasAction
+                        ? actionLabel
+                        : "Attendance Complete"}
+              </button>
+            </div>
           </div>
         ) : null}
       </section>

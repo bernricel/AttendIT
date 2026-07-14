@@ -1,240 +1,295 @@
-.browserSection,
-.selectedSection {
-  display: grid;
+.browserWrapper {
+  width: 100%;
+}
+
+.browserWrapper :global([class*="browserHeader"]) {
+  border-color: #eef2f7;
+  background: linear-gradient(135deg, #ffffff, #fbfdff);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
+}
+
+.browserWrapper :global([class*="eyebrow"]) {
+  color: #f0a400;
+}
+
+.browserWrapper :global([class*="browserTitle"]) {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.browserWrapper :global([class*="browserSubtitle"]) {
+  color: #475569;
+  font-weight: 500;
+}
+
+.browserWrapper :global([class*="browserMeta"]) {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.browserWrapper :global([class*="fieldLabel"]) {
+  color: #475569;
+  font-weight: 600;
+}
+
+.browserWrapper :global([class*="inputWithIcon"] svg) {
+  color: #8aa4c1;
+}
+
+.browserWrapper :global(button[class*="sessionCard"]) {
+  position: relative;
+  overflow: hidden;
+  min-height: 196px;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  padding: 18px;
+  background:
+    linear-gradient(145deg, #ffffff, #f8fafc),
+    radial-gradient(circle at 92% 0%, rgba(255, 183, 27, 0.12), transparent 34%);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 14px 30px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.selectedSection {
-  margin-top: 18px;
+.browserWrapper :global(button[class*="sessionCard"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.08), transparent),
+    linear-gradient(180deg, rgba(0, 40, 85, 0.03), transparent 45%);
+  opacity: 0.8;
 }
 
-.browserHeader,
+.browserWrapper :global(button[class*="sessionCard"] > *) {
+  position: relative;
+  z-index: 1;
+}
+
+.browserWrapper :global(button[class*="sessionCard"]:hover),
+.browserWrapper :global(button[class*="sessionCard"]:focus-visible) {
+  transform: translateY(-3px);
+  border-color: rgba(255, 183, 27, 0.78);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 18px 38px rgba(15, 23, 42, 0.13);
+}
+
+.browserWrapper :global([class*="sessionCardTop"]) {
+  align-items: center;
+}
+
+.browserWrapper :global([class*="statusBadge"]),
+.browserWrapper :global([class*="sessionCount"]) {
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 0.74rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.browserWrapper :global([class*="statusEnded"]) {
+  background: #eef2f7;
+  border-color: #d6e0ec;
+  color: #334155;
+}
+
+.browserWrapper :global([class*="statusActive"]) {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.browserWrapper :global([class*="sessionCount"]) {
+  background: #f8fafc;
+  border: 1px solid #dbe4ef;
+  color: #0f172a;
+}
+
+.browserWrapper :global([class*="sessionCardBody"]) {
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.browserWrapper :global([class*="sessionCardTitle"]) {
+  color: #0f172a;
+  font-size: clamp(1rem, 1.3vw, 1.16rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.browserWrapper :global([class*="sessionCardDate"]) {
+  color: #475569;
+  font-size: 0.93rem;
+}
+
+.browserWrapper :global(dl[class*="sessionCardMeta"]) {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+  align-items: flex-start;
+}
+
+.browserWrapper :global(dl[class*="sessionCardMeta"] div) {
+  min-width: 0;
+}
+
+.browserWrapper :global(dl[class*="sessionCardMeta"] div:last-child) {
+  text-align: right;
+}
+
+.browserWrapper :global(dl[class*="sessionCardMeta"] dt) {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.browserWrapper :global(dl[class*="sessionCardMeta"] dd) {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.browserWrapper :global(div[class*="browserMetaRow"]:has(> button)) {
+  width: 100%;
+  margin-top: 18px;
+  padding-top: 4px;
+}
+
+.browserWrapper :global(div[class*="browserMetaRow"]:has(> button) > button) {
+  min-width: 110px;
+  margin: 0;
+}
+
+.browserWrapper :global(div[class*="browserMetaRow"]:has(> button) > p) {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-weight: 600;
+  color: #334155;
+}
+
+.selectedSection {
+  display: grid;
+  gap: 18px;
+  color: #0f172a;
+}
+
 .summaryPanel,
 .controlsWrap {
-  display: grid;
-  gap: 14px;
-  border: 1px solid var(--glass-border);
+  border: 1px solid #e2e8f0;
   border-radius: 18px;
-  padding: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+.summaryPanel {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
   background:
-    radial-gradient(circle at top right, rgba(253, 185, 19, 0.12), transparent 38%),
-    rgba(255, 255, 255, 0.03);
-  box-shadow: 0 18px 40px rgba(5, 16, 32, 0.16);
+    linear-gradient(135deg, #ffffff, #f8fafc),
+    radial-gradient(circle at 100% 0%, rgba(0, 75, 135, 0.08), transparent 34%);
 }
 
 .eyebrow {
-  margin: 0 0 6px;
-  color: var(--ua-gold);
+  margin: 0 0 8px;
+  color: #f0a400;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.browserTitle,
 .summaryTitle {
   margin: 0;
-  color: #fff;
+  color: #0f172a;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  line-height: 1.2;
+  font-weight: 800;
 }
 
-.browserSubtitle,
-.summaryDate,
-.browserMeta {
+.summaryDate {
   margin: 8px 0 0;
-  color: var(--muted);
-}
-
-.searchRow {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
-}
-
-.inputWithIcon {
-  position: relative;
-}
-
-.inputWithIcon svg {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
-}
-
-.inputWithIcon :global(input) {
-  padding-left: 42px;
-}
-
-.browserMetaRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.sessionGrid {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.sessionCard {
-  width: 100%;
-  text-align: left;
-  border: 1px solid var(--glass-border);
-  border-radius: 18px;
-  padding: 16px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    rgba(255, 255, 255, 0.03);
-  display: grid;
-  gap: 14px;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-}
-
-.sessionCard:hover,
-.sessionCard:focus-visible {
-  transform: translateY(-2px);
-  border-color: rgba(253, 185, 19, 0.65);
-  box-shadow: 0 14px 30px rgba(5, 16, 32, 0.22);
-  outline: none;
-}
-
-.sessionCardActive {
-  border-color: var(--ua-gold);
-  background:
-    radial-gradient(circle at top right, rgba(253, 185, 19, 0.18), transparent 36%),
-    rgba(255, 255, 255, 0.05);
-  box-shadow: 0 18px 36px rgba(253, 185, 19, 0.1);
-}
-
-.sessionCardTop,
-.sessionCardMeta {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.sessionCardBody {
-  display: grid;
-  gap: 4px;
-}
-
-.statusBadge,
-.sessionCount {
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.statusBadge {
-  border: 1px solid transparent;
-}
-
-.statusActive {
-  background: rgba(46, 204, 113, 0.16);
-  border-color: rgba(46, 204, 113, 0.28);
-  color: #8ef0b1;
-}
-
-.statusEnded {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.sessionCount {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.sessionCardTitle {
-  margin: 0;
-  color: #fff;
-  font-size: 1.08rem;
-}
-
-.sessionCardDate {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.84);
-}
-
-.sessionCardMeta {
-  margin: 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--glass-border);
-}
-
-.sessionCardMeta div {
-  display: grid;
-  gap: 4px;
-}
-
-.sessionCardMeta dt {
-  color: var(--muted);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.sessionCardMeta dd {
-  margin: 0;
-  color: #fff;
+  color: #475569;
   font-weight: 600;
 }
 
 .summaryStats {
   display: grid;
-  gap: 12px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .summaryStat {
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.04);
   display: grid;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #ffffff;
 }
 
 .summaryStat span {
-  color: var(--muted);
-  font-size: 0.8rem;
-  text-transform: uppercase;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 700;
   letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .summaryStat strong {
-  color: #fff;
-  font-size: 1.05rem;
+  color: #0f172a;
+  font-size: 1.02rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.controlsWrap {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
 }
 
 .secondaryFilters {
   display: grid;
-  gap: 12px;
   grid-template-columns: repeat(4, minmax(170px, 1fr));
+  gap: 14px;
+  align-items: end;
 }
 
-.actionsRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+.controlsWrap :global([class*="fieldLabel"]) {
+  color: #475569 !important;
+  font-size: 0.86rem;
+  font-weight: 700 !important;
 }
 
-.quickFilterRow,
+.controlsWrap select {
+  min-height: 42px;
+  border: 1px solid #d6e0ec !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  padding: 8px 12px !important;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.controlsWrap select:focus {
+  border-color: #004b87 !important;
+  box-shadow: 0 0 0 3px rgba(0, 75, 135, 0.12);
+}
+
+.orderToggle,
 .actionButtons {
   display: flex;
   align-items: center;
@@ -242,22 +297,36 @@
   flex-wrap: wrap;
 }
 
-.actionButtons button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.actionsRow {
+  display: flex;
+  justify-content: flex-end;
 }
 
-.orderToggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.selectedSection :global([class*="ghostBtn"]) {
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.selectedSection :global([class*="ghostBtn"]:hover) {
+  border-color: #94a3b8 !important;
+  background: #f8fafc !important;
 }
 
 .orderActive {
-  border-color: var(--ua-gold);
-  background: rgba(253, 185, 19, 0.2);
+  border-color: #004b87 !important;
+  background: #eaf3fb !important;
+  color: #004b87 !important;
+}
+
+.actionButtons :global([class*="primaryBtn"]) {
+  background: #004b87 !important;
+  color: #ffffff !important;
+}
+
+.actionButtons :global([class*="primaryBtn"]:hover) {
+  background: #003b6d !important;
 }
 
 .responsiveBlock {
@@ -275,39 +344,46 @@
 .facultyName,
 .sessionName {
   margin: 0;
-  font-weight: 700;
-  color: #fff;
+  color: #0f172a;
+  font-weight: 800;
 }
 
 .facultyEmail,
 .sessionDate {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.82rem;
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 0.88rem;
+}
+
+.on_time,
+.checked_out,
+.late,
+.incomplete {
+  border: 1px solid transparent;
 }
 
 .on_time {
-  background: rgba(46, 204, 113, 0.2);
-  border-color: rgba(46, 204, 113, 0.4);
-  color: #2ecc71;
-}
-
-.late {
-  background: rgba(255, 164, 27, 0.2);
-  border-color: rgba(255, 164, 27, 0.45);
-  color: #ffba49;
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border-color: #bbf7d0;
 }
 
 .checked_out {
-  background: rgba(90, 187, 255, 0.2);
-  border-color: rgba(90, 187, 255, 0.45);
-  color: #8cc9ff;
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border-color: #bfdbfe;
+}
+
+.late {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border-color: #fde68a;
 }
 
 .incomplete {
-  background: rgba(255, 92, 92, 0.2);
-  border-color: rgba(255, 92, 92, 0.4);
-  color: #ff8b8b;
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca;
 }
 
 .mobileCards {
@@ -316,48 +392,45 @@
 }
 
 .mobileCard {
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 14px;
   display: grid;
-  gap: 6px;
+  gap: 7px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .cardTitle {
   margin: 0;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
+  color: #0f172a;
+  font-weight: 800;
 }
 
 .cardMeta {
   margin: 0;
-  color: var(--muted);
+  color: #64748b;
   font-size: 0.9rem;
 }
 
 .cardDetailGrid {
-  margin-top: 8px;
-  border-top: 1px solid var(--glass-border);
-  padding-top: 8px;
   display: grid;
-  gap: 6px;
+  gap: 7px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .cardDetailGrid p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.92);
+  color: #334155;
   font-size: 0.9rem;
 }
 
 @media (max-width: 1100px) {
-  .sessionGrid {
+  .secondaryFilters,
+  .summaryStats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .secondaryFilters {
-    grid-template-columns: repeat(2, minmax(170px, 1fr));
   }
 }
 
@@ -372,14 +445,16 @@
 }
 
 @media (max-width: 720px) {
-  .searchRow,
+  .browserWrapper :global(button[class*="sessionCard"]) {
+    min-height: 184px;
+  }
+
   .summaryStats,
-  .sessionGrid,
   .secondaryFilters {
     grid-template-columns: 1fr;
   }
 
   .actionsRow {
-    align-items: stretch;
+    justify-content: flex-start;
   }
 }

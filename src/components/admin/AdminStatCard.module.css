@@ -1,40 +1,38 @@
 .adminStatCard {
-  background: var(--panel);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-left: 4px solid var(--info);
-  border-radius: 14px;
-  padding: 18px;
-  display: grid;
-  gap: 6px;
-  box-shadow: var(--shadow);
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  background: #ffffff !important; /* Force matching clean white background card modules */
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-left: 4px solid #3b82f6 !important; /* Nice default blue border accent */
+  border-radius: 14px !important;
+  padding: 18px !important;
+  display: grid !important;
+  gap: 6px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.015), 0 2px 4px -1px rgba(0, 0, 0, 0.01) !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
 }
 
 .adminStatCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04) !important;
 }
 
 .yellow {
-  border-left-color: var(--ua-gold);
+  border-left-color: #fdb913 !important; /* Force golden-orange accent */
 }
 
 .red {
-  border-left-color: var(--red);
+  border-left-color: #ef4444 !important; /* Force crisp error-red accent */
 }
 
 .adminStatCard span {
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  color: #64748b !important; /* High contrast muted slate text for upper labels */
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
 }
 
 .adminStatCard strong {
-  font-size: 1.8rem;
-  color: #fff;
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important; /* Clear, prominent deep charcoal color for values */
 }

@@ -60,33 +60,46 @@ export default function AdminDashboardPage() {
   )
 
   return (
-    <>
+    <div className={styles.dashboardContainer}>
       <LayoutPageMeta
         title="Admin Dashboard"
         subtitle="Overview of attendance sessions and activity today."
       />
-      {isLoading ? <DataLoading message="Loading dashboard..." /> : null}
-      {error ? <DataError message={error} /> : null}
+
+      {isLoading ? (
+        <div className={styles.stateWrapper}>
+          <DataLoading message="Loading dashboard data..." />
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className={`${styles.stateWrapper} ${styles.errorText}`}>
+          <DataError message={error} />
+        </div>
+      ) : null}
 
       {!isLoading && !error ? (
         <>
           <section className={styles.adminStatsGrid}>
-            <AdminStatCard label="Total Sessions" value={sessions.length} />
-            <AdminStatCard label="Active Sessions" value={activeSessions} tone="yellow" />
-            <AdminStatCard label="Today's Check-ins" value={checkInsToday} />
-            <AdminStatCard label="Today's Check-outs" value={checkOutsToday} tone="red" />
+            <AdminStatCard label="TOTAL SESSIONS" value={sessions.length} />
+            <AdminStatCard label="ACTIVE SESSIONS" value={activeSessions} tone="yellow" />
+            <AdminStatCard label="TODAY'S CHECK-INS" value={checkInsToday} />
+            <AdminStatCard label="TODAY'S CHECK-OUTS" value={checkOutsToday} tone="red" />
           </section>
 
           <div className={common.adminTwoCol}>
+            
             <AdminPanel title="Recent Attendance Sessions" subtitle="Latest 6 sessions">
               {recentSessions.length === 0 ? (
-                <DataEmpty message="No attendance sessions yet." />
+                <div className={styles.panelStateWrapper}>
+                  <DataEmpty message="No attendance sessions yet." />
+                </div>
               ) : (
-                <div>
+                <div className={styles.recordsList}>
                   {recentSessions.map((session) => (
                     <article
                       key={session.id}
-                      className={`${common.sessionItem} ${styles.clickableSessionCard}`.trim()}
+                      className={`${styles.dashboardItem} ${styles.clickableSessionCard}`}
                       role="button"
                       tabIndex={0}
                       onClick={() => navigate(`${ROUTES.ADMIN_QR_DISPLAY}?sessionId=${session.id}`)}
@@ -97,11 +110,14 @@ export default function AdminDashboardPage() {
                         }
                       }}
                     >
-                      <div>
-                        <h3>{`${session.name} (${formatIsoDate(session.start_time)})`}</h3>
-                        <p>{session.session_type}</p>
+                      <div className={styles.itemInfo}>
+                        <h4 className={styles.itemTitle}>
+                          {session.name} <span className={styles.sessionDate}>({formatIsoDate(session.start_time)})</span>
+                        </h4>
+                        <p className={styles.itemSubtitle}>{session.session_type || 'Mixed'}</p>
                       </div>
-                      <div
+                      
+                      <span
                         className={`${common.chip} ${
                           session.lifecycle_status === 'ACTIVE'
                             ? common.ok
@@ -111,7 +127,7 @@ export default function AdminDashboardPage() {
                         }`}
                       >
                         {session.lifecycle_status || 'UNKNOWN'}
-                      </div>
+                      </span>
                     </article>
                   ))}
                 </div>
@@ -120,26 +136,31 @@ export default function AdminDashboardPage() {
 
             <AdminPanel title="Recent Attendance Records" subtitle="Latest 6 records for today">
               {todayRecords.length === 0 ? (
-                <DataEmpty message="No attendance records for today yet." />
+                <div className={styles.panelStateWrapper}>
+                  <DataEmpty message="No attendance records for today yet." />
+                </div>
               ) : (
-                <div>
+                <div className={styles.recordsList}>
                   {todayRecords.slice(0, 6).map((record) => (
-                    <article key={record.id} className={common.sessionItem}>
-                      <div>
-                        <h3>
+                    <article key={record.id} className={styles.dashboardItem}>
+                      <div className={styles.itemInfo}>
+                        <h4 className={styles.itemTitle}>
                           {record.user_first_name} {record.user_last_name}
-                        </h3>
-                        <p>{record.session_name}</p>
+                        </h4>
+                        <p className={styles.itemSubtitle}>{record.session_name}</p>
                       </div>
-                      <div className={common.chip}>{formatDateTime(record.check_time)}</div>
+                      <span className={styles.timestampChip}>
+                        {formatDateTime(record.check_time)}
+                      </span>
                     </article>
                   ))}
                 </div>
               )}
             </AdminPanel>
+
           </div>
         </>
       ) : null}
-    </>
+    </div>
   )
 }

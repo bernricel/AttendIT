@@ -1,64 +1,127 @@
+/* 1. Full-Screen Canvas with Highly Visible School Campus Background Image */
 .qrDisplayScreen {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 40px);
+  
+  /* Reduced opacity of the white gradients so the background image pops through clearly */
+  background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(241, 245, 249, 0.45)),
+              url('/src/assets/bg.jpg') no-repeat center center fixed;
+  background-size: cover;
+  
+  position: relative;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* 2. Elevated Modern Presentation Foreground Card */
 .qrDisplayCard {
-  width: min(920px, 100%);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  background: rgba(0, 20, 45, 0.84);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--shadow);
-  padding: clamp(20px, 3vw, 36px);
+  width: min(680px, 100%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 20px 30px -5px rgba(15, 23, 42, 0.1), 0 10px 15px -5px rgba(15, 23, 42, 0.05);
+  padding: clamp(24px, 5vw, 44px);
   text-align: center;
+  position: relative;
+  z-index: 10;
 }
 
+/* 3. High-Contrast Readable Text Elements */
 .qrDisplayKicker {
-  margin: 0;
+  margin: 0 0 12px 0;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: #004b87;
+  font-weight: 800;
+  font-size: 0.85rem;
 }
 
 .qrDisplayCard h1 {
-  margin: 10px 0 8px;
-  color: var(--ua-gold);
-  font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+  margin: 0 0 14px 0;
+  color: #0f172a;
+  font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.qrDisplayInstruction {
-  margin: 0;
-  color: #e8f0f8;
-  font-size: clamp(1rem, 2vw, 1.2rem);
+/* Department Subtitle Label */
+.qrDisplayInstruction:nth-of-type(1) {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 16px;
 }
 
+/* Scan Instructions Body Text */
+p.qrDisplayInstruction:nth-of-type(2) {
+  margin: 0 auto 24px auto;
+  color: #1e293b;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* 4. Clean QR Box Container Styling */
 .qrDisplayCodeWrap {
-  margin: 24px auto;
-  background: #fff;
+  margin: 16px auto 32px auto;
+  background: #ffffff;
   width: fit-content;
+  border: 2px solid #e2e8f0;
   border-radius: 20px;
-  padding: clamp(12px, 2vw, 18px);
+  padding: clamp(12px, 2.5vw, 20px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease-in-out;
 }
 
+.qrDisplayCodeWrap:hover {
+  transform: scale(1.02);
+}
+
+/* 5. Dashboard Chips for Metadata */
 .qrDisplayMeta {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 .qrDisplayMeta p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: clamp(0.92rem, 1.6vw, 1.05rem);
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #334155;
+  font-size: 0.92rem;
+  font-weight: 700;
+  flex: 1;
+  min-width: 150px;
+  text-align: center;
 }
 
+.qrDisplayMeta p:nth-child(1) {
+  border-left: 4px solid #004b87;
+  color: #004b87;
+}
+
+.qrDisplayMeta p:nth-child(3) {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+/* Adaptive mobile canvas boundaries sizing overrides */
 @media (max-width: 1100px) {
   .qrDisplayCodeWrap canvas {
-    width: min(76vw, 360px) !important;
-    height: min(76vw, 360px) !important;
+    width: min(72vw, 340px) !important;
+    height: min(72vw, 340px) !important;
   }
 }

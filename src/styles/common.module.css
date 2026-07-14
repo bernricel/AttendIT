@@ -13,188 +13,82 @@
 
 .fieldLabel {
   font-size: 0.9rem;
-  color: var(--muted);
+  color: #64748b;
 }
 
 .inputControl {
   width: 100%;
   min-height: 46px;
   border-radius: 12px;
-  border: 1px solid var(--glass-border);
+  border: 1px solid #e2e8f0;
   padding: 10px 12px;
   font-size: 1rem;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(4px);
+  color: #0f172a;
+  background: #ffffff;
   outline: none;
   transition: all 0.2s ease;
 }
 
-.selectControl {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 44px;
-  background:
-    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.75) 50%) calc(100% - 18px) calc(50% - 2px) / 7px 7px no-repeat,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.75) 50%, transparent 50%) calc(100% - 13px) calc(50% - 2px) / 7px 7px no-repeat,
-    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05));
-}
-
 .inputControl:focus {
-  border-color: var(--ua-gold);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(253, 185, 19, 0.16);
+  border-color: #8b6239;
+  box-shadow: 0 0 0 3px rgba(139, 98, 57, 0.12);
 }
 
-.inputControl::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-}
+/* =========================================
+   ACTION BUTTONS
+   ========================================= */
 
-.inputControl option {
-  background: var(--bg);
-  color: var(--text);
-}
-
-.primaryBtn,
-.ghostBtn {
-  border-radius: 12px;
-  min-height: 46px;
+/* Primary Solid Button */
+.primaryBtn {
+  border-radius: 8px;
+  min-height: 40px;
   border: none;
-  font-size: 0.98rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.primaryBtn {
   margin-top: 6px;
-  color: var(--ua-navy);
-  background: var(--ua-gold);
-  box-shadow: 0 4px 15px rgba(253, 185, 19, 0.3);
+  color: #ffffff;
+  background: #1e293b;
 }
 
 .primaryBtn:hover {
-  background: var(--ua-gold-hover);
-  transform: translateY(-2px);
+  background: #0f172a;
 }
 
-.primaryBtn:disabled {
-  background: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.5);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
+/* Modern Rounded Outlined Button (Ghost Button) */
 .ghostBtn {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text);
-  border: 1px solid var(--glass-border);
-}
-
-.ghostBtn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.compact {
-  min-height: 38px;
-  padding: 0 14px;
-}
-
-.authLinkBtn {
-  width: 100%;
+  background: transparent !important;
+  color: #0f172a !important; 
+  border: 2px solid #0f172a !important; 
+  border-radius: 12px !important; 
+  min-height: 44px; 
+  font-size: 0.95rem !important;
+  font-weight: 700 !important; 
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 24px;
 }
 
-.toggleField {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text);
+.ghostBtn:hover {
+  background: rgba(15, 23, 42, 0.05) !important; 
+  transform: translateY(-1px);
 }
 
-.toggleField input[type="checkbox"] {
-  width: auto;
-  min-height: auto;
-  accent-color: var(--ua-gold);
+.compact {
+  min-height: 38px !important;
+  border-radius: 10px !important; 
+  padding: 0 16px !important;
+  font-size: 0.85rem !important;
 }
 
-.switchField {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 10px 12px;
-  color: var(--text);
-  cursor: pointer;
-  text-align: left;
-}
-
-.switchInput {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-  pointer-events: none;
-}
-
-.switchControl {
-  width: 46px;
-  height: 26px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(255, 255, 255, 0.1);
-  position: relative;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.switchThumb {
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.2s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-}
-
-.switchText {
-  color: var(--text);
-}
-
-.switchInput:checked + .switchControl {
-  background: rgba(253, 185, 19, 0.32);
-  border-color: rgba(253, 185, 19, 0.8);
-}
-
-.switchInput:checked + .switchControl .switchThumb {
-  transform: translateX(20px);
-}
-
-.switchInput:focus-visible + .switchControl {
-  box-shadow:
-    0 0 0 3px rgba(253, 185, 19, 0.25),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.switchInput:disabled + .switchControl {
-  opacity: 0.55;
-}
-
-.switchInput:disabled ~ .switchText {
-  opacity: 0.65;
-}
-
-.subtleNote {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.85rem;
+.linkButton {
+  text-align: center;
+  white-space: nowrap;
 }
 
 .adminTwoCol,
@@ -211,26 +105,27 @@
 }
 
 .summaryItem {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 14px 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 20px;
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .summaryItem span {
-  color: var(--muted);
-  font-size: 0.82rem;
+  color: #64748b;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
 }
 
 .summaryItem strong {
-  color: #fff;
-  font-size: 1.05rem;
+  color: #0f172a;
+  font-size: 1rem;
   word-break: break-all;
+  font-weight: 600;
 }
 
 .quickActionsGrid {
@@ -240,171 +135,96 @@
 }
 
 .quickActionCard {
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 20px;
   text-decoration: none;
-  background: rgba(253, 185, 19, 0.05);
+  background: #ffffff;
   display: grid;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.2s ease;
 }
 
 .quickActionCard:hover {
-  border-color: var(--ua-gold);
-  background: rgba(253, 185, 19, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(253, 185, 19, 0.1);
+  border-color: #8b6239;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
 }
 
 .quickActionCard strong {
-  color: var(--ua-gold);
-  font-size: 1.05rem;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .quickActionCard span {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: #475569;
   line-height: 1.4;
 }
 
+/* Tables Layout */
 .tableWrap {
+  width: 100%;
   overflow-x: auto;
 }
 
 .adminTable {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
+  border-collapse: collapse; 
   min-width: 760px;
 }
 
 .adminTable th {
-  color: var(--ua-gold);
-  background: rgba(0, 0, 0, 0.2);
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  color: #8b6239; 
+  background: transparent;
+  padding: 16px 8px;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   text-align: left;
 }
 
 .adminTable td {
-  background: rgba(255, 255, 255, 0.03);
-  padding: 14px;
-  border-top: 1px solid var(--glass-border);
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.adminTable td:first-child {
-  border-left: 1px solid var(--glass-border);
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
-}
-
-.adminTable td:last-child {
-  border-right: 1px solid var(--glass-border);
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
-}
-
-.chip {
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--glass-border);
-  color: #fff;
-}
-
-.ok,
-.valid {
-  background: rgba(46, 204, 113, 0.2);
-  border-color: rgba(46, 204, 113, 0.4);
-  color: #2ecc71;
-}
-
-.muted {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.unknown {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.invalid {
-  background: rgba(255, 92, 92, 0.2);
-  border-color: rgba(255, 92, 92, 0.4);
-  color: #ff8b8b;
-}
-
-.sessionItem {
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  padding: 14px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s ease;
-  margin-bottom: 8px;
-}
-
-.sessionItem:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.dataState {
-  margin: 0;
-  border-radius: 10px;
-  padding: 14px;
+  background: transparent;
+  padding: 16px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
   font-size: 0.95rem;
+  vertical-align: middle;
 }
 
-.loading {
-  background: rgba(59, 130, 246, 0.1);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+.adminTable tr:last-child td {
+  border-bottom: none;
 }
 
-.empty {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--muted);
-  border: 1px solid var(--glass-border);
+.adminTable tbody tr {
+  transition: background-color 0.2s ease;
 }
 
-.error {
-  background: rgba(255, 92, 92, 0.1);
-  color: #ff5c5c;
-  border: 1px solid rgba(255, 92, 92, 0.2);
+.adminTable tbody tr:hover td {
+  background-color: #f8fafc;
 }
 
-.calendarActions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.logsDatePicker {
-  min-width: 180px;
-}
-
-.scanConfirmGrid {
-  display: grid;
-  gap: 16px;
-}
-
-.linkButton {
-  text-decoration: none;
+/* HIGH-CONTRAST GREEN CHIPS */
+.chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chip.ok {
+  background-color: rgba(16, 185, 129, 0.12) !important; 
+  color: #047857 !important; 
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 @media (max-width: 1100px) {

@@ -115,26 +115,28 @@ export default function AdminQrDisplayPage() {
         {deleteSuccess ? <p className={`${common.dataState} ${common.loading}`.trim()}>{deleteSuccess}</p> : null}
 
         {!selectedSession ? (
-          <SessionBrowser
-            title="Session Browser"
-            subtitle="Search sessions, filter by date, and open one session to display its live QR code."
-            searchInput={sessionSearchInput}
-            onSearchInputChange={(value) => {
-              setSessionSearchInput(value);
-              setSessionPage(1);
-            }}
-            dateFilter={sessionDateFilter}
-            onDateFilterChange={(value) => {
-              setSessionDateFilter(value);
-              setSessionPage(1);
-            }}
-            page={sessionPage}
-            onPageChange={setSessionPage}
-            onSessionSelect={(session) => {
-              setSelectedSession(session);
-              setSelectedId(String(session.id));
-            }}
-          />
+          <div className={`${styles.browserWrapper} clean-session-browser-root`.trim()}>
+            <SessionBrowser
+              title="Session Browser"
+              subtitle="Search sessions, filter by date, and open one session to display its live QR code."
+              searchInput={sessionSearchInput}
+              onSearchInputChange={(value) => {
+                setSessionSearchInput(value);
+                setSessionPage(1);
+              }}
+              dateFilter={sessionDateFilter}
+              onDateFilterChange={(value) => {
+                setSessionDateFilter(value);
+                setSessionPage(1);
+              }}
+              page={sessionPage}
+              onPageChange={setSessionPage}
+              onSessionSelect={(session) => {
+                setSelectedSession(session);
+                setSelectedId(String(session.id));
+              }}
+            />
+          </div>
         ) : (
           <>
             <button
@@ -144,30 +146,50 @@ export default function AdminQrDisplayPage() {
                 setSelectedSession(null);
                 setSelectedId("");
               }}
+              style={{ marginBottom: "16px", fontWeight: 600, color: "#1e293b" }}
             >
               Back to Session Browser
             </button>
 
             <div className={styles.qrStage}>
               <div className={styles.qrBox}>
-                {canAcceptAttendance ? (
+                {canAcceptAttendance && qrUrl ? (
                   <QRCodeCanvas value={qrUrl} size={320} level="H" includeMargin />
                 ) : (
-                  <p className={common.subtleNote}>Session Ended. Attendance is closed.</p>
+                  <div className={styles.endedNotice}>
+                    <strong>QR is not accessible</strong>
+                    <span>
+                      This session has already ended, so attendance scanning is closed.
+                    </span>
+                  </div>
                 )}
               </div>
               <div className={styles.qrMeta}>
                 <h3>{selectedSession.name}</h3>
-                {selectedSession.department ? <p>Department: {selectedSession.department}</p> : null}
-                <p>Type: {selectedSession.session_type}</p>
-                <p>Status: {sessionLifecycleStatus}</p>
-                <p>Start: {formatDateTime(selectedSession.start_time)}</p>
-                <p>End: {formatDateTime(selectedSession.session_end_time || selectedSession.end_time)}</p>
-                {canAcceptAttendance ? <p>QR Token: {currentQrToken}</p> : null}
+                {selectedSession.department ? <p><strong>Department:</strong> {selectedSession.department}</p> : null}
+                <p><strong>Type:</strong> {selectedSession.session_type}</p>
                 <p>
-                  Refresh Interval: {qrStatus?.qr_refresh_interval_seconds ?? selectedSession.qr_refresh_interval_seconds ?? 30}s
+                  <strong>Status:</strong>{" "}
+                  <span style={{
+                    padding: "4px 8px",
+                    borderRadius: "12px",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    backgroundColor: canAcceptAttendance ? "#ecfdf5" : "#fef2f2",
+                    color: canAcceptAttendance ? "#047857" : "#b91c1c"
+                  }}>
+                    {sessionLifecycleStatus}
+                  </span>
                 </p>
-                <p>Next Rotation In: {canAcceptAttendance ? `${secondsRemaining}s` : "Closed"}</p>
+                <p><strong>Start:</strong> {formatDateTime(selectedSession.start_time)}</p>
+                <p><strong>End:</strong> {formatDateTime(selectedSession.session_end_time || selectedSession.end_time)}</p>
+                {canAcceptAttendance ? <p><strong>QR Token:</strong> <code>{currentQrToken}</code></p> : null}
+                <p>
+                  <strong>Refresh Interval:</strong> {qrStatus?.qr_refresh_interval_seconds ?? selectedSession.qr_refresh_interval_seconds ?? 30}s
+                </p>
+                <p style={{ color: canAcceptAttendance ? "#0284c7" : "#64748b", fontWeight: 600 }}>
+                  Next Rotation In: {canAcceptAttendance ? `${secondsRemaining}s` : "Closed"}
+                </p>
                 <div className={styles.qrMetaActions}>
                   <a
                     className={`${common.ghostBtn} ${common.linkButton} ${styles.qrMetaActionBtn}`.trim()}
@@ -215,7 +237,7 @@ export default function AdminQrDisplayPage() {
               Deleting this session will also delete all related attendance records.
             </p>
             <label className={common.fieldBlock} htmlFor="admin_delete_password">
-              <span className={common.fieldLabel}>Enter your admin password to continue</span>
+              <span className={common.fieldLabel} style={{ color: "#475569", fontWeight: 600 }}>Enter your admin password to continue</span>
               <input
                 id="admin_delete_password"
                 className={common.inputControl}
@@ -224,6 +246,7 @@ export default function AdminQrDisplayPage() {
                 onChange={(event) => setDeletePassword(event.target.value)}
                 placeholder="Admin password"
                 disabled={isDeleting}
+                style={{ marginTop: "6px" }}
               />
             </label>
             {deleteError ? <DataError message={deleteError} /> : null}

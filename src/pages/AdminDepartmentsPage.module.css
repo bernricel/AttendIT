@@ -1,32 +1,200 @@
+/* ==========================================================================
+   DEPARTMENTS WORKSPACE RESPONSIVE LAYOUT
+   ========================================================================== */
+
 .layout {
   display: grid;
-  gap: 18px;
+  grid-template-columns: 1fr;
+  gap: 24px;
 }
 
-.formCard,
-.listCard {
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.03);
+/* Side-by-side layout on larger tablet and desktop screens */
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 350px 1fr;
+    align-items: start;
+  }
+}
+
+.formCard {
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  background-color: #ffffff !important;
   display: grid;
-  gap: 14px;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.formCard h3 {
-  margin: 0;
-  color: #fff;
+.listCard {
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  background-color: #ffffff !important;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.toolbar,
-.formActions,
-.actionsCell {
+.toolbar {
   display: flex;
-  gap: 10px;
-  align-items: end;
+  gap: 12px;
+  align-items: flex-end;
   flex-wrap: wrap;
 }
 
+.formActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   PURE RESPONSIVE TABLE-TO-CARD ENGINE
+   ========================================================================== */
+
+.responsiveTableWrap {
+  width: 100%;
+  overflow-x: visible;
+  margin-top: 12px;
+}
+
+.responsiveTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+/* Desktop Styles */
+.responsiveTable th {
+  color: #475569;
+  font-weight: 700;
+  padding: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.responsiveTable td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.deptNameCell {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+}
+
+.numericCell {
+  font-weight: 500;
+}
+
+.statusCell {
+  vertical-align: middle;
+}
+
 .actionsCell {
+  display: flex;
+  gap: 8px;
   align-items: center;
+}
+
+/* Badge Layout Styles */
+.badgeActive {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #ecfdf5;
+  color: #047857;
+  display: inline-block;
+}
+
+.badgeDisabled {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  display: inline-block;
+}
+
+/* ==========================================================================
+   MOBILE QUERY: SWITCH TABLE TO ELEGANT CARDS BELOW 768px
+   ========================================================================== */
+@media (max-width: 767px) {
+  /* Hide standard table headers */
+  .responsiveTable thead {
+    display: none;
+  }
+
+  /* Force table, rows, and cells to stack vertically */
+  .responsiveTable,
+  .responsiveTable tbody,
+  .responsiveTable tr,
+  .responsiveTable td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Style each row container as an individual card */
+  .responsiveTable tr {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+
+  /* Style individual table cells as stacked key-value rows */
+  .responsiveTable td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 0.9rem;
+    color: #1e293b;
+    text-align: right;
+  }
+
+  /* Remove bottom dashed border from the action cell */
+  .responsiveTable td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-top: 8px;
+  }
+
+  /* Inject mobile labels dynamically from JSX data-label attribute */
+  .responsiveTable td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-align: left;
+    float: left;
+  }
+
+  /* Ensure department name heading stands out at the top of card */
+  .deptNameCell {
+    border-bottom: 1.5px solid #cbd5e1 !important;
+    padding-top: 0 !important;
+    padding-bottom: 10px !important;
+    font-size: 1.05rem !important;
+  }
+
+  /* Reset layout for actions inside mobile cards */
+  .actionsCell {
+    justify-content: flex-end;
+    width: 100% !important;
+  }
 }

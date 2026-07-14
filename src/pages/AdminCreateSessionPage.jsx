@@ -127,7 +127,6 @@ export default function AdminCreateSessionPage() {
         setSuccess("Attendance session created successfully.");
       }
 
-      // Keep recurrence mode and activation preferences, but clear generated rule values for the next entry.
       setForm((prev) => ({
         ...prev,
         title: "",
@@ -178,11 +177,31 @@ export default function AdminCreateSessionPage() {
             options={departmentOptions}
             disabled={isSubmitting || isDepartmentsLoading}
           />
-          <Link className={common.subtleNote} to={ROUTES.ADMIN_DEPARTMENTS}>
-            Manage Departments
-          </Link>
+          
+          {/* UI FIXED: Styled Manage Departments link as a modern interactive button */}
+          <div style={{ margin: "12px 0 24px 0" }}>
+            <Link 
+              className={common.subtleNote} 
+              to={ROUTES.ADMIN_DEPARTMENTS}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "8px 16px",
+                backgroundColor: "#f1f5f9",
+                border: "1.5px solid #cbd5e1",
+                borderRadius: "6px",
+                color: "#1e293b",
+                fontWeight: "700",
+                fontSize: "0.85rem",
+                textDecoration: "none",
+                transition: "all 0.2s ease"
+              }}
+            >
+              Manage Departments
+            </Link>
+          </div>
 
-          <label className={common.switchField} htmlFor="is_recurring">
+          <label className={common.switchField} htmlFor="is_recurring" style={{ marginBottom: "16px", display: "flex", alignItems: "center" }}>
             <input
               id="is_recurring"
               className={common.switchInput}
@@ -194,9 +213,9 @@ export default function AdminCreateSessionPage() {
             <span className={common.switchControl} aria-hidden="true">
               <span className={common.switchThumb} />
             </span>
-            <span className={common.switchText}>
-              Recurring Session (Repeat session based on the selected date
-              range)
+            {/* UI FIXED: Clean, visible dark text */}
+            <span className={common.switchText} style={{ color: "#1e293b", fontWeight: "600", marginLeft: "10px" }}>
+              Recurring Session (Repeat session based on the selected date range)
             </span>
           </label>
 
@@ -223,7 +242,7 @@ export default function AdminCreateSessionPage() {
                           onChange={() => toggleRecurringWeekday(weekday.value)}
                           disabled={isSubmitting}
                         />
-                        <span>{weekday.label}</span>
+                        <span style={{ color: "#1e293b", fontWeight: "600" }}>{weekday.label}</span>
                       </label>
                     ))}
                   </div>
@@ -247,11 +266,9 @@ export default function AdminCreateSessionPage() {
                 disabled={isSubmitting}
               />
 
-              <p className={common.subtleNote}>
-                This will create approximately {recurringPreviewCount} scheduled
-                occurrence
-                {recurringPreviewCount === 1 ? "" : "s"} in the selected date
-                range.
+              <p className={common.subtleNote} style={{ color: "#475569", fontWeight: "600" }}>
+                This will create approximately {recurringPreviewCount} scheduled occurrence
+                {recurringPreviewCount === 1 ? "" : "s"} in the selected date range.
               </p>
             </>
           ) : null}
@@ -284,7 +301,8 @@ export default function AdminCreateSessionPage() {
             disabled={isSubmitting}
           />
 
-          <section className={styles.attendanceRulesCard}>
+          {/* UI FIXED: Structured block with an explicit card border & clean spacing */}
+          <section className={styles.attendanceRulesCard} style={{ margin: "24px 0", border: "1.5px solid #cbd5e1", borderRadius: "8px", overflow: "hidden" }}>
             <button
               type="button"
               className={styles.attendanceRulesToggle}
@@ -292,18 +310,37 @@ export default function AdminCreateSessionPage() {
               aria-expanded={isAttendanceRulesOpen}
               aria-controls="attendance-rules-content"
               disabled={isSubmitting}
+              style={{
+                width: "100%",
+                padding: "16px 20px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: "#f8fafc",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left"
+              }}
             >
-              <span className={styles.attendanceRulesHeading}>
-                Attendance Rules
-              </span>
-              <span className={styles.attendanceRulesHint}>
-                Optional advanced attendance timing settings
-              </span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span className={styles.attendanceRulesHeading} style={{ fontSize: "0.95rem", fontWeight: "700", color: "#1e293b" }}>
+                  Attendance Rules
+                </span>
+                <span className={styles.attendanceRulesHint} style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: "500" }}>
+                  Optional advanced attendance timing settings
+                </span>
+              </div>
               <span
                 className={`${styles.attendanceRulesChevron} ${
                   isAttendanceRulesOpen ? styles.attendanceRulesChevronOpen : ""
                 }`.trim()}
                 aria-hidden="true"
+                style={{
+                  fontSize: "1.1rem",
+                  color: "#1e293b",
+                  transform: isAttendanceRulesOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s ease"
+                }}
               >
                 &#9662;
               </span>
@@ -313,11 +350,16 @@ export default function AdminCreateSessionPage() {
               <div
                 id="attendance-rules-content"
                 className={styles.attendanceRulesContent}
+                style={{
+                  padding: "20px",
+                  background: "#ffffff",
+                  borderTop: "1.5px solid #cbd5e1",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "20px"
+                }}
               >
-                <label
-                  className={common.switchField}
-                  htmlFor="enable_check_in_window"
-                >
+                <label className={common.switchField} htmlFor="enable_check_in_window" style={{ display: "flex", alignItems: "center" }}>
                   <input
                     id="enable_check_in_window"
                     className={common.switchInput}
@@ -329,13 +371,13 @@ export default function AdminCreateSessionPage() {
                   <span className={common.switchControl} aria-hidden="true">
                     <span className={common.switchThumb} />
                   </span>
-                  <span className={common.switchText}>
+                  <span className={common.switchText} style={{ color: "#1e293b", fontWeight: "600", marginLeft: "10px" }}>
                     Enable Check-in Window
                   </span>
                 </label>
 
                 {form.enable_check_in_window ? (
-                  <>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingLeft: "12px", borderLeft: "2px solid #cbd5e1" }}>
                     <FormField
                       id="check_in_start_time"
                       label="Check-in Start Time"
@@ -360,13 +402,10 @@ export default function AdminCreateSessionPage() {
                       onChange={updateField("late_threshold_time")}
                       disabled={isSubmitting}
                     />
-                  </>
+                  </div>
                 ) : null}
 
-                <label
-                  className={common.switchField}
-                  htmlFor="enable_check_out_window"
-                >
+                <label className={common.switchField} htmlFor="enable_check_out_window" style={{ display: "flex", alignItems: "center" }}>
                   <input
                     id="enable_check_out_window"
                     className={common.switchInput}
@@ -378,13 +417,13 @@ export default function AdminCreateSessionPage() {
                   <span className={common.switchControl} aria-hidden="true">
                     <span className={common.switchThumb} />
                   </span>
-                  <span className={common.switchText}>
+                  <span className={common.switchText} style={{ color: "#1e293b", fontWeight: "600", marginLeft: "10px" }}>
                     Enable Check-out Window
                   </span>
                 </label>
 
                 {form.enable_check_out_window ? (
-                  <>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingLeft: "12px", borderLeft: "2px solid #cbd5e1" }}>
                     <FormField
                       id="check_out_start_time"
                       label="Check-out Start Time"
@@ -401,7 +440,7 @@ export default function AdminCreateSessionPage() {
                       onChange={updateField("check_out_end_time")}
                       disabled={isSubmitting}
                     />
-                  </>
+                  </div>
                 ) : null}
               </div>
             ) : null}
@@ -417,7 +456,7 @@ export default function AdminCreateSessionPage() {
             disabled={isSubmitting}
           />
 
-          <label className={common.switchField} htmlFor="is_active">
+          <label className={common.switchField} htmlFor="is_active" style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
             <input
               id="is_active"
               className={common.switchInput}
@@ -429,7 +468,7 @@ export default function AdminCreateSessionPage() {
             <span className={common.switchControl} aria-hidden="true">
               <span className={common.switchThumb} />
             </span>
-            <span className={common.switchText}>
+            <span className={common.switchText} style={{ color: "#1e293b", fontWeight: "600", marginLeft: "10px" }}>
               Activate session immediately
             </span>
           </label>
@@ -438,7 +477,7 @@ export default function AdminCreateSessionPage() {
           <MessageBanner type="info" message={success} />
 
           {creationSummary ? (
-            <p className={common.subtleNote}>
+            <p className={common.subtleNote} style={{ color: "#0f766e", fontWeight: "600" }}>
               Created: {creationSummary.created_count} | Skipped duplicates:{" "}
               {creationSummary.skipped_duplicates}
             </p>

@@ -1,20 +1,116 @@
-.facultyWelcomeCard,
-.facultyPanel {
-  background: var(--panel);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--shadow);
-}
-
 .facultyWelcomeCard {
-  margin-bottom: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+  color: #0f172a; 
 }
 
-.facultyWelcomeCard h2,
+.facultyWelcomeCard h2 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #000;
+}
+
+.facultyWelcomeCard p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.facultyTwoCol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.facultyPanel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+}
+
 .facultyPanel h3 {
-  color: var(--ua-gold);
+  color: #92400e; 
   margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* --- Profile Summary Box Styling --- */
+.profileGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.profileField {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: #fafafa;
+}
+
+.profileField span {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.profileField strong {
+  display: block;
+  font-size: 1rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* --- Quick Actions Box Styling --- */
+.quickActionsGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.actionCard {
+  display: block;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.actionCard:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.actionCard strong {
+  display: block;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.actionCard span {
+  display: block;
+  color: #64748b;
+  font-size: 0.875rem;
 }

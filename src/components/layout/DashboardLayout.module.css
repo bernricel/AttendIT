@@ -2,29 +2,33 @@
 .facultyShell {
   min-height: 100vh;
   display: flex;
-  background: transparent;
+  background-color: #f8fafc;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.88)),
+    url("https://upload.wikimedia.org/wikipedia/commons/6/66/Pampangajf3325a_04.JPG");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   position: relative;
 }
 
 .adminSidebar,
 .facultySidebar {
-  background-color: #0b132b;
-  background-image:
-    linear-gradient(rgba(11, 19, 43, 0.85), rgba(11, 19, 43, 0.9)),
-    url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80");
-  background-size: cover;
-  background-position: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
-  color: #fff;
-  padding: 24px 16px;
+  background-color: rgba(255, 255, 255, 0.35) !important; 
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+  padding: 24px 0; 
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  width: 270px;
-  flex: 0 0 270px;
+  gap: 16px;
+  width: 260px;
+  flex: 0 0 260px;
   transition: transform 0.25s ease;
   z-index: 1100;
+  min-height: 100vh; 
 }
 
 .adminBrand,
@@ -32,18 +36,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 10px;
+  padding: 0 24px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
+  margin-bottom: 8px;
 }
 
 .brandLogo {
-  width: 60px;
-  height: 60px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   flex-shrink: 0;
-  border-radius: 10px;
-  padding: 4px;
+  border-radius: 50%;
+  background: #ffffff;
 }
 
 .brandCopy {
@@ -52,32 +56,35 @@
 }
 
 .brandCopy strong {
-  color: var(--ua-gold);
-  letter-spacing: 0.02em;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .brandCopy span {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.82rem;
+  color: #64748b;
+  font-size: 0.75rem;
 }
 
 .adminNav,
 .facultyNav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .adminNavItem,
 .facultyNavItem {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   text-decoration: none;
-  color: #a0aabf;
-  padding: 14px 16px;
-  border-radius: 8px;
-  font-size: 1.05rem;
+  color: #475569;
+  padding: 12px 20px;
+  margin: 2px 16px;
+  border-radius: 12px; 
+  font-size: 0.92rem;
   font-weight: 500;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -89,68 +96,30 @@
 
 .adminNavItem:hover,
 .facultyNavItem:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-  transform: translateX(4px);
+  background: rgba(15, 23, 42, 0.04);
+  color: #0f172a;
 }
 
 .active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  font-weight: 600;
-  border-left: 4px solid var(--ua-gold);
-  border-radius: 4px 8px 8px 4px;
+  background: #eef2ff !important; 
+  color: #1e293b !important;
+  font-weight: 600 !important;
 }
 
 .navIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  font-size: 1.4rem;
+  width: 20px;
+  height: 20px;
+  font-size: 1.15rem;
   flex-shrink: 0;
-}
-
-.iconOrange {
-  color: #f59e0b;
-}
-
-.iconRed {
-  color: #f05232;
-}
-
-.iconPurple {
-  color: #8b5cf6;
-}
-
-.iconMagenta {
-  color: #d946ef;
-}
-
-.iconCyan {
-  color: #06b6d4;
-}
-
-.iconBlue {
-  color: #3b82f6;
-}
-
-.iconPink {
-  color: #ec4899;
-}
-
-.iconYellow {
-  color: #eab308;
-}
-
-.iconTeal {
-  color: #14b8a6;
+  color: inherit;
 }
 
 .adminMain,
 .facultyMain {
-  padding: 24px;
+  padding: 24px 32px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -160,35 +129,35 @@
 
 .adminTopbar,
 .facultyTopbar {
-  background: var(--panel);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #ffffff;
   border-radius: 16px;
-  padding: 14px 24px;
+  padding: 18px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .adminTopbar h1,
 .facultyTopbar h1 {
   margin: 4px 0 0;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: var(--ua-gold);
+  color: #f0a400;
 }
 
 .topbarTitleWrap {
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .topbarTitleWrap p {
   margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
+  color: #475569;
+  font-size: 0.88rem;
 }
 
 .topbarTitleRow {
@@ -201,9 +170,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #fff;
-  font-size: 0.85rem;
+  color: #64748b;
+  font-size: 0.8rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .adminTopbarRight,
@@ -224,15 +195,15 @@
 
 .adminUserBadge strong,
 .facultyUserBadge strong {
-  font-size: 0.95rem;
-  color: #fff;
+  font-size: 0.9rem;
+  color: #0f172a;
   font-weight: 600;
 }
 
 .adminUserBadge span,
 .facultyUserBadge span {
-  color: var(--muted);
-  font-size: 0.8rem;
+  color: #64748b;
+  font-size: 0.75rem;
 }
 
 .adminActions,
@@ -250,7 +221,7 @@
 .layoutBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 10, 24, 0.65);
+  background: rgba(15, 23, 42, 0.3);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -271,103 +242,32 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
   font-size: 1.2rem;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all 0.2s ease;
-}
-
-.sidebarToggle:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--ua-gold);
-}
-
-.isOpen {
 }
 
 @keyframes pageFadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 860px) {
-  .adminShell,
-  .facultyShell {
-    display: block;
-  }
-
-  .adminSidebar,
-  .facultySidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+  .adminShell, .facultyShell { display: block; }
+  .adminSidebar, .facultySidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
     transform: translateX(-105%);
-    box-shadow: 8px 0 22px rgba(0, 0, 0, 0.5);
+    box-shadow: 8px 0 22px rgba(15, 23, 42, 0.08);
   }
-
-  .adminSidebar.isOpen,
-  .facultySidebar.isOpen {
-    transform: translateX(0);
-  }
-
-  .sidebarToggle {
-    display: inline-flex;
-  }
-
-  .adminTopbarRight,
-  .facultyTopbarRight {
-    margin-left: auto;
-  }
-
-  .adminUserBadge,
-  .facultyUserBadge {
-    display: none;
-  }
-
-  .adminTopbar,
-  .facultyTopbar {
-    padding: 14px;
-  }
-
-  .adminMain,
-  .facultyMain {
-    padding: 14px;
-  }
-
-  .topbarBranding {
-    font-size: 0.8rem;
-  }
-
-  .brandLogo {
-    width: 34px;
-    height: 34px;
-  }
-}
-
-@media (min-width: 861px) {
-  .layoutBackdrop {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .adminSidebar,
-  .facultySidebar,
-  .layoutBackdrop,
-  .pageTransition {
-    transition: none;
-    animation: none;
-  }
+  .adminSidebar.isOpen, .facultySidebar.isOpen { transform: translateX(0); }
+  .sidebarToggle { display: inline-flex; }
+  .adminTopbarRight, .facultyTopbarRight { margin-left: auto; }
+  .adminUserBadge, .facultyUserBadge { display: none; }
+  .adminTopbar, .facultyTopbar { padding: 14px; }
+  .adminMain, .facultyMain { padding: 14px; }
 }

@@ -209,42 +209,55 @@ export default function AdminAttendanceLogsPage() {
       />
       <AdminPanel>
         {isBrowsingSessions ? (
-          <SessionBrowser
-            title="Session Browser"
-            subtitle="Search by session title, narrow by date, and open one session at a time for detailed attendance review."
-            excludedSessionId={selectedSessionId}
-            searchInput={sessionSearchInput}
-            onSearchInputChange={(value) => {
-              setSessionSearchInput(value);
-              setSessionPage(1);
-            }}
-            dateFilter={sessionDateFilter}
-            onDateFilterChange={(value) => {
-              setSessionDateFilter(value);
-              setSessionPage(1);
-            }}
-            page={sessionPage}
-            onPageChange={setSessionPage}
-            onSessionSelect={(session) => {
-              browserScrollYRef.current = window.scrollY;
-              setSelectedSession(session);
-              setSelectedSessionId(String(session.id));
-              setIsBrowsingSessions(false);
-            }}
-          />
+          <div className={styles.browserWrapper}>
+            <SessionBrowser
+              title="Session Browser"
+              subtitle="Search by session title, narrow by date, and open one session at a time for detailed attendance review."
+              excludedSessionId={selectedSessionId}
+              searchInput={sessionSearchInput}
+              onSearchInputChange={(value) => {
+                setSessionSearchInput(value);
+                setSessionPage(1);
+              }}
+              dateFilter={sessionDateFilter}
+              onDateFilterChange={(value) => {
+                setSessionDateFilter(value);
+                setSessionPage(1);
+              }}
+              page={sessionPage}
+              onPageChange={setSessionPage}
+              onSessionSelect={(session) => {
+                browserScrollYRef.current = window.scrollY;
+                setSelectedSession(session);
+                setSelectedSessionId(String(session.id));
+                setIsBrowsingSessions(false);
+              }}
+            />
+          </div>
         ) : null}
 
         {selectedSession && !isBrowsingSessions ? (
           <section className={styles.selectedSection}>
             <div className={styles.summaryPanel}>
-              <button
-                type="button"
-                className={`${common.ghostBtn} ${common.compact}`.trim()}
-                onClick={() => setIsBrowsingSessions(true)}
-              >
-                Back to Session Browser
-              </button>
               <div>
+                <button
+                  type="button"
+                  style={{ 
+                    border: '1px solid #cbd5e1', 
+                    background: '#ffffff', 
+                    color: '#0f172a', 
+                    fontWeight: '600', 
+                    cursor: 'pointer',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '0.88rem'
+                  }}
+                  onClick={() => setIsBrowsingSessions(true)}
+                >
+                  ← Back to Session Browser
+                </button>
+              </div>
+              <div style={{ marginTop: '10px' }}>
                 <p className={styles.eyebrow}>Selected Session</p>
                 <h2 className={styles.summaryTitle}>{selectedSession.name}</h2>
                 <p className={styles.summaryDate}>{formatLongDate(selectedSession.start_time)}</p>
@@ -269,10 +282,10 @@ export default function AdminAttendanceLogsPage() {
             <div className={styles.controlsWrap}>
               <div className={styles.secondaryFilters}>
                 <label className={common.fieldBlock} htmlFor="attendance_status_filter">
-                  <span className={common.fieldLabel}>Attendance Status</span>
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Attendance Status</span>
                   <select
                     id="attendance_status_filter"
-                    className={`${common.inputControl} ${common.selectControl}`.trim()}
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
                     value={attendanceStatusFilter}
                     onChange={(event) => setAttendanceStatusFilter(event.target.value)}
                   >
@@ -285,10 +298,10 @@ export default function AdminAttendanceLogsPage() {
                 </label>
 
                 <label className={common.fieldBlock} htmlFor="signature_status_filter">
-                  <span className={common.fieldLabel}>Signature Status</span>
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Signature Status</span>
                   <select
                     id="signature_status_filter"
-                    className={`${common.inputControl} ${common.selectControl}`.trim()}
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
                     value={signatureStatusFilter}
                     onChange={(event) => setSignatureStatusFilter(event.target.value)}
                   >
@@ -301,10 +314,10 @@ export default function AdminAttendanceLogsPage() {
                 </label>
 
                 <label className={common.fieldBlock} htmlFor="sort_by_filter">
-                  <span className={common.fieldLabel}>Sort</span>
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Sort By</span>
                   <select
                     id="sort_by_filter"
-                    className={`${common.inputControl} ${common.selectControl}`.trim()}
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
                   >
@@ -317,10 +330,11 @@ export default function AdminAttendanceLogsPage() {
                 </label>
 
                 <div className={common.fieldBlock}>
-                  <span className={common.fieldLabel}>Order</span>
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Order</span>
                   <div className={styles.orderToggle}>
                     <button
                       type="button"
+                      style={{ border: sortOrder === "asc" ? '2px solid #004b87' : '1px solid #cbd5e1', cursor: 'pointer', padding: '8px 12px', borderRadius: '8px' }}
                       className={`${common.ghostBtn} ${common.compact} ${sortOrder === "asc" ? styles.orderActive : ""}`.trim()}
                       onClick={() => setSortOrder("asc")}
                     >
@@ -328,6 +342,7 @@ export default function AdminAttendanceLogsPage() {
                     </button>
                     <button
                       type="button"
+                      style={{ border: sortOrder === "desc" ? '2px solid #004b87' : '1px solid #cbd5e1', cursor: 'pointer', padding: '8px 12px', borderRadius: '8px' }}
                       className={`${common.ghostBtn} ${common.compact} ${sortOrder === "desc" ? styles.orderActive : ""}`.trim()}
                       onClick={() => setSortOrder("desc")}
                     >
@@ -341,6 +356,7 @@ export default function AdminAttendanceLogsPage() {
                 <div className={styles.actionButtons}>
                   <button
                     type="button"
+                    style={{ border: '1px solid #cbd5e1', color: '#475569', cursor: 'pointer', padding: '8px 14px', borderRadius: '8px', fontWeight: '600' }}
                     className={`${common.ghostBtn} ${common.compact}`.trim()}
                     onClick={resetSecondaryFilters}
                   >
@@ -348,6 +364,7 @@ export default function AdminAttendanceLogsPage() {
                   </button>
                   <button
                     type="button"
+                    style={{ border: '1px solid #cbd5e1', color: '#0f172a', background: '#ffffff', cursor: 'pointer', padding: '8px 14px', borderRadius: '8px', fontWeight: '600' }}
                     className={`${common.ghostBtn} ${common.compact}`.trim()}
                     onClick={handleExportPdf}
                     disabled={isExportingPdf || isRowsLoading || !hasRows}
@@ -357,6 +374,7 @@ export default function AdminAttendanceLogsPage() {
                   </button>
                   <button
                     type="button"
+                    style={{ background: '#004b87', color: '#ffffff', cursor: 'pointer', padding: '8px 16px', borderRadius: '8px', fontWeight: '700', border: 'none' }}
                     className={`${common.primaryBtn} ${common.compact}`.trim()}
                     onClick={handleExportCsv}
                     disabled={isExportingCsv || isRowsLoading}
@@ -376,43 +394,55 @@ export default function AdminAttendanceLogsPage() {
             {!isRowsLoading && !rowsError && hasRows ? (
               <div className={styles.responsiveBlock}>
                 <div className={styles.desktopOnly}>
-                  <div className={common.tableWrap}>
+                  <div className={common.tableWrap} style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                     <table className={common.adminTable}>
-                      <thead>
+                      <thead style={{ background: '#f8fafc' }}>
                         <tr>
-                          <th>Faculty Name</th>
-                          <th>Session</th>
-                          <th>Time In</th>
-                          <th>Time Out</th>
-                          <th>Attendance Status</th>
-                          <th>Signature Status</th>
-                          <th>Late Status</th>
+                          <th style={{ color: '#334155', fontWeight: '700', padding: '14px' }}>Faculty Name</th>
+                          <th style={{ color: '#334155', fontWeight: '700' }}>Session</th>
+                          <th style={{ color: '#334155', fontWeight: '700' }}>Time In</th>
+                          <th style={{ color: '#334155', fontWeight: '700' }}>Time Out</th>
+                          <th style={{ color: '#334155', fontWeight: '700' }}>Attendance Status</th>
+                          <th style={{ color: '#334155', fontWeight: '700' }}>Signature Status</th>
+                          <th style={{ color: '#334155', fontWeight: '700' }}>Late Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {rows.map((row) => (
-                          <tr key={`${row.session_id}-${row.faculty_id}`}>
-                            <td>
-                              <p className={styles.facultyName}>{row.faculty_name}</p>
-                              <p className={styles.facultyEmail}>{row.email}</p>
+                          <tr key={`${row.session_id}-${row.faculty_id}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '14px' }}>
+                              <p className={styles.facultyName} style={{ color: '#0f172a', fontWeight: '700' }}>{row.faculty_name}</p>
+                              <p className={styles.facultyEmail} style={{ color: '#64748b' }}>{row.email}</p>
                             </td>
                             <td>
-                              <p className={styles.sessionName}>{row.session_name}</p>
-                              <p className={styles.sessionDate}>{row.date}</p>
+                              <p className={styles.sessionName} style={{ color: '#0f172a', fontWeight: '700' }}>{row.session_name}</p>
+                              <p className={styles.sessionDate} style={{ color: '#64748b' }}>{row.date}</p>
                             </td>
-                            <td>{formatDateTime(row.time_in)}</td>
-                            <td>{formatDateTime(row.time_out)}</td>
+                            <td style={{ color: '#334155', fontWeight: '600' }}>{formatDateTime(row.time_in)}</td>
+                            <td style={{ color: '#334155', fontWeight: '600' }}>{formatDateTime(row.time_out)}</td>
                             <td>
                               <span className={`${common.chip} ${styles[normalizeStatus(row.attendance_status)] || ""}`.trim()}>
                                 {row.attendance_status}
                               </span>
                             </td>
                             <td>
-                              <span className={`${common.chip} ${common[row.signature_status] || ""}`.trim()}>
+                              <span 
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '4px 10px',
+                                  borderRadius: '999px',
+                                  fontSize: '0.78rem',
+                                  fontWeight: '700',
+                                  textTransform: 'uppercase',
+                                  background: row.signature_status === 'valid' ? '#d1fae5' : '#fee2e2',
+                                  color: row.signature_status === 'valid' ? '#065f46' : '#991b1b',
+                                  border: row.signature_status === 'valid' ? '1px solid #a7f3d0' : '1px solid #fca5a5'
+                                }}
+                              >
                                 {row.signature_status}
                               </span>
                             </td>
-                            <td>{getLateStatusLabel(row)}</td>
+                            <td style={{ color: '#0f172a', fontWeight: '700' }}>{getLateStatusLabel(row)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -429,11 +459,11 @@ export default function AdminAttendanceLogsPage() {
                         <p className={styles.cardMeta}>{row.session_name}</p>
                         <p className={styles.cardMeta}>{row.date}</p>
                         <div className={styles.cardDetailGrid}>
-                          <p><strong>Time In:</strong> {formatDateTime(row.time_in)}</p>
-                          <p><strong>Time Out:</strong> {formatDateTime(row.time_out)}</p>
-                          <p><strong>Attendance Status:</strong> {row.attendance_status}</p>
-                          <p><strong>Signature Status:</strong> {row.signature_status}</p>
-                          <p><strong>Late Status:</strong> {getLateStatusLabel(row)}</p>
+                          <p><strong style={{ color: '#475569' }}>Time In:</strong> {formatDateTime(row.time_in)}</p>
+                          <p><strong style={{ color: '#475569' }}>Time Out:</strong> {formatDateTime(row.time_out)}</p>
+                          <p><strong style={{ color: '#475569' }}>Attendance Status:</strong> {row.attendance_status}</p>
+                          <p><strong style={{ color: '#475569' }}>Signature Status:</strong> {row.signature_status}</p>
+                          <p><strong style={{ color: '#475569' }}>Late Status:</strong> {getLateStatusLabel(row)}</p>
                         </div>
                       </article>
                     ))}
