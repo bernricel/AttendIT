@@ -19,3 +19,18 @@ export async function getActiveDepartments() {
   const response = await api.get('/auth/departments/')
   return response.data
 }
+
+export async function getActivePrograms(departmentId) {
+  const response = await api.get(`/auth/departments/${departmentId}/programs/`)
+  return response.data
+}
+
+export async function getProfile() {
+  const response = await api.get('/auth/profile/')
+  return response.data
+}
+
+export async function updateProfile(payload) {
+  const response = await api.patch('/auth/profile/', payload)
+  return response.data
+}

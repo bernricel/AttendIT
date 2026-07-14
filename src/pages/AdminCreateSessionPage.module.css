@@ -1,43 +1,151 @@
-/* ==========================================================================
-   ADMIN WORKSPACE COMPONENT OVERLAY STYLES
-   ========================================================================== */
+.sessionForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
 
-.profileForm {
-  display: flex;
-  flex-direction: column;
+.primaryColumn,
+.secondaryColumn,
+.formCard,
+.formGrid,
+.ruleStack,
+.ruleFields,
+.reviewList {
+  display: grid;
   gap: 16px;
 }
 
-.attendanceRulesCard {
+.secondaryColumn {
+  position: sticky;
+  top: 18px;
+}
+
+.formCard {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background:
+    linear-gradient(145deg, #ffffff, #f8fafc),
+    radial-gradient(circle at 100% 0%, rgba(0, 75, 135, 0.05), transparent 32%);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
+}
+
+.cardHeader,
+.ruleToggle,
+.switchRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.cardHeader h2,
+.ruleToggle h2,
+.reviewTitle {
+  margin: 4px 0 0;
+  color: #0f172a;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.kicker {
+  margin: 0;
+  color: #f0a400;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.manageLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  color: #0f172a;
+  text-decoration: none;
+  font-weight: 700;
+  background: #ffffff;
+}
+
+.formGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ruleToggle {
   width: 100%;
-  box-sizing: border-box;
-  background-color: #ffffff;
-  transition: border-color 0.2s ease;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
 }
 
-.attendanceRulesCard:hover {
-  border-color: #1e293b !important;
+.ruleToggle span:last-child {
+  color: #475569;
+  font-weight: 700;
 }
 
-.attendanceRulesToggle {
-  transition: background-color 0.2s ease;
+.ruleBlock {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
 }
 
-.attendanceRulesToggle:hover {
-  background-color: #f1f5f9 !important;
+.weekdayWrap {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.attendanceRulesContent {
-  animation: slideDown 0.2s ease-out;
+.weekdayChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid #dbe4ef;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 600;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
+.previewNote,
+.reviewList p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.reviewList strong {
+  color: #0f172a;
+}
+
+@media (max-width: 1080px) {
+  .sessionForm {
+    grid-template-columns: 1fr;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .secondaryColumn {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .cardHeader,
+  .ruleToggle,
+  .switchRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
   }
 }

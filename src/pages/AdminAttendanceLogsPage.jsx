@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FiFileText } from "react-icons/fi";
 
 import AdminPanel from "../components/admin/AdminPanel";
@@ -26,6 +26,13 @@ const SIGNATURE_STATUS_OPTIONS = [
   { value: "invalid", label: "Invalid" },
 ];
 
+const LATE_STATUS_OPTIONS = [
+  { value: "", label: "All late statuses" },
+  { value: "on_time", label: "On Time" },
+  { value: "late", label: "Late" },
+  { value: "na", label: "N/A" },
+];
+
 const SORT_BY_OPTIONS = [
   { value: "time_in", label: "Time In" },
   { value: "time_out", label: "Time Out" },
@@ -35,7 +42,7 @@ const SORT_BY_OPTIONS = [
 ];
 
 function normalizeFilename(contentDisposition) {
-  const match = /filename="?([^\"]+)"?/i.exec(contentDisposition || "");
+  const match = /filename="?([^"]+)"?/i.exec(contentDisposition || "");
   return match ? match[1] : "attendance_sheet.csv";
 }
 
@@ -69,6 +76,11 @@ function getSessionStatus(session) {
 }
 
 function getLateStatusLabel(row) {
+  const directLateStatus = normalizeStatus(
+    row.late_status || row.late_status_label || row.status_label,
+  );
+  if (directLateStatus === "late") return "Late";
+  if (directLateStatus === "on_time") return "On Time";
   const normalizedStatus = normalizeStatus(row.attendance_status);
   if (normalizedStatus === "late") return "Late";
   if (normalizedStatus === "on_time") return "On Time";
@@ -84,6 +96,8 @@ export default function AdminAttendanceLogsPage() {
   const [sessionPage, setSessionPage] = useState(1);
   const [attendanceStatusFilter, setAttendanceStatusFilter] = useState("");
   const [signatureStatusFilter, setSignatureStatusFilter] = useState("");
+  const [lateStatusFilter, setLateStatusFilter] = useState("");
+  const [recordSearch, setRecordSearch] = useState("");
   const [sortBy, setSortBy] = useState("time_in");
   const [sortOrder, setSortOrder] = useState("asc");
   const [rows, setRows] = useState([]);
@@ -140,7 +154,23 @@ export default function AdminAttendanceLogsPage() {
     });
   }, [isBrowsingSessions]);
 
-  const hasRows = rows.length > 0;
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) => {
+      const lateStatus = normalizeStatus(getLateStatusLabel(row));
+      const searchValue = recordSearch.trim().toLowerCase();
+      const matchesSearch =
+        !searchValue ||
+        String(row.faculty_name || "").toLowerCase().includes(searchValue) ||
+        String(row.email || "").toLowerCase().includes(searchValue) ||
+        String(row.session_name || "").toLowerCase().includes(searchValue);
+      const matchesLateStatus =
+        !lateStatusFilter ||
+        (lateStatusFilter === "na" ? lateStatus === "n/a" : lateStatus === lateStatusFilter);
+      return matchesSearch && matchesLateStatus;
+    });
+  }, [lateStatusFilter, recordSearch, rows]);
+
+  const hasRows = filteredRows.length > 0;
 
   const handleExportCsv = async () => {
     if (!selectedSessionId) return;
@@ -177,12 +207,15 @@ export default function AdminAttendanceLogsPage() {
     try {
       exportAttendanceLogsPdf({
         session: selectedSession,
-        rows,
+        rows: filteredRows,
         filters: {
           attendanceStatus:
             ATTENDANCE_STATUS_OPTIONS.find((option) => option.value === attendanceStatusFilter)?.label || "",
           signatureStatus:
             SIGNATURE_STATUS_OPTIONS.find((option) => option.value === signatureStatusFilter)?.label || "",
+          lateStatus:
+            LATE_STATUS_OPTIONS.find((option) => option.value === lateStatusFilter)?.label || "",
+          search: recordSearch,
           sortBy: SORT_BY_OPTIONS.find((option) => option.value === sortBy)?.label || sortBy,
           sortOrder,
         },
@@ -197,6 +230,8 @@ export default function AdminAttendanceLogsPage() {
   const resetSecondaryFilters = () => {
     setAttendanceStatusFilter("");
     setSignatureStatusFilter("");
+    setLateStatusFilter("");
+    setRecordSearch("");
     setSortBy("time_in");
     setSortOrder("asc");
   };
@@ -281,6 +316,19 @@ export default function AdminAttendanceLogsPage() {
 
             <div className={styles.controlsWrap}>
               <div className={styles.secondaryFilters}>
+                <label className={common.fieldBlock} htmlFor="record_search">
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Search Records</span>
+                  <input
+                    id="record_search"
+                    className={common.inputControl}
+                    type="text"
+                    value={recordSearch}
+                    onChange={(event) => setRecordSearch(event.target.value)}
+                    placeholder="Faculty, email, or session"
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
+                  />
+                </label>
+
                 <label className={common.fieldBlock} htmlFor="attendance_status_filter">
                   <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Attendance Status</span>
                   <select
@@ -290,6 +338,22 @@ export default function AdminAttendanceLogsPage() {
                     onChange={(event) => setAttendanceStatusFilter(event.target.value)}
                   >
                     {ATTENDANCE_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={common.fieldBlock} htmlFor="late_status_filter">
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Late Status</span>
+                  <select
+                    id="late_status_filter"
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
+                    value={lateStatusFilter}
+                    onChange={(event) => setLateStatusFilter(event.target.value)}
+                  >
+                    {LATE_STATUS_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -408,7 +472,7 @@ export default function AdminAttendanceLogsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {rows.map((row) => (
+                        {filteredRows.map((row) => (
                           <tr key={`${row.session_id}-${row.faculty_id}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
                             <td style={{ padding: '14px' }}>
                               <p className={styles.facultyName} style={{ color: '#0f172a', fontWeight: '700' }}>{row.faculty_name}</p>
@@ -452,7 +516,7 @@ export default function AdminAttendanceLogsPage() {
 
                 <div className={styles.mobileOnly}>
                   <div className={styles.mobileCards}>
-                    {rows.map((row) => (
+                    {filteredRows.map((row) => (
                       <article key={`${row.session_id}-${row.faculty_id}`} className={styles.mobileCard}>
                         <p className={styles.cardTitle}>{row.faculty_name}</p>
                         <p className={styles.cardMeta}>{row.email}</p>

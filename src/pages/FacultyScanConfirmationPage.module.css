@@ -125,6 +125,45 @@
   font-weight: 500;
 }
 
+.studentFields {
+  display: grid;
+  gap: 12px;
+}
+
+.readOnlyField,
+.selectField {
+  display: grid;
+  gap: 7px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.readOnlyField span,
+.selectField span {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.readOnlyField strong {
+  color: #0f172a;
+  font-size: 0.98rem;
+}
+
+.selectField select {
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
 .confirmButton {
   width: 100%;
   min-height: 46px;

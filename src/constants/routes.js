@@ -5,6 +5,7 @@ export const ROUTES = {
   COMPLETE_PROFILE: '/complete-profile',
 
   FACULTY_DASHBOARD: '/faculty/dashboard',
+  FACULTY_PROFILE: '/faculty/profile',
   FACULTY_HISTORY: '/faculty/history',
   FACULTY_SCAN: '/faculty/scan',
 

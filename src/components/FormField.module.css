@@ -6,3 +6,9 @@
 
 .inputControl {
 }
+
+.fieldBlock small {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}

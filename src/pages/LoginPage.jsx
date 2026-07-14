@@ -31,26 +31,32 @@ export default function LoginPage() {
     [googleClientId]
   );
 
-  const resolvePostLoginRoute = useCallback(
+  const navigateAfterLogin = useCallback(
     (user) => {
       if (!user?.is_profile_complete) {
-        return ROUTES.COMPLETE_PROFILE;
+        navigate(ROUTES.COMPLETE_PROFILE, {
+          replace: true,
+          state: continueTo ? { from: continueTo } : undefined,
+        });
+        return;
       }
 
       if (continueTo) {
         const isFacultyPath = continueTo.startsWith("/faculty");
         const isAdminPath = continueTo.startsWith("/admin");
+        const isUniversalScanPath = continueTo.startsWith("/scan/");
         if (
-          (isFacultyPath && user.role === "faculty") ||
+          ((isFacultyPath || isUniversalScanPath) && user.role === "faculty") ||
           (isAdminPath && user.role === "admin")
         ) {
-          return continueTo;
+          navigate(continueTo, { replace: true });
+          return;
         }
       }
 
-      return getDefaultRouteForUser(user);
+      navigate(getDefaultRouteForUser(user), { replace: true });
     },
-    [continueTo]
+    [continueTo, navigate]
   );
 
   useEffect(() => {
@@ -59,8 +65,8 @@ export default function LoginPage() {
       return;
     }
 
-    navigate(resolvePostLoginRoute(user), { replace: true });
-  }, [navigate, resolvePostLoginRoute]);
+    navigateAfterLogin(user);
+  }, [navigateAfterLogin]);
 
   const handleGoogleLogin = async (credentialResponse) => {
     if (!credentialResponse?.credential) {
@@ -85,7 +91,7 @@ export default function LoginPage() {
       const data = await loginWithGoogle(payload);
       storeAuthSession({ token: data.token, user: data.user });
 
-      navigate(resolvePostLoginRoute(data.user), { replace: true });
+      navigateAfterLogin(data.user);
     } catch (apiError) {
       clearAuthSession();
       setError(

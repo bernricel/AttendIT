@@ -27,14 +27,44 @@ export async function updateAdminDepartment(departmentId, payload) {
   return response.data
 }
 
+export async function createAdminProgram(departmentId, payload) {
+  const response = await api.post(`/admin/departments/${departmentId}/programs`, payload)
+  return response.data
+}
+
+export async function updateAdminProgram(programId, payload) {
+  const response = await api.patch(`/admin/programs/${programId}`, payload)
+  return response.data
+}
+
+export async function deleteAdminProgram(programId) {
+  const response = await api.delete(`/admin/programs/${programId}`)
+  return response.data
+}
+
+export async function createAdminSection(programId, payload) {
+  const response = await api.post(`/admin/programs/${programId}/sections`, payload)
+  return response.data
+}
+
+export async function updateAdminSection(sectionId, payload) {
+  const response = await api.patch(`/admin/sections/${sectionId}`, payload)
+  return response.data
+}
+
+export async function deleteAdminSection(sectionId) {
+  const response = await api.delete(`/admin/sections/${sectionId}`)
+  return response.data
+}
+
 export async function getAdminSessionQrStatus(sessionId) {
   // Fetch live QR token status for one session (token, expiry, countdown).
   const response = await api.get(`/admin/sessions/${sessionId}/qr-status`)
   return response.data
 }
 
-export async function getAttendanceByDate(date) {
-  const response = await api.get('/admin/attendance-by-date', { params: { date } })
+export async function getAttendanceByDate(params) {
+  const response = await api.get('/admin/attendance-by-date', { params })
   return response.data
 }
 
@@ -86,19 +116,22 @@ export async function verifyAttendanceSignature(attendanceRecordId) {
 
 export async function getFacultySessionPreview(qrToken) {
   // Preview endpoint: validate scanned token and return session details.
-  const response = await api.get('/attendance/session-preview', {
-    params: { qr_token: qrToken },
+  const response = await api.post('/attendance/preview/', {
+    qr_token: qrToken,
   })
   return response.data
 }
 
-export async function scanAttendance(qrToken, attendanceType = '') {
+export async function scanAttendance(qrToken, attendanceType = '', sectionId = '') {
   // Final scan submit endpoint: records attendance for the scanned token.
   const payload = { qr_token: qrToken }
   if (attendanceType) {
     payload.attendance_type = attendanceType
   }
-  const response = await api.post('/attendance/scan', payload)
+  if (sectionId) {
+    payload.section_id = Number(sectionId)
+  }
+  const response = await api.post('/attendance/scan/', payload)
   return response.data
 }
 

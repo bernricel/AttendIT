@@ -1,27 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../components/AuthLayout";
 import FormField from "../components/FormField";
 import MessageBanner from "../components/MessageBanner";
 import { ROUTES } from "../constants/routes";
-import { completeProfile, getActiveDepartments } from "../services/authApi";
-import { clearAuthSession, updateStoredUser } from "../services/authStorage";
+import { completeProfile, getActiveDepartments, getActivePrograms } from "../services/authApi";
+import { clearAuthSession, getStoredAuth, updateStoredUser } from "../services/authStorage";
 import { getApiErrorMessage } from "../utils/apiError";
 import common from "../styles/common.module.css";
 import styles from "./CompleteProfilePage.module.css";
 
 export default function CompleteProfilePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = getStoredAuth();
+  const isStudent = user?.role === "student";
+  const displayName = [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim();
+  const continueTo = location.state?.from || "";
   const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
     school_id: "",
+    school_id_confirmation: "",
     department_id: "",
+    program_id: "",
   });
   const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [programOptions, setProgramOptions] = useState([{ value: "", label: "Select a program" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDepartmentsLoading, setIsDepartmentsLoading] = useState(true);
+  const [isProgramsLoading, setIsProgramsLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -42,53 +49,89 @@ export default function CompleteProfilePage() {
         setIsDepartmentsLoading(false);
       }
     };
-
     loadDepartments();
   }, []);
 
-  const isValid = useMemo(
-    () =>
-      form.first_name.trim() &&
-      form.last_name.trim() &&
-      form.school_id.trim() &&
-      form.department_id,
-    [form],
-  );
+  useEffect(() => {
+    const loadPrograms = async () => {
+      if (!isStudent || !form.department_id) {
+        setProgramOptions([{ value: "", label: "Select a program" }]);
+        return;
+      }
+      setIsProgramsLoading(true);
+      try {
+        const data = await getActivePrograms(form.department_id);
+        setProgramOptions([
+          { value: "", label: "Select a program" },
+          ...(data.programs || []).map((program) => ({
+            value: String(program.id),
+            label: `${program.code} - ${program.name}`,
+          })),
+        ]);
+      } catch (apiError) {
+        setError(getApiErrorMessage(apiError, "Could not load programs."));
+      } finally {
+        setIsProgramsLoading(false);
+      }
+    };
+    loadPrograms();
+  }, [form.department_id, isStudent]);
+
+  const isValid = useMemo(() => {
+    if (!form.school_id.trim() || !form.school_id_confirmation.trim() || !form.department_id) {
+      return false;
+    }
+    if (form.school_id.trim() !== form.school_id_confirmation.trim()) {
+      return false;
+    }
+    if (isStudent && !form.program_id) {
+      return false;
+    }
+    return true;
+  }, [form, isStudent]);
 
   const updateField = (field) => (event) => {
-    setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    const value = event.target.value;
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "department_id" ? { program_id: "" } : null),
+    }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-
     if (!isValid) {
-      setError("Please complete all fields before continuing.");
+      setError("Please complete the required fields.");
       return;
     }
 
     setIsSubmitting(true);
-
     try {
-      const data = await completeProfile({
-        ...form,
+      const payload = {
+        school_id: form.school_id.trim(),
+        school_id_confirmation: form.school_id_confirmation.trim(),
         department_id: Number(form.department_id),
-      });
+      };
+      if (isStudent) {
+        payload.program_id = Number(form.program_id);
+      }
+      const data = await completeProfile(payload);
       updateStoredUser(data.user);
-      navigate(ROUTES.FACULTY_DASHBOARD, { replace: true });
+      navigate(
+        continueTo.startsWith("/faculty") || continueTo.startsWith("/scan/")
+          ? continueTo
+          : ROUTES.FACULTY_DASHBOARD,
+        { replace: true },
+      );
     } catch (apiError) {
       if (apiError?.response?.status === 401) {
         clearAuthSession();
         navigate(ROUTES.LOGIN, { replace: true });
         return;
       }
-      setError(
-        getApiErrorMessage(
-          apiError,
-          "Could not complete profile. Please review your fields and try again.",
-        ),
-      );
+      setError(getApiErrorMessage(apiError, "Could not complete profile."));
     } finally {
       setIsSubmitting(false);
     }
@@ -97,35 +140,16 @@ export default function CompleteProfilePage() {
   return (
     <AuthLayout
       title="Profile Completion"
-      subtitle="One more step before entering the UA Faculty Attendance System."
-      sideNote={
-        <p>
-          This information will be used across attendance records and reporting.
-        </p>
-      }
+      subtitle="Finish your verified university profile."
+      sideNote={<p>Your name and role come from your Google account and cannot be edited here.</p>}
     >
       <AuthCard title="Complete Your Profile">
-        <form
-          className={`${common.profileForm} ${styles.profileForm}`.trim()}
-          onSubmit={handleSubmit}
-        >
-          <FormField
-            id="first_name"
-            label="First Name"
-            value={form.first_name}
-            onChange={updateField("first_name")}
-            placeholder="Enter your first name"
-            disabled={isSubmitting}
-          />
-
-          <FormField
-            id="last_name"
-            label="Last Name"
-            value={form.last_name}
-            onChange={updateField("last_name")}
-            placeholder="Enter your last name"
-            disabled={isSubmitting}
-          />
+        <form className={`${common.profileForm} ${styles.profileForm}`.trim()} onSubmit={handleSubmit}>
+          <div className={styles.identityCard}>
+            <span>Verified Google Account</span>
+            <strong>{displayName || user?.email || "Unknown user"}</strong>
+            <small>{user?.role === "student" ? "Student" : "Faculty"}</small>
+          </div>
 
           <FormField
             id="school_id"
@@ -133,6 +157,15 @@ export default function CompleteProfilePage() {
             value={form.school_id}
             onChange={updateField("school_id")}
             placeholder="Enter your school ID"
+            disabled={isSubmitting}
+          />
+
+          <FormField
+            id="school_id_confirmation"
+            label="Confirm School ID"
+            value={form.school_id_confirmation}
+            onChange={updateField("school_id_confirmation")}
+            placeholder="Re-enter your school ID"
             disabled={isSubmitting}
           />
 
@@ -145,13 +178,20 @@ export default function CompleteProfilePage() {
             disabled={isSubmitting || isDepartmentsLoading}
           />
 
+          {isStudent ? (
+            <FormField
+              id="program_id"
+              label="Program"
+              value={form.program_id}
+              onChange={updateField("program_id")}
+              options={programOptions}
+              disabled={isSubmitting || isProgramsLoading || !form.department_id}
+            />
+          ) : null}
+
           <MessageBanner type="error" message={error} />
 
-          <button
-            className={common.primaryBtn}
-            type="submit"
-            disabled={isSubmitting || !isValid}
-          >
+          <button className={common.primaryBtn} type="submit" disabled={isSubmitting || !isValid}>
             {isSubmitting ? "Saving Profile..." : "Save and Continue"}
           </button>
         </form>

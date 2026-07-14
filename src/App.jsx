@@ -3,8 +3,8 @@ import {
   RequireAdminRole,
   RequireAuth,
   RequireCompleteProfile,
-  RequireFacultyRole,
   RequireIncompleteProfile,
+  RequireParticipantRole,
 } from './components/RouteGuards'
 import AdminAttendanceCalendarPage from './pages/AdminAttendanceCalendarPage'
 import AdminAttendanceLogsPage from './pages/AdminAttendanceLogsPage'
@@ -18,6 +18,7 @@ import { ROUTES } from './constants/routes'
 import CompleteProfilePage from './pages/CompleteProfilePage'
 import FacultyAttendanceHistoryPage from './pages/FacultyAttendanceHistoryPage'
 import FacultyDashboardPage from './pages/FacultyDashboardPage'
+import FacultyProfilePage from './pages/FacultyProfilePage'
 import FacultyScanConfirmationPage from './pages/FacultyScanConfirmationPage'
 import LoginPage from './pages/LoginPage'
 import AdminLoginPage from './pages/AdminLoginPage'
@@ -54,19 +55,32 @@ function App() {
         }
       />
       <Route
-        path="/faculty"
+        path="/scan/:qrToken"
         element={
           <RequireAuth>
+              <RequireCompleteProfile>
+              <RequireParticipantRole>
+                <FacultyScanConfirmationPage />
+              </RequireParticipantRole>
+            </RequireCompleteProfile>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/faculty"
+        element={
+            <RequireAuth>
             <RequireCompleteProfile>
-              <RequireFacultyRole>
+              <RequireParticipantRole>
                 {/* Shared faculty layout stays mounted while child routes render via Outlet. */}
                 <FacultyLayout />
-              </RequireFacultyRole>
+              </RequireParticipantRole>
             </RequireCompleteProfile>
           </RequireAuth>
         }
       >
         <Route path="dashboard" element={<FacultyDashboardPage />} />
+        <Route path="profile" element={<FacultyProfilePage />} />
         <Route path="history" element={<FacultyAttendanceHistoryPage />} />
         <Route path="scan" element={<FacultyScanConfirmationPage />} />
         <Route path="scan/:qrToken" element={<FacultyScanConfirmationPage />} />

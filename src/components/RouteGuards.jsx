@@ -20,9 +20,16 @@ export function RequireAuth({ children }) {
 }
 
 export function RequireCompleteProfile({ children }) {
+  const location = useLocation()
   const { user } = getStoredAuth()
   if (!user?.is_profile_complete) {
-    return <Navigate to={ROUTES.COMPLETE_PROFILE} replace />
+    return (
+      <Navigate
+        to={ROUTES.COMPLETE_PROFILE}
+        replace
+        state={{ from: `${location.pathname}${location.search}` }}
+      />
+    )
   }
   return children
 }
@@ -46,6 +53,14 @@ export function RequireAdminRole({ children }) {
 export function RequireFacultyRole({ children }) {
   const { user } = getStoredAuth()
   if (user?.role !== 'faculty') {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />
+  }
+  return children
+}
+
+export function RequireParticipantRole({ children }) {
+  const { user } = getStoredAuth()
+  if (!['faculty', 'student'].includes(user?.role)) {
     return <Navigate to={getDefaultRouteForUser(user)} replace />
   }
   return children

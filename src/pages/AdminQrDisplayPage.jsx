@@ -38,6 +38,7 @@ export default function AdminQrDisplayPage() {
         ? {
             ...prev,
             qr_token: qrStatus.qr_token,
+            qr_url: qrStatus.qr_url,
             qr_refresh_interval_seconds: qrStatus.qr_refresh_interval_seconds,
             lifecycle_status: qrStatus.lifecycle_status,
             can_accept_attendance: qrStatus.can_accept_attendance,
@@ -47,7 +48,7 @@ export default function AdminQrDisplayPage() {
   }, [qrStatus, selectedSession]);
 
   const currentQrToken = qrStatus?.qr_token || selectedSession?.qr_token || "";
-  const qrUrl = currentQrToken ? `${window.location.origin}/faculty/scan/${currentQrToken}` : "";
+  const qrUrl = qrStatus?.qr_url || selectedSession?.qr_url || "";
   const separateDisplayUrl = selectedSession ? buildAdminQrPresentationRoute(selectedSession.id) : "";
   const sessionLifecycleStatus = qrStatus?.lifecycle_status || selectedSession?.lifecycle_status || "UNKNOWN";
   const canAcceptAttendance =

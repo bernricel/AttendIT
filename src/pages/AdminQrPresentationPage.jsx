@@ -61,10 +61,7 @@ export default function AdminQrPresentationPage() {
     }
   }, [sessionId])
 
-  const currentQrToken = qrStatus?.qr_token || sessionLookup.session?.qr_token || ''
-  const qrUrl = currentQrToken
-    ? `${window.location.origin}/faculty/scan/${currentQrToken}`
-    : ''
+  const qrUrl = qrStatus?.qr_url || sessionLookup.session?.qr_url || ''
   const refreshInterval = useMemo(
     () => qrStatus?.qr_refresh_interval_seconds ?? sessionLookup.session?.qr_refresh_interval_seconds ?? 30,
     [qrStatus?.qr_refresh_interval_seconds, sessionLookup.session?.qr_refresh_interval_seconds],

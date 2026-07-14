@@ -10,6 +10,9 @@ export default function FormField({
   type = 'text',
   options,
   disabled = false,
+  multiple = false,
+  readOnly = false,
+  helperText = '',
 }) {
   return (
     <label className={`${common.fieldBlock} ${styles.fieldBlock}`.trim()} htmlFor={id}>
@@ -21,6 +24,7 @@ export default function FormField({
           value={value}
           onChange={onChange}
           disabled={disabled}
+          multiple={multiple}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -37,8 +41,10 @@ export default function FormField({
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
+          readOnly={readOnly}
         />
       )}
+      {helperText ? <small>{helperText}</small> : null}
     </label>
   )
 }

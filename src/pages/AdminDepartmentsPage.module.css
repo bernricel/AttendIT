@@ -1,200 +1,214 @@
-/* ==========================================================================
-   DEPARTMENTS WORKSPACE RESPONSIVE LAYOUT
-   ========================================================================== */
-
 .layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
 }
 
-/* Side-by-side layout on larger tablet and desktop screens */
-@media (min-width: 1024px) {
+@media (min-width: 1100px) {
   .layout {
-    grid-template-columns: 350px 1fr;
+    grid-template-columns: 340px minmax(0, 1fr);
     align-items: start;
   }
 }
 
-.formCard {
-  border: 1.5px solid #cbd5e1 !important;
-  border-radius: 12px !important;
-  padding: 24px !important;
-  background-color: #ffffff !important;
-  display: grid;
-  gap: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.formCard,
+.listCard,
+.departmentCard,
+.programCard,
+.sectionCard,
+.inlineComposer {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
+.formCard,
 .listCard {
-  border: 1.5px solid #cbd5e1 !important;
-  border-radius: 12px !important;
-  padding: 24px !important;
-  background-color: #ffffff !important;
+  padding: 24px;
   display: grid;
   gap: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.cardTitle {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.18rem;
+  font-weight: 800;
 }
 
 .toolbar {
   display: flex;
   gap: 12px;
-  align-items: flex-end;
   flex-wrap: wrap;
+  align-items: end;
 }
 
-.formActions {
+.toolbarField {
+  flex: 1;
+  min-width: 220px;
+}
+
+.formActions,
+.departmentActions,
+.inlineFooter,
+.inlineActionRow {
   display: flex;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-/* ==========================================================================
-   PURE RESPONSIVE TABLE-TO-CARD ENGINE
-   ========================================================================== */
-
-.responsiveTableWrap {
-  width: 100%;
-  overflow-x: visible;
-  margin-top: 12px;
-}
-
-.responsiveTable {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-/* Desktop Styles */
-.responsiveTable th {
-  color: #475569;
-  font-weight: 700;
-  padding: 12px;
-  border-bottom: 2px solid #e2e8f0;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.responsiveTable td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 0.95rem;
-  color: #334155;
-  vertical-align: middle;
-}
-
-.deptNameCell {
-  color: #1e293b !important;
-  font-weight: 700 !important;
-}
-
-.numericCell {
-  font-weight: 500;
-}
-
-.statusCell {
-  vertical-align: middle;
-}
-
-.actionsCell {
-  display: flex;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
   align-items: center;
 }
 
-/* Badge Layout Styles */
-.badgeActive {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
+.departmentList,
+.programList,
+.sectionList,
+.nestedWorkspace,
+.inlineEditor,
+.sectionsBlock {
+  display: grid;
+  gap: 16px;
+}
+
+.departmentCard {
+  padding: 18px;
+}
+
+.departmentHeader,
+.programHeader,
+.sectionRow,
+.inlineHeader,
+.sectionsHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.departmentIdentity,
+.programHeader > div:first-child,
+.sectionRow > div:first-child {
+  min-width: 0;
+}
+
+.expandButton {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.expandButton span,
+.departmentStats span,
+.programHeader p,
+.sectionRow p,
+.inlineHeader p,
+.sectionsHeader p,
+.emptyState {
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.expandButton strong,
+.programHeader h4,
+.sectionsHeader h5,
+.inlineHeader h4 {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.programHeader h4 span {
   font-weight: 700;
-  background-color: #ecfdf5;
-  color: #047857;
-  display: inline-block;
+}
+
+.departmentStats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.departmentStats span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.nestedWorkspace {
+  margin-top: 18px;
+}
+
+.inlineComposer,
+.programCard,
+.sectionCard {
+  padding: 18px;
+}
+
+.inlineGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.programCard {
+  background:
+    linear-gradient(145deg, #ffffff, #f8fafc),
+    radial-gradient(circle at 100% 0%, rgba(0, 75, 135, 0.06), transparent 32%);
+}
+
+.sectionsBlock {
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sectionCard {
+  box-shadow: none;
+}
+
+.badgeActive,
+.badgeDisabled {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.badgeActive {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
 }
 
 .badgeDisabled {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background-color: #fef2f2;
-  color: #b91c1c;
-  display: inline-block;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
-/* ==========================================================================
-   MOBILE QUERY: SWITCH TABLE TO ELEGANT CARDS BELOW 768px
-   ========================================================================== */
-@media (max-width: 767px) {
-  /* Hide standard table headers */
-  .responsiveTable thead {
-    display: none;
+.emptyState {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .departmentHeader,
+  .programHeader,
+  .sectionRow,
+  .inlineHeader,
+  .sectionsHeader {
+    flex-direction: column;
   }
 
-  /* Force table, rows, and cells to stack vertically */
-  .responsiveTable,
-  .responsiveTable tbody,
-  .responsiveTable tr,
-  .responsiveTable td {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Style each row container as an individual card */
-  .responsiveTable tr {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  }
-
-  /* Style individual table cells as stacked key-value rows */
-  .responsiveTable td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px dashed #e2e8f0;
-    font-size: 0.9rem;
-    color: #1e293b;
-    text-align: right;
-  }
-
-  /* Remove bottom dashed border from the action cell */
-  .responsiveTable td:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-top: 8px;
-  }
-
-  /* Inject mobile labels dynamically from JSX data-label attribute */
-  .responsiveTable td::before {
-    content: attr(data-label);
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    text-align: left;
-    float: left;
-  }
-
-  /* Ensure department name heading stands out at the top of card */
-  .deptNameCell {
-    border-bottom: 1.5px solid #cbd5e1 !important;
-    padding-top: 0 !important;
-    padding-bottom: 10px !important;
-    font-size: 1.05rem !important;
-  }
-
-  /* Reset layout for actions inside mobile cards */
-  .actionsCell {
-    justify-content: flex-end;
-    width: 100% !important;
+  .inlineGrid {
+    grid-template-columns: 1fr;
   }
 }
