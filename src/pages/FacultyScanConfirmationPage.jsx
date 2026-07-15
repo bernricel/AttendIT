@@ -8,11 +8,13 @@ import {
 } from "react-router-dom"
 import {
   FiCalendar,
+  FiAlertTriangle,
   FiCheckCircle,
   FiChevronDown,
   FiClock,
   FiInfo,
   FiMapPin,
+  FiRefreshCw,
 } from "react-icons/fi"
 
 import LayoutPageMeta from "../components/layout/LayoutPageMeta"
@@ -83,6 +85,18 @@ function getDepartmentLabel(session, user) {
   )
 }
 
+function isQrProblem(apiError) {
+  const message = getApiErrorMessage(apiError, "").toLowerCase()
+  return (
+    [400, 404, 410].includes(apiError?.response?.status) ||
+    message.includes("qr") ||
+    message.includes("token") ||
+    message.includes("session not found") ||
+    message.includes("expired") ||
+    message.includes("invalid")
+  )
+}
+
 export default function FacultyScanConfirmationPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -104,6 +118,7 @@ export default function FacultyScanConfirmationPage() {
   const [success, setSuccess] = useState("")
   const [alreadyRecorded, setAlreadyRecorded] = useState(false)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [qrProblem, setQrProblem] = useState(false)
 
   const sectionOptions = useMemo(
     () => getSectionOptions(session, user),
@@ -128,7 +143,7 @@ export default function FacultyScanConfirmationPage() {
     const loadSession = async () => {
       if (!token) return
       if (!qrToken) {
-        setError("Missing QR token. Please scan a valid QR link.")
+        setQrProblem(true)
         setAlreadyRecorded(false)
         setIsLoading(false)
         return
@@ -136,6 +151,7 @@ export default function FacultyScanConfirmationPage() {
       setIsLoading(true)
       setError("")
       setWarning("")
+      setQrProblem(false)
       setAlreadyRecorded(false)
       setSelectedSectionId("")
       try {
@@ -143,7 +159,11 @@ export default function FacultyScanConfirmationPage() {
         setSession(data.session)
         setAlreadyRecorded(Boolean(data.already_recorded))
       } catch (apiError) {
-        setError(getApiErrorMessage(apiError, "Unable to load session details."))
+        if (isQrProblem(apiError)) {
+          setQrProblem(true)
+        } else {
+          setError(getApiErrorMessage(apiError, "Unable to load session details."))
+        }
       } finally {
         setIsLoading(false)
       }
@@ -190,6 +210,8 @@ export default function FacultyScanConfirmationPage() {
 
       if (statusCode === 409) {
         setWarning(apiMessage || "You have already checked in for this session.")
+      } else if (isQrProblem(apiError)) {
+        setQrProblem(true)
       } else {
         setError(apiMessage)
       }
@@ -228,6 +250,13 @@ export default function FacultyScanConfirmationPage() {
         : hasAction
           ? `Ready to ${actionLabel}`
           : "No Action Available"
+  const promptText = isSessionClosed
+    ? "This session is no longer accepting attendance."
+    : success
+      ? "Attendance has been recorded."
+      : hasAction
+        ? `Ready to ${actionLabel.toLowerCase()}?`
+        : "No additional attendance action is available."
 
   const checkInWindowLabel = useMemo(() => {
     if (!session) return ""
@@ -272,13 +301,33 @@ export default function FacultyScanConfirmationPage() {
         {!isLoading && warning ? (
           <p className={`${common.dataState} ${common.error}`.trim()}>{warning}</p>
         ) : null}
-        {!isLoading && error ? <MessageBanner type="error" message={error} /> : null}
+        {!isLoading && error && !qrProblem ? <MessageBanner type="error" message={error} /> : null}
         {!isLoading && session?.action_message ? (
           <MessageBanner type="info" message={session.action_message} />
         ) : null}
         {!isLoading && success ? <MessageBanner type="info" message={success} /> : null}
 
-        {!isLoading && session ? (
+        {!isLoading && qrProblem ? (
+          <div className={styles.expiredState}>
+            <div className={styles.expiredIcon}>
+              <FiAlertTriangle aria-hidden="true" />
+            </div>
+            <h2>QR Code Expired</h2>
+            <p>
+              This QR code is no longer valid. Please scan the latest QR code displayed by the facilitator or administrator to continue.
+            </p>
+            <button
+              type="button"
+              className={`${common.primaryBtn} ${styles.scanAgainButton}`.trim()}
+              onClick={() => navigate(ROUTES.FACULTY_SCAN, { replace: true })}
+            >
+              <FiRefreshCw aria-hidden="true" />
+              Scan Another QR
+            </button>
+          </div>
+        ) : null}
+
+        {!isLoading && session && !qrProblem ? (
           <div className={styles.scanConfirmStack}>
             <div className={styles.confirmPanel}>
               <p className={styles.confirmEyebrow}>Attendance Action</p>
@@ -292,7 +341,7 @@ export default function FacultyScanConfirmationPage() {
                   {attendanceStatusLabel}
                 </span>
               </div>
-              <div className={styles.primarySummary}>
+              <div className={styles.essentialBlock}>
                 <div className={styles.summaryLine}>
                   <FiInfo aria-hidden="true" />
                   <div>
@@ -300,34 +349,7 @@ export default function FacultyScanConfirmationPage() {
                     <strong>{session.name}</strong>
                   </div>
                 </div>
-                <div className={styles.summaryLine}>
-                  <FiCalendar aria-hidden="true" />
-                  <div>
-                    <span>Date</span>
-                    <strong>{formatIsoDate(session.start_time)}</strong>
-                  </div>
-                </div>
-                <div className={styles.summaryLine}>
-                  <FiClock aria-hidden="true" />
-                  <div>
-                    <span>Time</span>
-                    <strong>{formatDateTime(session.start_time)} to {formatDateTime(session.end_time)}</strong>
-                  </div>
-                </div>
-                <div className={styles.summaryLine}>
-                  <FiMapPin aria-hidden="true" />
-                  <div>
-                    <span>Department</span>
-                    <strong>{getDepartmentLabel(session, user)}</strong>
-                  </div>
-                </div>
-                <div className={styles.summaryLine}>
-                  <FiCheckCircle aria-hidden="true" />
-                  <div>
-                    <span>Current Status</span>
-                    <strong>{attendanceStatusLabel}</strong>
-                  </div>
-                </div>
+                <p className={styles.promptText}>{promptText}</p>
               </div>
 
               {isStudent ? (
@@ -352,6 +374,15 @@ export default function FacultyScanConfirmationPage() {
                   ) : null}
                 </div>
               ) : null}
+
+              <button
+                type="button"
+                className={`${common.primaryBtn} ${styles.inlineConfirmButton}`.trim()}
+                onClick={handleConfirm}
+                disabled={isActionDisabled}
+              >
+                {confirmButtonText}
+              </button>
             </div>
 
             <div className={styles.detailsCard}>
@@ -367,6 +398,18 @@ export default function FacultyScanConfirmationPage() {
               {isDetailsOpen ? (
                 <div className={styles.summaryGrid}>
                   <div className={styles.summaryItem}>
+                    <span>Date</span>
+                    <p><FiCalendar aria-hidden="true" /> {formatIsoDate(session.start_time)}</p>
+                  </div>
+                  <div className={styles.summaryItem}>
+                    <span>Time</span>
+                    <p><FiClock aria-hidden="true" /> {formatDateTime(session.start_time)} to {formatDateTime(session.end_time)}</p>
+                  </div>
+                  <div className={styles.summaryItem}>
+                    <span>Department</span>
+                    <p><FiMapPin aria-hidden="true" /> {getDepartmentLabel(session, user)}</p>
+                  </div>
+                  <div className={styles.summaryItem}>
                     <span>Check-in Window</span>
                     <p className={styles.windowValue}>{checkInWindowLabel}</p>
                   </div>
@@ -376,7 +419,7 @@ export default function FacultyScanConfirmationPage() {
                   </div>
                   <div className={styles.summaryItem}>
                     <span>Session Status</span>
-                    <p>{session.lifecycle_status || "UNKNOWN"}</p>
+                    <p><FiCheckCircle aria-hidden="true" /> {session.lifecycle_status || "UNKNOWN"}</p>
                   </div>
                   <div className={styles.summaryItem}>
                     <span>Already Recorded</span>
