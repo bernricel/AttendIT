@@ -31,7 +31,6 @@ const LATE_STATUS_OPTIONS = [
   { value: "", label: "All late statuses" },
   { value: "on_time", label: "On Time" },
   { value: "late", label: "Late" },
-  { value: "na", label: "N/A" },
 ];
 
 const SORT_BY_OPTIONS = [
@@ -101,7 +100,7 @@ function getLateStatusLabel(row) {
   const normalizedStatus = normalizeStatus(row.attendance_status);
   if (normalizedStatus === "late") return "Late";
   if (normalizedStatus === "on_time") return "On Time";
-  return "N/A";
+  return "Incomplete";
 }
 
 export default function AdminAttendanceLogsPage() {
@@ -240,7 +239,7 @@ export default function AdminAttendanceLogsPage() {
         String(row.session_name || "").toLowerCase().includes(searchValue);
       const matchesLateStatus =
         !lateStatusFilter ||
-        (lateStatusFilter === "na" ? lateStatus === "n/a" : lateStatus === lateStatusFilter);
+        lateStatus === lateStatusFilter;
       return matchesSearch && matchesLateStatus;
     });
   }, [lateStatusFilter, recordSearch, rows]);
