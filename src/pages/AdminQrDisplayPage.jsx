@@ -19,6 +19,41 @@ import { formatDateTime } from "../utils/dateTime";
 import styles from "./AdminQrDisplayPage.module.css";
 import common from "../styles/common.module.css";
 
+const MANUAL_ACTION_LABELS = {
+  "check-in": "Check In",
+  "check-out": "Check Out",
+};
+
+function buildManualUser(data, fallbackUser = null) {
+  const hasCheckedIn = Boolean(data.has_checked_in);
+  const hasCheckedOut = Boolean(data.has_checked_out);
+  const attendanceCompleted = Boolean(data.attendance_completed || (hasCheckedIn && hasCheckedOut));
+  const nextAction = data.next_action || data.next_valid_action || "";
+  return {
+    ...(data.user || fallbackUser || {}),
+    next_action: nextAction,
+    next_valid_action: data.next_valid_action || nextAction,
+    attendance_completed: attendanceCompleted,
+    has_checked_in: hasCheckedIn,
+    has_checked_out: hasCheckedOut,
+    action_message: data.action_message || data.message || "",
+  };
+}
+
+function getManualActionLabel(user) {
+  if (!user) return "";
+  if (user.attendance_completed) return "Completed";
+  return MANUAL_ACTION_LABELS[user.next_action] || "Unavailable";
+}
+
+function getManualActionClass(user) {
+  if (!user) return "";
+  if (user.attendance_completed) return styles.completedAction;
+  if (user.next_action === "check-out") return styles.checkOutAction;
+  if (user.next_action === "check-in") return styles.checkInAction;
+  return "";
+}
+
 export default function AdminQrDisplayPage() {
   const location = useLocation();
   const isQrDisplayRoute = location.pathname === ROUTES.ADMIN_QR_DISPLAY;
@@ -162,8 +197,7 @@ export default function AdminQrDisplayPage() {
     setManualUser(null);
     try {
       const data = await lookupManualAttendanceUser(selectedSession.id, manualSchoolId.trim());
-      setManualUser(data.user);
-      if (data.message) setManualSuccess(data.message);
+      setManualUser(buildManualUser(data));
     } catch (apiError) {
       setManualError(getApiErrorMessage(apiError, "School ID was not found."));
     } finally {
@@ -179,10 +213,9 @@ export default function AdminQrDisplayPage() {
     try {
       const data = await recordManualAttendance(selectedSession.id, {
         school_id: manualUser.school_id,
-        attendance_type: "check-in",
       });
       setManualSuccess(data.message || "Manual attendance recorded successfully.");
-      setManualUser(data.user || manualUser);
+      setManualUser(buildManualUser(data, manualUser));
     } catch (apiError) {
       setManualError(getApiErrorMessage(apiError, "Failed to record manual attendance."));
     } finally {
@@ -292,7 +325,7 @@ export default function AdminQrDisplayPage() {
                     }}
                     disabled={!canAcceptAttendance}
                   >
-                    Manual Check In
+                    Manual Attendance
                   </button>
                   <button
                     className={`${common.ghostBtn} ${styles.qrMetaActionBtn}`.trim()}
@@ -374,7 +407,7 @@ export default function AdminQrDisplayPage() {
       {isManualModalOpen ? (
         <div className={styles.confirmModalBackdrop} role="presentation">
           <div className={styles.confirmModal} role="dialog" aria-modal="true" aria-labelledby="manual_modal_title">
-            <h3 id="manual_modal_title">Manual Check In</h3>
+            <h3 id="manual_modal_title">Manual Attendance</h3>
             <p className={common.subtleNote}>Enter the user's School ID Number to confirm their identity before recording attendance.</p>
             <form className={styles.manualLookupForm} onSubmit={handleManualLookup}>
               <label className={common.fieldBlock} htmlFor="manual_school_id">
@@ -395,12 +428,19 @@ export default function AdminQrDisplayPage() {
             {manualError ? <DataError message={manualError} /> : null}
             {manualSuccess ? <p className={`${common.dataState} ${common.loading}`.trim()}>{manualSuccess}</p> : null}
             {manualUser ? (
-              <div className={styles.manualUserCard}>
-                <strong>{manualUser.name}</strong>
-                <span>{manualUser.school_id}</span>
-                <span>{manualUser.department || "No department"}</span>
-                {manualUser.program ? <span>{manualUser.program}</span> : null}
-              </div>
+              <>
+                <div className={styles.manualUserCard}>
+                  <span><strong>Full Name:</strong> {manualUser.name}</span>
+                  <span><strong>School ID:</strong> {manualUser.school_id}</span>
+                  <span><strong>Department:</strong> {manualUser.department || "No department"}</span>
+                  {manualUser.program ? <span><strong>Program:</strong> {manualUser.program}</span> : null}
+                </div>
+                <div className={`${styles.manualActionCard} ${getManualActionClass(manualUser)}`.trim()}>
+                  <span>Next Action</span>
+                  <strong><i aria-hidden="true" /> {getManualActionLabel(manualUser)}</strong>
+                  {manualUser.action_message ? <p>{manualUser.action_message}</p> : null}
+                </div>
+              </>
             ) : null}
             <div className={styles.confirmModalActions}>
               <button
@@ -418,9 +458,9 @@ export default function AdminQrDisplayPage() {
                 className={common.primaryBtn}
                 type="button"
                 onClick={handleManualRecord}
-                disabled={isManualLoading || !manualUser}
+                disabled={isManualLoading || !manualUser || manualUser.attendance_completed || !manualUser.next_action}
               >
-                {isManualLoading ? "Recording..." : "Confirm Manual Check In"}
+                {isManualLoading ? "Recording..." : manualUser?.attendance_completed ? "Attendance Completed" : MANUAL_ACTION_LABELS[manualUser?.next_action] || "Unavailable"}
               </button>
             </div>
           </div>

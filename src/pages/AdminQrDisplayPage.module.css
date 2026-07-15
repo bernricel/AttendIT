@@ -370,6 +370,75 @@
   font-weight: 650;
 }
 
+.manualActionCard {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  background: #ecfdf5;
+}
+
+.manualActionCard span {
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.manualActionCard strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #047857;
+  font-size: 1.05rem;
+}
+
+.manualActionCard strong i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #10b981;
+}
+
+.manualActionCard p {
+  margin: 0;
+  color: #475569;
+  font-weight: 650;
+}
+
+.checkInAction {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
+}
+
+.checkOutAction {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.checkOutAction strong {
+  color: #1d4ed8;
+}
+
+.checkOutAction strong i {
+  background: #3b82f6;
+}
+
+.completedAction {
+  border-color: #dbe4ef;
+  background: #f8fafc;
+}
+
+.completedAction strong {
+  color: #475569;
+}
+
+.completedAction strong i {
+  background: #94a3b8;
+}
+
 .dangerConfirmBtn {
   margin-top: 0;
   background: #dc2626 !important;

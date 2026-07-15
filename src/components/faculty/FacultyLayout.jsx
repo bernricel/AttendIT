@@ -28,7 +28,7 @@ export default function FacultyLayout() {
     <DashboardLayout
       variant="faculty"
       sidebarId="faculty-sidebar-nav"
-      brandSubtitle="Faculty Portal"
+      brandSubtitle="User Portal"
       navItems={facultyNavItems}
       fallbackUserLabel="Faculty"
       userSubtitleResolver={(user) => user?.role === "student" ? "Student" : "Faculty"}

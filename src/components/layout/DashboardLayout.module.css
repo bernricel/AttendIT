@@ -48,7 +48,8 @@
 .brandLogo {
   width: 44px;
   height: 44px;
-  object-fit: contain;
+  aspect-ratio: 1;
+  object-fit: cover;
   flex-shrink: 0;
   border-radius: 50%;
   background: #ffffff;

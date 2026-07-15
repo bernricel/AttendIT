@@ -9,7 +9,7 @@ import styles from "./DashboardLayout.module.css";
 import common from "../../styles/common.module.css";
 
 // Branding asset path served from `public`.
-const uaLogo = "/UA-LOGO.png";
+const syncInLogo = "/SyncIN-LOGO.png";
 
 export default function DashboardLayout({
   variant,
@@ -86,9 +86,9 @@ export default function DashboardLayout({
         className={`${sidebarClassName} ${isSidebarOpen ? styles.isOpen : ""}`}
       >
         <div className={brandClassName}>
-          <img src={uaLogo} alt="UA logo" className={styles.brandLogo} />
+          <img src={syncInLogo} alt="SyncIN logo" className={styles.brandLogo} />
           <div className={styles.brandCopy}>
-            <strong>UACheckIN</strong>
+            <strong>SyncIN</strong>
             <span>{brandSubtitle}</span>
           </div>
         </div>
