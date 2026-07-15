@@ -1,7 +1,9 @@
 .adminShell,
 .facultyShell {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
+  align-items: flex-start;
+  overflow: hidden;
   background-color: #f8fafc;
   background-image: 
     linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.88)),
@@ -14,7 +16,8 @@
 
 .adminSidebar,
 .facultySidebar {
-  position: relative;
+  position: sticky;
+  top: 0;
   background-color: rgba(255, 255, 255, 0.35) !important; 
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
@@ -122,6 +125,8 @@
 .facultyMain {
   position: relative;
   z-index: 1;
+  height: 100vh;
+  overflow-y: auto;
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
@@ -272,7 +277,12 @@
 }
 
 @media (max-width: 860px) {
-  .adminShell, .facultyShell { display: block; }
+  .adminShell, .facultyShell {
+    display: block;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
   .adminSidebar, .facultySidebar {
     position: fixed; top: 0; left: 0; bottom: 0;
     transform: translateX(-105%);
@@ -283,5 +293,10 @@
   .adminTopbarRight, .facultyTopbarRight { margin-left: auto; }
   .adminUserBadge, .facultyUserBadge { display: none; }
   .adminTopbar, .facultyTopbar { padding: 14px; }
-  .adminMain, .facultyMain { padding: 14px; }
+  .adminMain, .facultyMain {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    padding: 14px;
+  }
 }

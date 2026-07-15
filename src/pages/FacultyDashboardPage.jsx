@@ -45,8 +45,8 @@ export default function FacultyDashboardPage() {
               <span>Check your recorded check-ins and check-outs.</span>
             </Link>
             <Link className={common.quickActionCard} to={ROUTES.FACULTY_SCAN}>
-              <strong>Open Scan Confirmation</strong>
-              <span>Use this page when opening a QR attendance link.</span>
+              <strong>Scan QR Code</strong>
+              <span>Open the camera scanner and confirm your attendance.</span>
             </Link>
           </div>
         </section>

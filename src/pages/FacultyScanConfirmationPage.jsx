@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Link,
   useLocation,
@@ -97,12 +97,27 @@ function isQrProblem(apiError) {
   )
 }
 
+function extractQrToken(value) {
+  const raw = String(value || "").trim()
+  if (!raw) return ""
+  try {
+    const parsed = new URL(raw)
+    const parts = parsed.pathname.split("/").filter(Boolean)
+    return parts.at(-1) || ""
+  } catch {
+    const parts = raw.split("/").filter(Boolean)
+    return parts.at(-1) || raw
+  }
+}
+
 export default function FacultyScanConfirmationPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const params = useParams()
   const [searchParams] = useSearchParams()
   const { token, user } = getStoredAuth()
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
 
   const qrToken = useMemo(
     () => params.qrToken || searchParams.get("token") || "",
@@ -119,6 +134,8 @@ export default function FacultyScanConfirmationPage() {
   const [alreadyRecorded, setAlreadyRecorded] = useState(false)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [qrProblem, setQrProblem] = useState(false)
+  const [scannerError, setScannerError] = useState("")
+  const [manualQrValue, setManualQrValue] = useState("")
 
   const sectionOptions = useMemo(
     () => getSectionOptions(session, user),
@@ -143,7 +160,7 @@ export default function FacultyScanConfirmationPage() {
     const loadSession = async () => {
       if (!token) return
       if (!qrToken) {
-        setQrProblem(true)
+        setQrProblem(false)
         setAlreadyRecorded(false)
         setIsLoading(false)
         return
@@ -170,6 +187,66 @@ export default function FacultyScanConfirmationPage() {
     }
     loadSession()
   }, [qrToken, token])
+
+  useEffect(() => {
+    if (!token || qrToken || isLoading) return undefined
+    let isCancelled = false
+    let frameId = 0
+
+    const stopScanner = () => {
+      if (frameId) window.cancelAnimationFrame(frameId)
+      streamRef.current?.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+
+    const startScanner = async () => {
+      setScannerError("")
+      if (!("BarcodeDetector" in window)) {
+        setScannerError("Camera scanning is not supported on this browser. You can paste the QR link below.")
+        return
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        })
+        if (isCancelled) {
+          stream.getTracks().forEach((track) => track.stop())
+          return
+        }
+        streamRef.current = stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          await videoRef.current.play()
+        }
+        const detector = new window.BarcodeDetector({ formats: ["qr_code"] })
+        const scanFrame = async () => {
+          if (isCancelled || !videoRef.current) return
+          try {
+            const codes = await detector.detect(videoRef.current)
+            const tokenValue = extractQrToken(codes[0]?.rawValue)
+            if (tokenValue) {
+              stopScanner()
+              navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
+              return
+            }
+          } catch {
+            setScannerError("Unable to read the QR code. Please try again or paste the QR link below.")
+          }
+          frameId = window.requestAnimationFrame(scanFrame)
+        }
+        frameId = window.requestAnimationFrame(scanFrame)
+      } catch {
+        setScannerError("Camera access was blocked. Allow camera access or paste the QR link below.")
+      }
+    }
+
+    startScanner()
+    return () => {
+      isCancelled = true
+      stopScanner()
+    }
+  }, [isLoading, navigate, qrToken, token])
 
   useEffect(() => {
     if (sectionOptions.length === 1) {
@@ -218,6 +295,16 @@ export default function FacultyScanConfirmationPage() {
     } finally {
       setIsConfirming(false)
     }
+  }
+
+  const handleManualQrSubmit = (event) => {
+    event.preventDefault()
+    const tokenValue = extractQrToken(manualQrValue)
+    if (!tokenValue) {
+      setScannerError("Enter a valid QR link or token.")
+      return
+    }
+    navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
   }
 
   const isSessionClosed =
@@ -324,6 +411,29 @@ export default function FacultyScanConfirmationPage() {
               <FiRefreshCw aria-hidden="true" />
               Scan Another QR
             </button>
+          </div>
+        ) : null}
+
+        {!isLoading && !qrToken && !qrProblem ? (
+          <div className={styles.scannerState}>
+            <h2>Scan QR Code</h2>
+            <p>Point your camera at the attendance QR code displayed by the facilitator.</p>
+            <div className={styles.scannerFrame}>
+              <video ref={videoRef} muted playsInline aria-label="QR scanner camera preview" />
+            </div>
+            {scannerError ? <MessageBanner type="error" message={scannerError} /> : null}
+            <form className={styles.manualQrForm} onSubmit={handleManualQrSubmit}>
+              <label htmlFor="manual_qr_value">Paste QR link or token</label>
+              <input
+                id="manual_qr_value"
+                value={manualQrValue}
+                onChange={(event) => setManualQrValue(event.target.value)}
+                placeholder="https://.../scan/token"
+              />
+              <button className={`${common.primaryBtn} ${styles.scanAgainButton}`.trim()} type="submit">
+                Continue
+              </button>
+            </form>
           </div>
         ) : null}
 
@@ -435,16 +545,6 @@ export default function FacultyScanConfirmationPage() {
               ) : null}
             </div>
 
-            <div className={styles.stickyConfirmBar}>
-              <button
-                type="button"
-                className={`${common.primaryBtn} ${styles.confirmButton}`.trim()}
-                onClick={handleConfirm}
-                disabled={isActionDisabled}
-              >
-                {confirmButtonText}
-              </button>
-            </div>
           </div>
         ) : null}
       </section>

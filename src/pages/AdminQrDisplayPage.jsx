@@ -8,7 +8,12 @@ import { DataError } from "../components/admin/DataState";
 import LayoutPageMeta from "../components/layout/LayoutPageMeta";
 import { ROUTES, buildAdminQrPresentationRoute } from "../constants/routes";
 import { useSessionQrStatus } from "../hooks/useSessionQrStatus";
-import { deleteAttendanceSession, endAttendanceSession } from "../services/attendanceApi";
+import {
+  deleteAttendanceSession,
+  endAttendanceSession,
+  lookupManualAttendanceUser,
+  recordManualAttendance,
+} from "../services/attendanceApi";
 import { getApiErrorMessage } from "../utils/apiError";
 import { formatDateTime } from "../utils/dateTime";
 import styles from "./AdminQrDisplayPage.module.css";
@@ -29,6 +34,12 @@ export default function AdminQrDisplayPage() {
   const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [manualSchoolId, setManualSchoolId] = useState("");
+  const [manualUser, setManualUser] = useState(null);
+  const [manualError, setManualError] = useState("");
+  const [manualSuccess, setManualSuccess] = useState("");
+  const [isManualLoading, setIsManualLoading] = useState(false);
   const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(isQrDisplayRoute ? selectedId : "");
   const openSession = (session) => {
     setSelectedSession(session);
@@ -40,12 +51,14 @@ export default function AdminQrDisplayPage() {
       setSelectedSession(null);
       setSelectedId("");
       setIsDeleteModalOpen(false);
+      setIsManualModalOpen(false);
     }
 
     return () => {
       setSelectedSession(null);
       setSelectedId("");
       setIsDeleteModalOpen(false);
+      setIsManualModalOpen(false);
     };
   }, [isQrDisplayRoute]);
 
@@ -130,6 +143,50 @@ export default function AdminQrDisplayPage() {
       setError(getApiErrorMessage(apiError, "Failed to end the session."));
     } finally {
       setIsEnding(false);
+    }
+  };
+
+  const resetManualModal = () => {
+    setManualSchoolId("");
+    setManualUser(null);
+    setManualError("");
+    setManualSuccess("");
+  };
+
+  const handleManualLookup = async (event) => {
+    event.preventDefault();
+    if (!selectedSession || !manualSchoolId.trim()) return;
+    setIsManualLoading(true);
+    setManualError("");
+    setManualSuccess("");
+    setManualUser(null);
+    try {
+      const data = await lookupManualAttendanceUser(selectedSession.id, manualSchoolId.trim());
+      setManualUser(data.user);
+      if (data.message) setManualSuccess(data.message);
+    } catch (apiError) {
+      setManualError(getApiErrorMessage(apiError, "School ID was not found."));
+    } finally {
+      setIsManualLoading(false);
+    }
+  };
+
+  const handleManualRecord = async () => {
+    if (!selectedSession || !manualUser) return;
+    setIsManualLoading(true);
+    setManualError("");
+    setManualSuccess("");
+    try {
+      const data = await recordManualAttendance(selectedSession.id, {
+        school_id: manualUser.school_id,
+        attendance_type: "check-in",
+      });
+      setManualSuccess(data.message || "Manual attendance recorded successfully.");
+      setManualUser(data.user || manualUser);
+    } catch (apiError) {
+      setManualError(getApiErrorMessage(apiError, "Failed to record manual attendance."));
+    } finally {
+      setIsManualLoading(false);
     }
   };
 
@@ -229,6 +286,17 @@ export default function AdminQrDisplayPage() {
                   <button
                     className={`${common.ghostBtn} ${styles.qrMetaActionBtn}`.trim()}
                     type="button"
+                    onClick={() => {
+                      resetManualModal();
+                      setIsManualModalOpen(true);
+                    }}
+                    disabled={!canAcceptAttendance}
+                  >
+                    Manual Check In
+                  </button>
+                  <button
+                    className={`${common.ghostBtn} ${styles.qrMetaActionBtn}`.trim()}
+                    type="button"
                     onClick={handleEndSession}
                     disabled={isEnding || !canAcceptAttendance}
                   >
@@ -297,6 +365,62 @@ export default function AdminQrDisplayPage() {
                 disabled={isDeleting || !deletePassword.trim()}
               >
                 {isDeleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isManualModalOpen ? (
+        <div className={styles.confirmModalBackdrop} role="presentation">
+          <div className={styles.confirmModal} role="dialog" aria-modal="true" aria-labelledby="manual_modal_title">
+            <h3 id="manual_modal_title">Manual Check In</h3>
+            <p className={common.subtleNote}>Enter the user's School ID Number to confirm their identity before recording attendance.</p>
+            <form className={styles.manualLookupForm} onSubmit={handleManualLookup}>
+              <label className={common.fieldBlock} htmlFor="manual_school_id">
+                <span className={common.fieldLabel} style={{ color: "#475569", fontWeight: 700 }}>School ID Number</span>
+                <input
+                  id="manual_school_id"
+                  className={common.inputControl}
+                  value={manualSchoolId}
+                  onChange={(event) => setManualSchoolId(event.target.value)}
+                  placeholder="Enter School ID"
+                  disabled={isManualLoading}
+                />
+              </label>
+              <button className={`${common.primaryBtn} ${common.compact}`.trim()} type="submit" disabled={isManualLoading || !manualSchoolId.trim()}>
+                {isManualLoading ? "Checking..." : "Find User"}
+              </button>
+            </form>
+            {manualError ? <DataError message={manualError} /> : null}
+            {manualSuccess ? <p className={`${common.dataState} ${common.loading}`.trim()}>{manualSuccess}</p> : null}
+            {manualUser ? (
+              <div className={styles.manualUserCard}>
+                <strong>{manualUser.name}</strong>
+                <span>{manualUser.school_id}</span>
+                <span>{manualUser.department || "No department"}</span>
+                {manualUser.program ? <span>{manualUser.program}</span> : null}
+              </div>
+            ) : null}
+            <div className={styles.confirmModalActions}>
+              <button
+                className={common.ghostBtn}
+                type="button"
+                onClick={() => {
+                  setIsManualModalOpen(false);
+                  resetManualModal();
+                }}
+                disabled={isManualLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className={common.primaryBtn}
+                type="button"
+                onClick={handleManualRecord}
+                disabled={isManualLoading || !manualUser}
+              >
+                {isManualLoading ? "Recording..." : "Confirm Manual Check In"}
               </button>
             </div>
           </div>

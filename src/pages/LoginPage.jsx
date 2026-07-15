@@ -46,7 +46,7 @@ export default function LoginPage() {
         const isAdminPath = continueTo.startsWith("/admin");
         const isUniversalScanPath = continueTo.startsWith("/scan/");
         if (
-          ((isFacultyPath || isUniversalScanPath) && user.role === "faculty") ||
+          ((isFacultyPath || isUniversalScanPath) && ["faculty", "student"].includes(user.role)) ||
           (isAdminPath && user.role === "admin")
         ) {
           navigate(continueTo, { replace: true });
@@ -105,8 +105,8 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="AttendIT - CIT Faculty Attendance Portal"
-      subtitle="Secure sign-in for CIT faculty and administrators."
+      title="SyncIN Attendance Portal"
+      subtitle="Secure sign-in for faculty, students, and administrators."
       sideNote={
         <p>
           Access is limited to accounts ending with <strong>@ua.edu.ph</strong>.
@@ -115,7 +115,7 @@ export default function LoginPage() {
     >
       <AuthCard
         title="Login"
-        description="Access the CIT Faculty Attendance System."
+        description="Access SyncIN attendance tools."
       >
         {isLoading ? (
           <div className={styles.loaderLine}>Authenticating...</div>

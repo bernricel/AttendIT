@@ -346,6 +346,30 @@
   margin-top: 8px;
 }
 
+.manualLookupForm {
+  display: grid;
+  gap: 12px;
+}
+
+.manualUserCard {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid #dbe4ef;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.manualUserCard strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.manualUserCard span {
+  color: #475569;
+  font-weight: 650;
+}
+
 .dangerConfirmBtn {
   margin-top: 0;
   background: #dc2626 !important;

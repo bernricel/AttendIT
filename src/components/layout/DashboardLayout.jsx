@@ -128,7 +128,7 @@ export default function DashboardLayout({
                 <FiMenu />
               </button>
               <div className={styles.topbarBranding}>
-                <span>UAFaculty Attendance</span>
+                <span>SyncIN Attendance Management</span>
               </div>
             </div>
             <h1>{pageMeta.title}</h1>

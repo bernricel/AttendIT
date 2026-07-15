@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
 
   return (
     <AuthLayout
-      title="UA Faculty Attendance Portal"
+      title="SyncIN Admin Portal"
       subtitle="Administrative access for authorized personnel."
       sideNote={<p>Use your assigned admin credentials to continue.</p>}
     >

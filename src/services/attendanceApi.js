@@ -18,6 +18,18 @@ export async function getAdminSessionQrStatus(sessionId) {
   return response.data
 }
 
+export async function lookupManualAttendanceUser(sessionId, schoolId) {
+  const response = await api.get(`/admin/sessions/${sessionId}/manual-attendance`, {
+    params: { school_id: schoolId },
+  })
+  return response.data
+}
+
+export async function recordManualAttendance(sessionId, payload) {
+  const response = await api.post(`/admin/sessions/${sessionId}/manual-attendance`, payload)
+  return response.data
+}
+
 export async function getAttendanceByDate(params) {
   const response = await api.get('/admin/attendance-by-date', { params })
   return response.data
