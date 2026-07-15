@@ -43,6 +43,7 @@
 
 .authCard form {
   gap: 12px;
+  padding: 10px;
 }
 
 .authCard label {

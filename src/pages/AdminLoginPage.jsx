@@ -118,14 +118,14 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <div className={styles.authDivider} role="presentation">
-          <span>faculty or staff</span>
+        <div className={styles.divider} role="presentation">
+          <span>User Login</span>
         </div>
         <Link
           className={`${common.ghostBtn} ${common.authLinkBtn}`.trim()}
           to={ROUTES.LOGIN}
         >
-          Back to Faculty Login
+          Back to User Login
         </Link>
       </AuthCard>
     </AuthLayout>

@@ -25,7 +25,7 @@ export default function AdminDashboardPage() {
       try {
         const [sessionData, attendanceData] = await Promise.all([
           getAdminSessions(),
-          getAttendanceByDate(toIsoDate()),
+          getAttendanceByDate({ date: toIsoDate() }),
         ])
         setSessions(sessionData.sessions || [])
         setTodayRecords(attendanceData.records || [])
@@ -58,6 +58,11 @@ export default function AdminDashboardPage() {
         .slice(0, 6),
     [sessions],
   )
+  const openQrSession = (session) => {
+    navigate(`${ROUTES.ADMIN_QR_DISPLAY}?sessionId=${session.id}`, {
+      state: { selectedSession: session },
+    })
+  }
 
   return (
     <div className={styles.dashboardContainer}>
@@ -102,11 +107,11 @@ export default function AdminDashboardPage() {
                       className={`${styles.dashboardItem} ${styles.clickableSessionCard}`}
                       role="button"
                       tabIndex={0}
-                      onClick={() => navigate(`${ROUTES.ADMIN_QR_DISPLAY}?sessionId=${session.id}`)}
+                      onClick={() => openQrSession(session)}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
                           event.preventDefault()
-                          navigate(`${ROUTES.ADMIN_QR_DISPLAY}?sessionId=${session.id}`)
+                          openQrSession(session)
                         }
                       }}
                     >

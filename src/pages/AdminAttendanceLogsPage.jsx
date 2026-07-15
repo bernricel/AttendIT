@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FiFileText } from "react-icons/fi";
 
 import AdminPanel from "../components/admin/AdminPanel";
@@ -6,6 +6,7 @@ import SessionBrowser from "../components/admin/SessionBrowser";
 import { DataEmpty, DataError, DataLoading } from "../components/admin/DataState";
 import LayoutPageMeta from "../components/layout/LayoutPageMeta";
 import { exportAdminAttendanceSheetCsv, getAdminAttendanceSheet } from "../services/attendanceApi";
+import { getAdminDepartments } from "../services/departmentsApi";
 import common from "../styles/common.module.css";
 import { getApiErrorMessage } from "../utils/apiError";
 import { exportAttendanceLogsPdf } from "../utils/attendancePdf";
@@ -40,6 +41,22 @@ const SORT_BY_OPTIONS = [
   { value: "signature_status", label: "Signature Status" },
   { value: "session", label: "Session" },
 ];
+
+const ROLE_OPTIONS = [
+  { value: "", label: "All roles" },
+  { value: "faculty", label: "Faculty" },
+  { value: "student", label: "Student" },
+];
+
+function getProgramsForDepartment(departments, departmentId) {
+  const department = departments.find((item) => String(item.id) === String(departmentId));
+  return Array.isArray(department?.programs) ? department.programs : [];
+}
+
+function getSectionsForProgram(programs, programId) {
+  const program = programs.find((item) => String(item.id) === String(programId));
+  return Array.isArray(program?.sections) ? program.sections : [];
+}
 
 function normalizeFilename(contentDisposition) {
   const match = /filename="?([^"]+)"?/i.exec(contentDisposition || "");
@@ -97,6 +114,10 @@ export default function AdminAttendanceLogsPage() {
   const [attendanceStatusFilter, setAttendanceStatusFilter] = useState("");
   const [signatureStatusFilter, setSignatureStatusFilter] = useState("");
   const [lateStatusFilter, setLateStatusFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [programFilter, setProgramFilter] = useState("");
+  const [sectionFilter, setSectionFilter] = useState("");
   const [recordSearch, setRecordSearch] = useState("");
   const [sortBy, setSortBy] = useState("time_in");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -105,44 +126,98 @@ export default function AdminAttendanceLogsPage() {
   const [rowsError, setRowsError] = useState("");
   const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [departments, setDepartments] = useState([]);
   const browserScrollYRef = useRef(null);
+  const attendanceParamsRef = useRef(null);
+
+  const programs = useMemo(
+    () => getProgramsForDepartment(departments, departmentFilter),
+    [departments, departmentFilter],
+  );
+  const sections = useMemo(
+    () => getSectionsForProgram(programs, programFilter),
+    [programs, programFilter],
+  );
 
   useEffect(() => {
-    if (!selectedSessionId) {
+    const loadDepartments = async () => {
+      try {
+        const data = await getAdminDepartments({ active_only: 1 });
+        setDepartments(data.departments || []);
+      } catch {
+        setDepartments([]);
+      }
+    };
+    loadDepartments();
+  }, []);
+
+  const loadAttendanceSheet = useCallback(async ({ showLoading = false } = {}) => {
+    const params = attendanceParamsRef.current;
+    if (!params?.session_id) {
       setRows([]);
       setRowsError("");
       setIsRowsLoading(false);
       return;
     }
 
-    const loadAttendanceSheet = async () => {
-      setIsRowsLoading(true);
+    if (showLoading) setIsRowsLoading(true);
+    try {
+      const data = await getAdminAttendanceSheet(params);
+      const nextRows = data.rows || [];
+      setRows(nextRows);
       setRowsError("");
-      try {
-        const params = {
+      setSelectedSession((prev) =>
+        prev ? { ...prev, attendance_count: data.total_records ?? data.total_count ?? nextRows.length } : prev,
+      );
+    } catch (apiError) {
+      setRows([]);
+      setRowsError(getApiErrorMessage(apiError, "Failed to load attendance sheet."));
+    } finally {
+      if (showLoading) setIsRowsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const params = selectedSessionId
+      ? {
           session_id: selectedSessionId,
           sort_by: sortBy,
           sort_order: sortOrder,
-        };
-        if (attendanceStatusFilter) {
-          params.attendance_status = attendanceStatusFilter;
         }
-        if (signatureStatusFilter) {
-          params.signature_status = signatureStatusFilter;
-        }
+      : null;
+    if (params) {
+      if (attendanceStatusFilter) params.attendance_status = attendanceStatusFilter;
+      if (signatureStatusFilter) params.signature_status = signatureStatusFilter;
+      if (roleFilter) params.role = roleFilter;
+      if (departmentFilter) params.department_id = departmentFilter;
+      if (programFilter) params.program_id = programFilter;
+      if (sectionFilter) params.section_id = sectionFilter;
+    }
 
-        const data = await getAdminAttendanceSheet(params);
-        setRows(data.rows || []);
-      } catch (apiError) {
-        setRows([]);
-        setRowsError(getApiErrorMessage(apiError, "Failed to load attendance sheet."));
-      } finally {
-        setIsRowsLoading(false);
-      }
-    };
+    attendanceParamsRef.current = params;
+    loadAttendanceSheet({ showLoading: true });
+  }, [
+    selectedSessionId,
+    attendanceStatusFilter,
+    signatureStatusFilter,
+    roleFilter,
+    departmentFilter,
+    programFilter,
+    sectionFilter,
+    sortBy,
+    sortOrder,
+    loadAttendanceSheet,
+  ]);
 
-    loadAttendanceSheet();
-  }, [selectedSessionId, attendanceStatusFilter, signatureStatusFilter, sortBy, sortOrder]);
+  useEffect(() => {
+    if (isBrowsingSessions || !selectedSessionId) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      loadAttendanceSheet();
+    }, 2000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isBrowsingSessions, loadAttendanceSheet, selectedSessionId]);
 
   useEffect(() => {
     if (!isBrowsingSessions || browserScrollYRef.current == null) return;
@@ -189,6 +264,10 @@ export default function AdminAttendanceLogsPage() {
       if (signatureStatusFilter) {
         params.signature_status = signatureStatusFilter;
       }
+      if (roleFilter) params.role = roleFilter;
+      if (departmentFilter) params.department_id = departmentFilter;
+      if (programFilter) params.program_id = programFilter;
+      if (sectionFilter) params.section_id = sectionFilter;
 
       const result = await exportAdminAttendanceSheetCsv(params);
       downloadBlob(result.blob, normalizeFilename(result.contentDisposition));
@@ -231,6 +310,10 @@ export default function AdminAttendanceLogsPage() {
     setAttendanceStatusFilter("");
     setSignatureStatusFilter("");
     setLateStatusFilter("");
+    setRoleFilter("");
+    setDepartmentFilter("");
+    setProgramFilter("");
+    setSectionFilter("");
     setRecordSearch("");
     setSortBy("time_in");
     setSortOrder("asc");
@@ -340,6 +423,82 @@ export default function AdminAttendanceLogsPage() {
                     {ATTENDANCE_STATUS_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={common.fieldBlock} htmlFor="role_filter">
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Role</span>
+                  <select
+                    id="role_filter"
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
+                    value={roleFilter}
+                    onChange={(event) => setRoleFilter(event.target.value)}
+                  >
+                    {ROLE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={common.fieldBlock} htmlFor="department_filter">
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Department</span>
+                  <select
+                    id="department_filter"
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
+                    value={departmentFilter}
+                    onChange={(event) => {
+                      setDepartmentFilter(event.target.value);
+                      setProgramFilter("");
+                      setSectionFilter("");
+                    }}
+                  >
+                    <option value="">All departments</option>
+                    {departments.map((department) => (
+                      <option key={department.id} value={department.id}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={common.fieldBlock} htmlFor="program_filter">
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Program</span>
+                  <select
+                    id="program_filter"
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
+                    value={programFilter}
+                    onChange={(event) => {
+                      setProgramFilter(event.target.value);
+                      setSectionFilter("");
+                    }}
+                    disabled={!departmentFilter}
+                  >
+                    <option value="">All programs</option>
+                    {programs.map((program) => (
+                      <option key={program.id} value={program.id}>
+                        {program.code ? `${program.code} - ${program.name}` : program.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={common.fieldBlock} htmlFor="section_filter">
+                  <span className={common.fieldLabel} style={{ color: '#475569', fontWeight: '700' }}>Section</span>
+                  <select
+                    id="section_filter"
+                    style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
+                    value={sectionFilter}
+                    onChange={(event) => setSectionFilter(event.target.value)}
+                    disabled={!programFilter}
+                  >
+                    <option value="">All sections</option>
+                    {sections.map((section) => (
+                      <option key={section.id} value={section.id}>
+                        {section.name}
                       </option>
                     ))}
                   </select>

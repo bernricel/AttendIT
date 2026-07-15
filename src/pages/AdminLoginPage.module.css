@@ -1,3 +1,38 @@
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 20px 0 16px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #cbd5e1 35%, #cbd5e1 65%, transparent);
+}
+
+.divider::after {
+  transform: scaleX(-1);
+}
+
+.divider span {
+  position: relative;
+  z-index: 1;
+  padding: 0 4px;
+  background: #ffffff;
+  color: #64748b;
+  white-space: nowrap;
+}
+
 .browserWrapper :global(*) {
   background-image: none !important;
   transition: all 0.2s ease-in-out;

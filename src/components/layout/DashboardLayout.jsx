@@ -162,7 +162,7 @@ export default function DashboardLayout({
               The shared layout stays mounted while route content swaps inside Outlet.
               This keeps sidebar/navbar persistent and only re-renders page content.
             */}
-            <Outlet context={outletContext} />
+            <Outlet key={`${location.pathname}${location.search}`} context={outletContext} />
           </div>
         </div>
       </section>

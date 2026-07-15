@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 
 import AdminPanel from "../components/admin/AdminPanel";
 import SessionBrowser from "../components/admin/SessionBrowser";
 import { DataError } from "../components/admin/DataState";
 import LayoutPageMeta from "../components/layout/LayoutPageMeta";
-import { buildAdminQrPresentationRoute } from "../constants/routes";
+import { ROUTES, buildAdminQrPresentationRoute } from "../constants/routes";
 import { useSessionQrStatus } from "../hooks/useSessionQrStatus";
 import { deleteAttendanceSession, endAttendanceSession } from "../services/attendanceApi";
 import { getApiErrorMessage } from "../utils/apiError";
@@ -14,6 +15,8 @@ import styles from "./AdminQrDisplayPage.module.css";
 import common from "../styles/common.module.css";
 
 export default function AdminQrDisplayPage() {
+  const location = useLocation();
+  const isQrDisplayRoute = location.pathname === ROUTES.ADMIN_QR_DISPLAY;
   const [selectedSession, setSelectedSession] = useState(null);
   const [selectedId, setSelectedId] = useState("");
   const [sessionSearchInput, setSessionSearchInput] = useState("");
@@ -26,10 +29,36 @@ export default function AdminQrDisplayPage() {
   const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
-  const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(selectedId);
+  const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(isQrDisplayRoute ? selectedId : "");
+  const openSession = (session) => {
+    setSelectedSession(session);
+    setSelectedId(String(session.id));
+  };
 
   useEffect(() => {
-    if (!selectedSession || !qrStatus) {
+    if (!isQrDisplayRoute) {
+      setSelectedSession(null);
+      setSelectedId("");
+      setIsDeleteModalOpen(false);
+    }
+
+    return () => {
+      setSelectedSession(null);
+      setSelectedId("");
+      setIsDeleteModalOpen(false);
+    };
+  }, [isQrDisplayRoute]);
+
+  useEffect(() => {
+    const routedSession = location.state?.selectedSession;
+    if (!isQrDisplayRoute || !routedSession || selectedId === String(routedSession.id)) {
+      return;
+    }
+    openSession(routedSession);
+  }, [isQrDisplayRoute, location.state, selectedId]);
+
+  useEffect(() => {
+    if (!isQrDisplayRoute || !selectedId || !qrStatus) {
       return;
     }
 
@@ -45,7 +74,7 @@ export default function AdminQrDisplayPage() {
           }
         : prev,
     );
-  }, [qrStatus, selectedSession]);
+  }, [isQrDisplayRoute, qrStatus, selectedId]);
 
   const currentQrToken = qrStatus?.qr_token || selectedSession?.qr_token || "";
   const qrUrl = qrStatus?.qr_url || selectedSession?.qr_url || "";
@@ -132,10 +161,7 @@ export default function AdminQrDisplayPage() {
               }}
               page={sessionPage}
               onPageChange={setSessionPage}
-              onSessionSelect={(session) => {
-                setSelectedSession(session);
-                setSelectedId(String(session.id));
-              }}
+              onSessionSelect={openSession}
             />
           </div>
         ) : (

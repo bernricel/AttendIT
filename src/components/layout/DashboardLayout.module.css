@@ -14,6 +14,7 @@
 
 .adminSidebar,
 .facultySidebar {
+  position: relative;
   background-color: rgba(255, 255, 255, 0.35) !important; 
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
@@ -119,6 +120,8 @@
 
 .adminMain,
 .facultyMain {
+  position: relative;
+  z-index: 1;
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
@@ -139,6 +142,7 @@
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: box-shadow var(--motion-fast), border-color var(--motion-fast), background-color var(--motion-fast);
 }
 
 .adminTopbar h1,
@@ -250,6 +254,16 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  transition: background-color var(--motion-fast), border-color var(--motion-fast), transform var(--motion-fast);
+}
+
+.sidebarToggle:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.sidebarToggle:active {
+  transform: translateY(0);
 }
 
 @keyframes pageFadeSlideIn {

@@ -7,7 +7,10 @@
   display: grid !important;
   gap: 6px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.015), 0 2px 4px -1px rgba(0, 0, 0, 0.01) !important;
-  transition: transform 0.2s, box-shadow 0.2s !important;
+  transition:
+    transform var(--motion-fast),
+    box-shadow var(--motion-fast),
+    border-color var(--motion-fast) !important;
 }
 
 .adminStatCard:hover {

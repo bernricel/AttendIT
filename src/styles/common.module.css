@@ -26,7 +26,11 @@
   color: #0f172a;
   background: #ffffff;
   outline: none;
-  transition: all 0.2s ease;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    background-color var(--motion-fast),
+    color var(--motion-fast);
 }
 
 .inputControl:focus {
@@ -46,7 +50,12 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color var(--motion-fast),
+    color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast),
+    opacity var(--motion-fast);
   margin-top: 6px;
   color: #ffffff;
   background: #1e293b;
@@ -54,6 +63,18 @@
 
 .primaryBtn:hover {
   background: #0f172a;
+  transform: translateY(-1px);
+}
+
+.primaryBtn:active {
+  transform: translateY(0);
+}
+
+.primaryBtn:disabled,
+.ghostBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
 }
 
 /* Modern Rounded Outlined Button (Ghost Button) */
@@ -70,7 +91,12 @@
   align-items: center;
   justify-content: center;
   text-decoration: none !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast),
+    transform var(--motion-fast),
+    opacity var(--motion-fast);
   padding: 0 24px;
 }
 
@@ -134,6 +160,13 @@
   gap: 12px;
 }
 
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
 .quickActionCard {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -142,7 +175,11 @@
   background: #ffffff;
   display: grid;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition:
+    transform var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    background-color var(--motion-fast);
 }
 
 .quickActionCard:hover {
@@ -201,7 +238,7 @@
 }
 
 .adminTable tbody tr {
-  transition: background-color 0.2s ease;
+  transition: background-color var(--motion-fast);
 }
 
 .adminTable tbody tr:hover td {
@@ -229,7 +266,8 @@
 
 @media (max-width: 1100px) {
   .adminTwoCol,
-  .facultyTwoCol {
+  .facultyTwoCol,
+  .filterGrid {
     grid-template-columns: 1fr;
   }
 }

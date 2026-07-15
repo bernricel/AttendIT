@@ -22,6 +22,11 @@
   --red: #ff5c5c;
   --info: #3b82f6;
   --shadow: var(--glass-shadow);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-disabled: #94a3b8;
+  --motion-fast: 160ms ease;
+  --motion-med: 220ms ease-in-out;
 }
 
 *,
@@ -32,7 +37,7 @@
 
 body {
   margin: 0;
-  color: var(--text);
+  color: var(--text-primary);
   font-family: 'Poppins', sans-serif;
   background-color: #f8fafc;
   
@@ -52,4 +57,15 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }

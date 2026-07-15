@@ -9,6 +9,7 @@ import {
 import AdminAttendanceCalendarPage from './pages/AdminAttendanceCalendarPage'
 import AdminAttendanceLogsPage from './pages/AdminAttendanceLogsPage'
 import AdminCreateSessionPage from './pages/AdminCreateSessionPage'
+import AdminDepartmentDetailPage from './pages/AdminDepartmentDetailPage'
 import AdminDepartmentsPage from './pages/AdminDepartmentsPage'
 import { getDefaultRouteForUser, getStoredAuth } from './services/authStorage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
@@ -18,7 +19,7 @@ import { ROUTES } from './constants/routes'
 import CompleteProfilePage from './pages/CompleteProfilePage'
 import FacultyAttendanceHistoryPage from './pages/FacultyAttendanceHistoryPage'
 import FacultyDashboardPage from './pages/FacultyDashboardPage'
-import FacultyProfilePage from './pages/FacultyProfilePage'
+import ProfilePage from './pages/ProfilePage'
 import FacultyScanConfirmationPage from './pages/FacultyScanConfirmationPage'
 import LoginPage from './pages/LoginPage'
 import AdminLoginPage from './pages/AdminLoginPage'
@@ -80,7 +81,7 @@ function App() {
         }
       >
         <Route path="dashboard" element={<FacultyDashboardPage />} />
-        <Route path="profile" element={<FacultyProfilePage />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="history" element={<FacultyAttendanceHistoryPage />} />
         <Route path="scan" element={<FacultyScanConfirmationPage />} />
         <Route path="scan/:qrToken" element={<FacultyScanConfirmationPage />} />
@@ -101,6 +102,7 @@ function App() {
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="create-session" element={<AdminCreateSessionPage />} />
         <Route path="departments" element={<AdminDepartmentsPage />} />
+        <Route path="departments/:departmentId" element={<AdminDepartmentDetailPage />} />
         <Route path="qr-display" element={<AdminQrDisplayPage />} />
         <Route path="logs" element={<AdminAttendanceLogsPage />} />
         <Route path="calendar" element={<AdminAttendanceCalendarPage />} />

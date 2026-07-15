@@ -3,6 +3,7 @@
   grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
   gap: 24px;
   align-items: start;
+  min-height: 800px;
 }
 
 .primaryColumn,
@@ -75,6 +76,140 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.audienceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.pickerBlock {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  z-index: 1;
+}
+
+.pickerOpen {
+  z-index: 80;
+}
+
+.pickerHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  min-height: 22px;
+  color: #475569;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.allToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 46px;
+  padding: 7px;
+  border: 1px solid #d6e0ec;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.chip,
+.addChip {
+  min-height: 30px;
+  border: 1px solid #dbe4ef;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: default;
+}
+
+.addChip {
+  cursor: pointer;
+}
+
+.addChip {
+  background: #ffffff;
+  color: #004b87;
+}
+
+.searchPicker {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #dbe4ef;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+  overflow: hidden;
+  animation: pickerIn var(--motion-fast) both;
+}
+
+.floatingPicker {
+  position: fixed;
+  z-index: 3000;
+}
+
+.inlinePicker {
+  position: static;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.searchPicker input {
+  min-height: 40px;
+  border: 1px solid #d6e0ec;
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.optionList {
+  display: grid;
+  gap: 6px;
+  max-height: 180px;
+  box-sizing: border-box;
+  padding-bottom: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.optionList label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color var(--motion-fast), color var(--motion-fast);
+}
+
+.optionList label:hover {
+  background: #f8fafc;
+}
+
 .ruleToggle {
   width: 100%;
   padding: 0;
@@ -82,6 +217,22 @@
   background: transparent;
   text-align: left;
   cursor: pointer;
+  transition: color var(--motion-fast), transform var(--motion-fast);
+}
+
+.ruleToggle:hover {
+  transform: translateY(-1px);
+}
+
+@keyframes pickerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .ruleToggle span:last-child {
@@ -146,6 +297,10 @@
   }
 
   .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .audienceGrid {
     grid-template-columns: 1fr;
   }
 }

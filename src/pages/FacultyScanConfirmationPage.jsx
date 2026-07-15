@@ -28,13 +28,18 @@ function normalizeOption(option) {
 }
 
 function getSectionOptions(session, user) {
+  const userProgramId = user?.program_id ? String(user.program_id) : ""
   const candidateLists = [
     session?.available_sections,
     session?.sections,
-    user?.sections,
   ]
   const nextOptions = candidateLists
     .flatMap((list) => (Array.isArray(list) ? list : []))
+    .filter((section) => {
+      if (!userProgramId) return true
+      if (section?.program_id === undefined || section?.program_id === null) return true
+      return String(section.program_id) === userProgramId
+    })
     .map(normalizeOption)
     .filter(Boolean)
 
@@ -54,6 +59,18 @@ function getProgramLabel(session, user) {
     session?.program?.name ||
     user?.program_name ||
     user?.program?.name ||
+    "N/A"
+  )
+}
+
+function getDepartmentLabel(session, user) {
+  return (
+    session?.department ||
+    session?.department_name ||
+    session?.department?.name ||
+    user?.department ||
+    user?.department_name ||
+    user?.department?.name ||
     "N/A"
   )
 }
@@ -86,7 +103,7 @@ export default function FacultyScanConfirmationPage() {
   const isStudent = user?.role === "student"
   const requiresSectionSelection =
     isStudent &&
-    sectionOptions.length > 0 &&
+    (sectionOptions.length > 0 || session?.requires_section) &&
     session?.next_valid_action === "check-in"
 
   useEffect(() => {
@@ -243,7 +260,7 @@ export default function FacultyScanConfirmationPage() {
               </div>
               <div className={styles.summaryItem}>
                 <span>Department</span>
-                <p>{session.department || "N/A"}</p>
+                <p>{getDepartmentLabel(session, user)}</p>
               </div>
               <div className={styles.summaryItem}>
                 <span>Date</span>
@@ -312,6 +329,10 @@ export default function FacultyScanConfirmationPage() {
 
               {isStudent ? (
                 <div className={styles.studentFields}>
+                  <div className={styles.readOnlyField}>
+                    <span>Department</span>
+                    <strong>{getDepartmentLabel(session, user)}</strong>
+                  </div>
                   <div className={styles.readOnlyField}>
                     <span>Program</span>
                     <strong>{getProgramLabel(session, user)}</strong>

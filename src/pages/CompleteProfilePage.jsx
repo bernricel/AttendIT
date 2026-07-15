@@ -148,8 +148,25 @@ export default function CompleteProfilePage() {
           <div className={styles.identityCard}>
             <span>Verified Google Account</span>
             <strong>{displayName || user?.email || "Unknown user"}</strong>
+            <small>{user?.email || "No email available"}</small>
             <small>{user?.role === "student" ? "Student" : "Faculty"}</small>
           </div>
+
+          <FormField
+            id="google_name"
+            label="Google Name"
+            value={displayName || "Unknown user"}
+            readOnly
+            disabled
+          />
+
+          <FormField
+            id="google_email"
+            label="Google Email"
+            value={user?.email || ""}
+            readOnly
+            disabled
+          />
 
           <FormField
             id="school_id"

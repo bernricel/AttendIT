@@ -17,18 +17,22 @@
 }
 
 .calendarCell {
-  border: 1px solid var(--glass-border);
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   min-height: 68px;
-  background: rgba(255, 255, 255, 0.03);
+  background: #ffffff;
   padding: 8px;
-  color: #fff;
-  transition: all 0.2s ease;
+  color: #0f172a;
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
 }
 
 .weekday {
   min-height: auto;
-  background: rgba(0, 0, 0, 0.2);
+  background: #f8fafc;
   font-size: 0.85rem;
   text-align: center;
   color: var(--ua-gold);
@@ -46,15 +50,15 @@
 
 .day small {
   font-size: 0.73rem;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.15);
+  color: #475569;
+  background: #f1f5f9;
   padding: 2px 6px;
   border-radius: 4px;
   margin-top: 4px;
 }
 
 .day:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #f8fafc;
   transform: translateY(-2px);
 }
 
@@ -67,6 +71,6 @@
 .empty {
   background: transparent;
   border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: #e2e8f0;
   pointer-events: none;
 }

@@ -42,6 +42,17 @@ export function validateSessionForm(form) {
   if (!form.title.trim()) {
     return 'Session title is required.'
   }
+  if (!form.all_departments && (!form.department_ids || form.department_ids.length === 0)) {
+    return 'Select at least one department or use All Departments.'
+  }
+  if (form.allowed_roles !== 'faculty') {
+    if (!form.all_programs && (!form.program_ids || form.program_ids.length === 0)) {
+      return 'Select at least one program or use All Programs.'
+    }
+    if (!form.all_sections && (!form.section_ids || form.section_ids.length === 0)) {
+      return 'Select at least one section or use All Sections.'
+    }
+  }
 
   // QR token rotation interval is configured during session creation.
   const interval = Number(form.qr_refresh_interval_seconds)
@@ -50,7 +61,7 @@ export function validateSessionForm(form) {
   }
 
   if (form.scheduled_start_time && form.session_end_time && form.scheduled_start_time >= form.session_end_time) {
-    return 'Session end time must be later than scheduled start time.'
+    return 'End time must be later than the start time.'
   }
 
   if (form.enable_check_in_window) {
@@ -98,10 +109,20 @@ export function validateSessionForm(form) {
 
 export function buildSessionPayload(form) {
   // Utility: convert UI form state into backend API payload shape.
-  const optionalTime = (value) => (value ? `${value}:00` : null)
+  const optionalTime = (value) => {
+    if (!value) return null
+    return value.length === 5 ? `${value}:00` : value
+  }
   const basePayload = {
     title: form.title,
-    department_id: form.department_id ? Number(form.department_id) : null,
+    department_id:
+      !form.all_departments && form.department_ids?.length === 1
+        ? Number(form.department_ids[0])
+        : null,
+    allowed_roles: form.allowed_roles || 'both',
+    allowed_department_ids: form.all_departments ? [] : (form.department_ids || []).map(Number),
+    allowed_program_ids: form.all_programs ? [] : (form.program_ids || []).map(Number),
+    allowed_section_ids: form.all_sections ? [] : (form.section_ids || []).map(Number),
     scheduled_start_time: optionalTime(form.scheduled_start_time),
     check_in_start_time: form.enable_check_in_window ? optionalTime(form.check_in_start_time) : null,
     check_in_end_time: form.enable_check_in_window ? optionalTime(form.check_in_end_time) : null,
