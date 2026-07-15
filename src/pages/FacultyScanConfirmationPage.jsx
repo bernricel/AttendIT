@@ -6,6 +6,14 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom"
+import {
+  FiCalendar,
+  FiCheckCircle,
+  FiChevronDown,
+  FiClock,
+  FiInfo,
+  FiMapPin,
+} from "react-icons/fi"
 
 import LayoutPageMeta from "../components/layout/LayoutPageMeta"
 import MessageBanner from "../components/MessageBanner"
@@ -95,6 +103,7 @@ export default function FacultyScanConfirmationPage() {
   const [warning, setWarning] = useState("")
   const [success, setSuccess] = useState("")
   const [alreadyRecorded, setAlreadyRecorded] = useState(false)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   const sectionOptions = useMemo(
     () => getSectionOptions(session, user),
@@ -201,6 +210,24 @@ export default function FacultyScanConfirmationPage() {
     isSessionClosed ||
     !hasAction ||
     (requiresSectionSelection && !selectedSectionId)
+  const confirmButtonText = isSessionClosed
+    ? "Session Closed"
+    : isConfirming
+      ? `${actionLabel}...`
+      : success
+        ? "Attendance Confirmed"
+        : hasAction
+          ? actionLabel
+          : "Attendance Complete"
+  const attendanceStatusLabel = success
+    ? "Attendance Confirmed"
+    : session?.already_checked_out || alreadyRecorded
+      ? "Already Recorded"
+      : session?.already_checked_in
+        ? "Already Checked In"
+        : hasAction
+          ? `Ready to ${actionLabel}`
+          : "No Action Available"
 
   const checkInWindowLabel = useMemo(() => {
     if (!session) return ""
@@ -252,91 +279,59 @@ export default function FacultyScanConfirmationPage() {
         {!isLoading && success ? <MessageBanner type="info" message={success} /> : null}
 
         {!isLoading && session ? (
-          <div className={styles.scanConfirmGrid}>
-            <div className={styles.summaryGrid}>
-              <div className={styles.summaryItem}>
-                <span>Session Title</span>
-                <p>{session.name}</p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>Department</span>
-                <p>{getDepartmentLabel(session, user)}</p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>Date</span>
-                <p>{formatIsoDate(session.start_time)}</p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>Start Time</span>
-                <p>{formatDateTime(session.start_time)}</p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>End Time</span>
-                <p>{formatDateTime(session.end_time)}</p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>Check-in Window</span>
-                <p className={styles.windowValue}>{checkInWindowLabel}</p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>Check-out Window</span>
-                <p className={styles.windowValue}>{checkOutWindowLabel}</p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>Status</span>
-                <p>
-                  <span
-                    className={`${styles.statusPill} ${
-                      isSessionClosed ? styles.statusClosed : styles.statusOpen
-                    }`.trim()}
-                  >
-                    {session.lifecycle_status || "UNKNOWN"}
-                  </span>
-                </p>
-              </div>
-              <div className={styles.summaryItem}>
-                <span>Already Recorded</span>
-                <p>{alreadyRecorded ? "Yes" : "No"}</p>
-              </div>
-              {isStudent ? (
-                <div className={styles.summaryItem}>
-                  <span>Program</span>
-                  <p>{getProgramLabel(session, user)}</p>
-                </div>
-              ) : null}
-            </div>
-
+          <div className={styles.scanConfirmStack}>
             <div className={styles.confirmPanel}>
-              <p className={styles.confirmEyebrow}>Next Step</p>
-              <h2>
-                {isSessionClosed
-                  ? "Attendance is closed"
-                  : success
-                    ? "Attendance confirmed"
-                    : hasAction
-                      ? `Ready to ${actionLabel.toLowerCase()}`
-                      : "Attendance complete"}
-              </h2>
-              <p>
-                {isSessionClosed
-                  ? "This session is no longer accepting attendance scans."
-                  : success
-                    ? success
-                    : hasAction
-                      ? "Review the session details, then confirm your attendance action."
-                      : "No additional attendance action is available for this session."}
-              </p>
-
-              {isStudent ? (
-                <div className={styles.studentFields}>
-                  <div className={styles.readOnlyField}>
+              <p className={styles.confirmEyebrow}>Attendance Action</p>
+              <div className={styles.actionHeader}>
+                <h2>{isSessionClosed ? "Attendance Closed" : actionLabel}</h2>
+                <span
+                  className={`${styles.statusPill} ${
+                    isSessionClosed ? styles.statusClosed : styles.statusOpen
+                  }`.trim()}
+                >
+                  {attendanceStatusLabel}
+                </span>
+              </div>
+              <div className={styles.primarySummary}>
+                <div className={styles.summaryLine}>
+                  <FiInfo aria-hidden="true" />
+                  <div>
+                    <span>Session</span>
+                    <strong>{session.name}</strong>
+                  </div>
+                </div>
+                <div className={styles.summaryLine}>
+                  <FiCalendar aria-hidden="true" />
+                  <div>
+                    <span>Date</span>
+                    <strong>{formatIsoDate(session.start_time)}</strong>
+                  </div>
+                </div>
+                <div className={styles.summaryLine}>
+                  <FiClock aria-hidden="true" />
+                  <div>
+                    <span>Time</span>
+                    <strong>{formatDateTime(session.start_time)} to {formatDateTime(session.end_time)}</strong>
+                  </div>
+                </div>
+                <div className={styles.summaryLine}>
+                  <FiMapPin aria-hidden="true" />
+                  <div>
                     <span>Department</span>
                     <strong>{getDepartmentLabel(session, user)}</strong>
                   </div>
-                  <div className={styles.readOnlyField}>
-                    <span>Program</span>
-                    <strong>{getProgramLabel(session, user)}</strong>
+                </div>
+                <div className={styles.summaryLine}>
+                  <FiCheckCircle aria-hidden="true" />
+                  <div>
+                    <span>Current Status</span>
+                    <strong>{attendanceStatusLabel}</strong>
                   </div>
+                </div>
+              </div>
+
+              {isStudent ? (
+                <div className={styles.studentFields}>
                   {sectionOptions.length ? (
                     <label className={styles.selectField} htmlFor="section_id">
                       <span>Select Section</span>
@@ -357,22 +352,54 @@ export default function FacultyScanConfirmationPage() {
                   ) : null}
                 </div>
               ) : null}
+            </div>
 
+            <div className={styles.detailsCard}>
+              <button
+                type="button"
+                className={styles.detailsToggle}
+                onClick={() => setIsDetailsOpen((prev) => !prev)}
+                aria-expanded={isDetailsOpen}
+              >
+                <span>Session Details</span>
+                <FiChevronDown className={isDetailsOpen ? styles.chevronOpen : ""} aria-hidden="true" />
+              </button>
+              {isDetailsOpen ? (
+                <div className={styles.summaryGrid}>
+                  <div className={styles.summaryItem}>
+                    <span>Check-in Window</span>
+                    <p className={styles.windowValue}>{checkInWindowLabel}</p>
+                  </div>
+                  <div className={styles.summaryItem}>
+                    <span>Check-out Window</span>
+                    <p className={styles.windowValue}>{checkOutWindowLabel}</p>
+                  </div>
+                  <div className={styles.summaryItem}>
+                    <span>Session Status</span>
+                    <p>{session.lifecycle_status || "UNKNOWN"}</p>
+                  </div>
+                  <div className={styles.summaryItem}>
+                    <span>Already Recorded</span>
+                    <p>{alreadyRecorded ? "Yes" : "No"}</p>
+                  </div>
+                  {isStudent ? (
+                    <div className={styles.summaryItem}>
+                      <span>Program</span>
+                      <p>{getProgramLabel(session, user)}</p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
+            <div className={styles.stickyConfirmBar}>
               <button
                 type="button"
                 className={`${common.primaryBtn} ${styles.confirmButton}`.trim()}
                 onClick={handleConfirm}
                 disabled={isActionDisabled}
               >
-                {isSessionClosed
-                  ? "Session Closed"
-                  : isConfirming
-                    ? `${actionLabel}...`
-                    : success
-                      ? "Attendance Confirmed"
-                      : hasAction
-                        ? actionLabel
-                        : "Attendance Complete"}
+                {confirmButtonText}
               </button>
             </div>
           </div>

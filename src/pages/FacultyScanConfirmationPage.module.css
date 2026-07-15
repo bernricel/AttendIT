@@ -1,65 +1,56 @@
 .facultyPanel {
-  margin-top: 24px;
+  margin-top: 16px;
+  padding: 14px 14px 92px;
   border: 1px solid #ffffff;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-  padding: 26px;
   color: #0f172a;
 }
 
-.scanConfirmGrid {
+.scanConfirmStack {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.75fr);
-  gap: 18px;
-  align-items: start;
+  gap: 14px;
 }
 
-.summaryGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.summaryItem {
-  min-width: 0;
-  display: grid;
-  gap: 7px;
+.confirmPanel,
+.detailsCard {
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: 16px;
   background:
     linear-gradient(145deg, #ffffff, #f8fafc),
-    radial-gradient(circle at 100% 0%, rgba(0, 75, 135, 0.06), transparent 32%);
-  padding: 15px 16px;
+    radial-gradient(circle at 100% 0%, rgba(255, 183, 27, 0.12), transparent 34%);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
 }
 
-.summaryItem span:first-child {
-  color: #64748b;
+.confirmPanel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.confirmEyebrow {
+  margin: 0;
+  color: #f0a400;
   font-size: 0.74rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.summaryItem p {
-  margin: 0;
-  color: #0f172a;
-  font-size: 0.98rem;
-  font-weight: 700;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
+.actionHeader {
+  display: grid;
+  gap: 10px;
 }
 
-.windowValue {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  white-space: normal;
-  word-break: normal;
-  overflow-wrap: anywhere;
-  line-height: 1.4;
+.actionHeader h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.55rem, 8vw, 2.15rem);
+  line-height: 1;
+  font-weight: 900;
 }
 
 .statusPill {
@@ -67,10 +58,10 @@
   align-items: center;
   width: fit-content;
   border-radius: 999px;
-  padding: 5px 10px;
+  padding: 6px 10px;
   font-size: 0.76rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -86,92 +77,152 @@
   color: #991b1b;
 }
 
-.confirmPanel {
-  position: sticky;
-  top: 18px;
+.primarySummary {
   display: grid;
-  gap: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  background:
-    linear-gradient(145deg, #ffffff, #f8fafc),
-    radial-gradient(circle at 100% 0%, rgba(255, 183, 27, 0.14), transparent 34%);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
-  padding: 20px;
+  gap: 10px;
 }
 
-.confirmEyebrow {
-  margin: 0;
-  color: #f0a400;
-  font-size: 0.76rem;
+.summaryLine {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px 0;
+  border-top: 1px solid #eef2f7;
+}
+
+.summaryLine:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.summaryLine svg {
+  margin-top: 2px;
+  color: #004b87;
+  font-size: 1.05rem;
+}
+
+.summaryLine span,
+.summaryItem span:first-child,
+.selectField span {
+  color: #64748b;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.confirmPanel h2 {
-  margin: 0;
+.summaryLine strong {
+  display: block;
+  margin-top: 3px;
   color: #0f172a;
-  font-size: clamp(1.2rem, 2vw, 1.45rem);
-  line-height: 1.2;
-  font-weight: 800;
-}
-
-.confirmPanel p {
-  margin: 0;
-  color: #475569;
-  font-size: 0.94rem;
-  line-height: 1.55;
-  font-weight: 500;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .studentFields {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
-.readOnlyField,
 .selectField {
   display: grid;
   gap: 7px;
   padding: 12px 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #dbe4ef;
   border-radius: 14px;
   background: #ffffff;
 }
 
-.readOnlyField span,
-.selectField span {
-  color: #64748b;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.readOnlyField strong {
-  color: #0f172a;
-  font-size: 0.98rem;
-}
-
 .selectField select {
-  min-height: 42px;
+  min-height: 44px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   background: #ffffff;
   color: #0f172a;
-  font-weight: 600;
+  font-weight: 700;
   padding: 8px 12px;
+}
+
+.detailsToggle {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.detailsToggle svg {
+  color: #004b87;
+  transition: transform 180ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.summaryGrid {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+
+.summaryItem {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 13px 14px;
+}
+
+.summaryItem p {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.windowValue {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.stickyConfirmBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid #dbe4ef;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.1);
 }
 
 .confirmButton {
   width: 100%;
-  min-height: 46px;
-  margin-top: 4px;
-  border-radius: 12px !important;
+  min-height: 50px;
+  margin: 0;
+  border-radius: 14px !important;
   background: #004b87 !important;
   color: #ffffff !important;
-  font-weight: 800 !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
 }
 
 .confirmButton:hover:not(:disabled) {
@@ -197,11 +248,11 @@
   background: rgba(254, 242, 242, 0.96) !important;
   color: #991b1b !important;
   box-shadow: 0 8px 18px rgba(239, 68, 68, 0.07) !important;
-  padding: 15px 18px !important;
-  font-size: 0.94rem !important;
+  padding: 13px 15px !important;
+  font-size: 0.92rem !important;
   font-weight: 700 !important;
-  line-height: 1.5;
-  margin-bottom: 18px;
+  line-height: 1.45;
+  margin-bottom: 14px;
 }
 
 .facultyPanel :global([class*="info"]),
@@ -212,24 +263,51 @@
   color: #047857 !important;
 }
 
-@media (max-width: 1100px) {
-  .scanConfirmGrid {
-    grid-template-columns: 1fr;
+@media (min-width: 760px) {
+  .facultyPanel {
+    margin-top: 24px;
+    padding: 24px 24px 104px;
   }
 
-  .confirmPanel {
-    position: static;
+  .confirmPanel,
+  .detailsCard {
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .actionHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .primarySummary,
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stickyConfirmBar {
+    left: 260px;
+    padding-inline: 24px;
+  }
+
+  .confirmButton {
+    max-width: 760px;
+    display: block;
+    margin: 0 auto;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 360px) {
   .facultyPanel {
-    margin-top: 16px;
-    padding: 16px;
-    border-radius: 16px;
+    padding-inline: 10px;
   }
 
-  .summaryGrid {
-    grid-template-columns: 1fr;
+  .confirmPanel {
+    padding: 14px;
+  }
+
+  .summaryLine {
+    grid-template-columns: 20px minmax(0, 1fr);
   }
 }
