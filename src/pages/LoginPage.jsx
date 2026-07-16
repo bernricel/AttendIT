@@ -105,8 +105,8 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="SyncIN Attendance Portal"
-      subtitle="Secure sign-in for faculty, students, and administrators."
+      title="Sync In Attendance Portal"
+      subtitle="Secure sign-in for users, students, and administrators."
       sideNote={
         <p>
           Access is limited to accounts ending with <strong>@ua.edu.ph</strong>.
@@ -115,7 +115,7 @@ export default function LoginPage() {
     >
       <AuthCard
         title="Login"
-        description="Access SyncIN attendance tools."
+        description="Access Sync In attendance tools."
       >
         {isLoading ? (
           <div className={styles.loaderLine}>Authenticating...</div>

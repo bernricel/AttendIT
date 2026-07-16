@@ -96,7 +96,7 @@
 }
 
 :global([class*="authCard"]):has(.profileForm) h2::before {
-  content: "Faculty Profile";
+  content: "User Profile";
   display: block;
   width: fit-content;
   margin-bottom: 9px;

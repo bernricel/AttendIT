@@ -92,7 +92,7 @@ export function exportAttendanceLogsPdf({ session, rows, filters }) {
     startY: margin + 126,
     margin: { top: margin, right: margin, bottom: margin + 20, left: margin },
     head: [[
-      "Faculty Name",
+      "User Name",
       "Email",
       "Check In",
       "Check Out",

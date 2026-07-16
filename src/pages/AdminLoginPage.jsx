@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
 
   return (
     <AuthLayout
-      title="SyncIN Admin Portal"
+      title="Sync In Admin Portal"
       subtitle="Administrative access for authorized personnel."
       sideNote={<p>Use your assigned admin credentials to continue.</p>}
     >

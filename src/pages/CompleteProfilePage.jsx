@@ -7,6 +7,7 @@ import MessageBanner from "../components/MessageBanner";
 import { ROUTES } from "../constants/routes";
 import { completeProfile, getActiveDepartments, getActivePrograms } from "../services/authApi";
 import { clearAuthSession, getStoredAuth, updateStoredUser } from "../services/authStorage";
+import { getAccountType } from "../utils/accountType";
 import { getApiErrorMessage } from "../utils/apiError";
 import common from "../styles/common.module.css";
 import styles from "./CompleteProfilePage.module.css";
@@ -16,6 +17,7 @@ export default function CompleteProfilePage() {
   const location = useLocation();
   const { user } = getStoredAuth();
   const isStudent = user?.role === "student";
+  const accountType = getAccountType(user?.email);
   const displayName = [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim();
   const continueTo = location.state?.from || "";
   const [form, setForm] = useState({
@@ -141,7 +143,7 @@ export default function CompleteProfilePage() {
     <AuthLayout
       title="Profile Completion"
       subtitle="Finish your verified university profile."
-      sideNote={<p>Your name and role come from your Google account and cannot be edited here.</p>}
+      sideNote={<p>Your name and account type come from your Google account and cannot be edited here.</p>}
     >
       <AuthCard title="Complete Your Profile">
         <form className={`${common.profileForm} ${styles.profileForm}`.trim()} onSubmit={handleSubmit}>
@@ -149,7 +151,7 @@ export default function CompleteProfilePage() {
             <span>Verified Google Account</span>
             <strong>{displayName || user?.email || "Unknown user"}</strong>
             <small>{user?.email || "No email available"}</small>
-            <small>{user?.role === "student" ? "Student" : "Faculty"}</small>
+            <small>{accountType}</small>
           </div>
 
           <FormField

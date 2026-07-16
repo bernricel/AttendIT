@@ -12,7 +12,7 @@ import common from '../styles/common.module.css'
 const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const roleOptions = [
   { value: '', label: 'All roles' },
-  { value: 'faculty', label: 'Faculty' },
+  { value: 'faculty', label: 'User' },
   { value: 'student', label: 'Student' },
 ]
 

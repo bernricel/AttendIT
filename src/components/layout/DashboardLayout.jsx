@@ -9,7 +9,9 @@ import styles from "./DashboardLayout.module.css";
 import common from "../../styles/common.module.css";
 
 // Branding asset path served from `public`.
+const syncInIcon = "/syncin-icon.png";
 const syncInLogo = "/SyncIN-LOGO.png";
+const syncInDashboard = "/syncin-dashboard.png";
 
 export default function DashboardLayout({
   variant,
@@ -86,9 +88,9 @@ export default function DashboardLayout({
         className={`${sidebarClassName} ${isSidebarOpen ? styles.isOpen : ""}`}
       >
         <div className={brandClassName}>
-          <img src={syncInLogo} alt="SyncIN logo" className={styles.brandLogo} />
+          <img src={syncInIcon} alt="Sync In logo" className={styles.brandLogo} />
           <div className={styles.brandCopy}>
-            <strong>SyncIN</strong>
+            <strong>Sync In</strong>
             <span>{brandSubtitle}</span>
           </div>
         </div>
@@ -128,11 +130,15 @@ export default function DashboardLayout({
                 <FiMenu />
               </button>
               <div className={styles.topbarBranding}>
-                <span>SyncIN Attendance Management</span>
+                <img
+                  src={variant === "admin" ? syncInLogo : syncInDashboard}
+                  alt="Sync In Attendance Management"
+                  className={styles.topbarLogo}
+                />
               </div>
             </div>
-            <h1>{pageMeta.title}</h1>
-            {pageMeta.subtitle ? <p>{pageMeta.subtitle}</p> : null}
+            {variant === "admin" && pageMeta.title ? <h1>{pageMeta.title}</h1> : null}
+            {variant === "admin" && pageMeta.subtitle ? <p>{pageMeta.subtitle}</p> : null}
           </div>
 
           <div className={topbarRightClassName}>
@@ -165,6 +171,18 @@ export default function DashboardLayout({
             <Outlet key={`${location.pathname}${location.search}`} context={outletContext} />
           </div>
         </div>
+
+        <footer className={styles.dashboardFooter} aria-label="Development team">
+          <strong>Development Team</strong>
+          <div className={styles.footerCredits}>
+            <span>Bern Ricel B. Musngi — Backend &amp; Web Application Developer</span>
+            <span>
+              Joshua O. Parungao — Mobile &amp; Desktop Application Developer; Contributing Backend Developer
+            </span>
+            <span>Lance Kyle A. Musngi — Contributing Web Application Developer</span>
+          </div>
+          <small>© 2026 Sync In. All rights reserved.</small>
+        </footer>
       </section>
     </div>
   );

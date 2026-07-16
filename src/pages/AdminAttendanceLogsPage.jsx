@@ -43,7 +43,7 @@ const SORT_BY_OPTIONS = [
 
 const ROLE_OPTIONS = [
   { value: "", label: "All roles" },
-  { value: "faculty", label: "Faculty" },
+  { value: "faculty", label: "User" },
   { value: "student", label: "Student" },
 ];
 
@@ -406,7 +406,7 @@ export default function AdminAttendanceLogsPage() {
                     type="text"
                     value={recordSearch}
                     onChange={(event) => setRecordSearch(event.target.value)}
-                    placeholder="Faculty, email, or session"
+                    placeholder="User, email, or session"
                     style={{ border: '1.5px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '600', width: '100%', padding: '8px 12px', borderRadius: '8px' }}
                   />
                 </label>
@@ -620,7 +620,7 @@ export default function AdminAttendanceLogsPage() {
                     <table className={common.adminTable}>
                       <thead style={{ background: '#f8fafc' }}>
                         <tr>
-                          <th style={{ color: '#334155', fontWeight: '700', padding: '14px' }}>Faculty Name</th>
+                          <th style={{ color: '#334155', fontWeight: '700', padding: '14px' }}>User Name</th>
                           <th style={{ color: '#334155', fontWeight: '700' }}>Session</th>
                           <th style={{ color: '#334155', fontWeight: '700' }}>Time In</th>
                           <th style={{ color: '#334155', fontWeight: '700' }}>Time Out</th>

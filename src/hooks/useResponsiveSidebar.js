@@ -29,7 +29,6 @@ export function useResponsiveSidebar() {
       setIsMobileViewport(event.matches)
     }
 
-    setIsMobileViewport(mediaQuery.matches)
     mediaQuery.addEventListener('change', handleMediaQueryChange)
 
     return () => mediaQuery.removeEventListener('change', handleMediaQueryChange)

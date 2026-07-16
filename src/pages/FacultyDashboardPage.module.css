@@ -8,6 +8,10 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   margin-bottom: 24px;
   color: #0f172a; 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
 }
 
 .facultyWelcomeCard h2 {
@@ -28,6 +32,14 @@
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
   align-items: start;
+}
+
+@media (max-width: 640px) {
+  .facultyWelcomeCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
 }
 
 .facultyPanel {

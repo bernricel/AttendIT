@@ -12,14 +12,16 @@ export default function FacultyDashboardPage() {
   return (
     <>
       <LayoutPageMeta
-        title="Faculty Dashboard"
-        subtitle="Access your attendance actions and personal logs."
+        title=""
+        subtitle=""
       />
       <section className={styles.facultyWelcomeCard}>
-        <h2>Welcome, {getDisplayName(user, 'Faculty')}</h2>
-        <p>
-          Your attendance interactions are secured with role checks and digital signatures.
-        </p>
+        <div>
+          <h2>Welcome, {getDisplayName(user, 'User')}</h2>
+          <p>
+            Your attendance interactions are secured with role checks and digital signatures.
+          </p>
+        </div>
       </section>
 
       <div className={common.facultyTwoCol}>

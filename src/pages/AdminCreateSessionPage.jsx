@@ -62,6 +62,7 @@ function ChipPicker({ id, label, allLabel, addLabel, all, onAllChange, selectedI
 
   useEffect(() => {
     if (!open) return undefined
+    let positionFrame = 0
     const handlePointerDown = (event) => {
       if (!pickerRef.current?.contains(event.target) && !dropdownRef.current?.contains(event.target)) {
         setOpenPicker("")
@@ -72,10 +73,13 @@ function ChipPicker({ id, label, allLabel, addLabel, all, onAllChange, selectedI
     if (floating) {
       window.addEventListener("scroll", handleReposition, true)
       window.addEventListener("resize", handleReposition)
-      updatePosition()
+      positionFrame = window.requestAnimationFrame(updatePosition)
     }
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown)
+      if (positionFrame) {
+        window.cancelAnimationFrame(positionFrame)
+      }
       if (floating) {
         window.removeEventListener("scroll", handleReposition, true)
         window.removeEventListener("resize", handleReposition)
@@ -376,7 +380,7 @@ export default function AdminCreateSessionPage() {
                   label="Session Title"
                   value={form.title}
                   onChange={updateField("title")}
-                  placeholder="Example: Faculty Daily Attendance"
+                  placeholder="Example: User Daily Attendance"
                   disabled={isSubmitting}
                 />
 
@@ -443,8 +447,8 @@ export default function AdminCreateSessionPage() {
                     value={form.allowed_roles}
                     onChange={updateField("allowed_roles")}
                     options={[
-                      { value: "both", label: "Faculty and Students" },
-                      { value: "faculty", label: "Faculty" },
+                      { value: "both", label: "Users and Students" },
+                      { value: "faculty", label: "Users" },
                       { value: "student", label: "Students" },
                     ]}
                     disabled={isSubmitting}
@@ -687,9 +691,9 @@ export default function AdminCreateSessionPage() {
                 <p>
                   <strong>Roles:</strong>{" "}
                   {form.allowed_roles === "both"
-                    ? "Faculty and Students"
+                    ? "Users and Students"
                     : form.allowed_roles === "faculty"
-                      ? "Faculty"
+                      ? "Users"
                       : "Students"}
                 </p>
                 <p>

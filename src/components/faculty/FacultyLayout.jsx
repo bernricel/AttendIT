@@ -1,6 +1,7 @@
 import { FiClock, FiPieChart, FiUser } from "react-icons/fi";
 import DashboardLayout from "../layout/DashboardLayout";
 import { ROUTES } from "../../constants/routes";
+import { getAccountType } from "../../utils/accountType";
 
 const facultyNavItems = [
   {
@@ -30,11 +31,11 @@ export default function FacultyLayout() {
       sidebarId="faculty-sidebar-nav"
       brandSubtitle="User Portal"
       navItems={facultyNavItems}
-      fallbackUserLabel="Faculty"
-      userSubtitleResolver={(user) => user?.role === "student" ? "Student" : "Faculty"}
+      fallbackUserLabel="User"
+      userSubtitleResolver={(user) => getAccountType(user?.email)}
       defaultMeta={{
-        title: "Attendance Dashboard",
-        subtitle: "Access your attendance actions and personal logs.",
+        title: "",
+        subtitle: "",
       }}
     />
   );

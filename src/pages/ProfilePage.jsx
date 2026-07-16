@@ -6,6 +6,7 @@ import MessageBanner from "../components/MessageBanner"
 import { getActiveDepartments, getActivePrograms, getProfile, updateProfile } from "../services/authApi"
 import { updateStoredUser } from "../services/authStorage"
 import common from "../styles/common.module.css"
+import { getAccountType } from "../utils/accountType"
 import { getApiErrorMessage } from "../utils/apiError"
 import styles from "./ProfilePage.module.css"
 
@@ -26,6 +27,7 @@ export default function ProfilePage() {
 
   const isStudent = profile?.role === "student"
   const displayName = useMemo(() => getFullName(profile) || profile?.email || "", [profile])
+  const accountType = useMemo(() => getAccountType(profile?.email), [profile?.email])
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -122,7 +124,7 @@ export default function ProfilePage() {
             <div className={styles.readonlyGrid}>
               <FormField id="profile_name" label="Name" value={displayName} readOnly disabled />
               <FormField id="profile_email" label="Email" value={profile.email || ""} readOnly disabled />
-              <FormField id="profile_role" label="Role" value={profile.role || ""} readOnly disabled />
+              <FormField id="profile_account_type" label="Account Type" value={accountType} readOnly disabled />
               <FormField id="profile_school_id" label="School ID" value={profile.school_id || ""} readOnly disabled />
             </div>
             <div className={styles.editGrid}>

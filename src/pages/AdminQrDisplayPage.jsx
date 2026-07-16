@@ -227,7 +227,7 @@ export default function AdminQrDisplayPage() {
     <>
       <LayoutPageMeta
         title="QR Display"
-        subtitle="Select a session and display a full-size QR for faculty scanning."
+        subtitle="Select a session and display a full-size QR for user scanning."
       />
       <AdminPanel>
         {error ? <DataError message={error} /> : null}

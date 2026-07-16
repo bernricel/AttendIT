@@ -18,11 +18,11 @@
 .facultySidebar {
   position: sticky;
   top: 0;
-  background-color: rgba(255, 255, 255, 0.35) !important; 
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.94) !important; 
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 4px 0 18px rgba(15, 23, 42, 0.04);
   color: #0f172a;
   padding: 24px 0; 
   display: flex;
@@ -162,6 +162,7 @@
 .topbarTitleWrap {
   display: grid;
   gap: 2px;
+  min-width: 0;
 }
 
 .topbarTitleWrap p {
@@ -187,11 +188,19 @@
   letter-spacing: 0.03em;
 }
 
+.topbarLogo {
+  display: block;
+  width: clamp(180px, 24vw, 320px);
+  max-height: 64px;
+  object-fit: contain;
+}
+
 .adminTopbarRight,
 .facultyTopbarRight {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .adminUserBadge,
@@ -226,6 +235,34 @@
 .facultyContent {
   display: grid;
   gap: 20px;
+}
+
+.dashboardFooter {
+  margin-top: auto;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 18px 4px 4px;
+  display: grid;
+  gap: 8px;
+  color: #475569;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.dashboardFooter strong {
+  color: #0f172a;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.footerCredits {
+  display: grid;
+  gap: 3px;
+}
+
+.dashboardFooter small {
+  color: #64748b;
+  font-size: 0.74rem;
 }
 
 .layoutBackdrop {
@@ -293,7 +330,9 @@
   .sidebarToggle { display: inline-flex; }
   .adminTopbarRight, .facultyTopbarRight { margin-left: auto; }
   .adminUserBadge, .facultyUserBadge { display: none; }
-  .adminTopbar, .facultyTopbar { padding: 14px; }
+  .adminTopbar, .facultyTopbar { padding: 14px; gap: 12px; }
+  .topbarLogo { width: clamp(150px, 42vw, 220px); max-height: 48px; }
+  .dashboardFooter { padding-top: 14px; }
   .adminMain, .facultyMain {
     height: auto;
     min-height: 100vh;
