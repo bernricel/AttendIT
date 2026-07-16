@@ -10,8 +10,7 @@ import common from "../../styles/common.module.css";
 
 // Branding asset path served from `public`.
 const syncInIcon = "/syncin-icon.png";
-const syncInLogo = "/SyncIN-LOGO.png";
-const syncInDashboard = "/syncin-dashboard.png";
+const dashboardLogo = "/dashboard.png";
 
 export default function DashboardLayout({
   variant,
@@ -131,8 +130,8 @@ export default function DashboardLayout({
               </button>
               <div className={styles.topbarBranding}>
                 <img
-                  src={variant === "admin" ? syncInLogo : syncInDashboard}
-                  alt="Sync In Attendance Management"
+                  src={dashboardLogo}
+                  alt="Sync In logo"
                   className={styles.topbarLogo}
                 />
               </div>

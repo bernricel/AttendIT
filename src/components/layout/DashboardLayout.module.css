@@ -180,6 +180,7 @@
 .topbarBranding {
   display: flex;
   align-items: center;
+  min-height: 80px;
   gap: 8px;
   color: #64748b;
   font-size: 0.8rem;
@@ -190,8 +191,9 @@
 
 .topbarLogo {
   display: block;
-  width: clamp(180px, 24vw, 320px);
-  max-height: 64px;
+  width: 240px;
+  max-width: 45vw;
+  height: auto;
   object-fit: contain;
 }
 
@@ -331,7 +333,7 @@
   .adminTopbarRight, .facultyTopbarRight { margin-left: auto; }
   .adminUserBadge, .facultyUserBadge { display: none; }
   .adminTopbar, .facultyTopbar { padding: 14px; gap: 12px; }
-  .topbarLogo { width: clamp(150px, 42vw, 220px); max-height: 48px; }
+  .topbarLogo { width: min(180px, 42vw); height: auto; }
   .dashboardFooter { padding-top: 14px; }
   .adminMain, .facultyMain {
     height: auto;
