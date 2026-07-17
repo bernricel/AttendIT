@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../components/AuthLayout";
 import FormField from "../components/FormField";
@@ -7,7 +7,7 @@ import MessageBanner from "../components/MessageBanner";
 import { ROUTES } from "../constants/routes";
 import { completeProfile, getActiveDepartments, getActivePrograms } from "../services/authApi";
 import { clearAuthSession, getStoredAuth, updateStoredUser } from "../services/authStorage";
-import { getAccountType } from "../utils/accountType";
+import { getAccountType, isAdminUser } from "../utils/accountType";
 import { getApiErrorMessage } from "../utils/apiError";
 import common from "../styles/common.module.css";
 import styles from "./CompleteProfilePage.module.css";
@@ -16,6 +16,7 @@ export default function CompleteProfilePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = getStoredAuth();
+  const isAdminAccount = isAdminUser(user);
   const isStudent = user?.role === "student";
   const accountType = getAccountType(user?.email);
   const displayName = [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim();
@@ -35,6 +36,9 @@ export default function CompleteProfilePage() {
 
   useEffect(() => {
     const loadDepartments = async () => {
+      if (isAdminAccount) {
+        return;
+      }
       setIsDepartmentsLoading(true);
       try {
         const data = await getActiveDepartments();
@@ -52,7 +56,7 @@ export default function CompleteProfilePage() {
       }
     };
     loadDepartments();
-  }, []);
+  }, [isAdminAccount]);
 
   useEffect(() => {
     const loadPrograms = async () => {
@@ -144,6 +148,10 @@ export default function CompleteProfilePage() {
     }
   };
 
+  if (isAdminAccount) {
+    return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
+  }
+
   return (
     <AuthLayout
       title="Profile Completion"
@@ -159,6 +167,15 @@ export default function CompleteProfilePage() {
             <small>{user?.email || "No email available"}</small>
             <small>{accountType}</small>
           </div>
+
+          <button
+            className={common.ghostBtn}
+            type="button"
+            onClick={handleBackToLogin}
+            disabled={isSubmitting}
+          >
+            Back to Login
+          </button>
 
           <FormField
             id="google_name"

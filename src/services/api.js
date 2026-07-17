@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getStoredAuth } from "./authStorage";
 
-const DEFAULT_API_BASE_URL = "https://attendance-backend-y6sk.onrender.com/api";
+const DEFAULT_API_BASE_URL = "https://syncin.ua-cit.com/api";
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL
 ).replace(/\/+$/, "");

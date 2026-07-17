@@ -11,3 +11,15 @@ export function getAccountType(email) {
 
   return 'User'
 }
+
+export function isAdminUser(user) {
+  const role = String(user?.role || '').toLowerCase()
+  return Boolean(
+    user &&
+      (role === 'admin' ||
+        role === 'superadmin' ||
+        user.is_staff === true ||
+        user.is_superuser === true ||
+        user.is_admin === true),
+  )
+}

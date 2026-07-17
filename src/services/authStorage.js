@@ -1,4 +1,7 @@
 import { ROUTES } from '../constants/routes'
+import { isAdminUser } from '../utils/accountType'
+
+export { isAdminUser } from '../utils/accountType'
 
 const AUTH_TOKEN_KEY = 'fas_auth_token'
 const AUTH_USER_KEY = 'fas_auth_user'
@@ -35,17 +38,6 @@ export function updateStoredUser(user) {
 export function clearAuthSession() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   localStorage.removeItem(AUTH_USER_KEY)
-}
-
-export function isAdminUser(user) {
-  const role = String(user?.role || '').toLowerCase()
-  return (
-    role === 'admin' ||
-    role === 'superadmin' ||
-    user?.is_staff === true ||
-    user?.is_superuser === true ||
-    user?.is_admin === true
-  )
 }
 
 export function getDefaultRouteForUser(user) {
