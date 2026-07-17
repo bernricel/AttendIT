@@ -10,6 +10,7 @@ import {
   clearAuthSession,
   getDefaultRouteForUser,
   getStoredAuth,
+  isAdminUser,
   storeAuthSession,
 } from "../services/authStorage";
 import { getApiErrorMessage } from "../utils/apiError";
@@ -42,7 +43,7 @@ export default function AdminLoginPage() {
       return;
     }
     const destination =
-      user.role === "admin"
+      isAdminUser(user)
         ? resolveAdminRoute()
         : getDefaultRouteForUser(user);
     navigate(destination, { replace: true });

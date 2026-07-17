@@ -11,7 +11,7 @@ import AdminAttendanceLogsPage from './pages/AdminAttendanceLogsPage'
 import AdminCreateSessionPage from './pages/AdminCreateSessionPage'
 import AdminDepartmentDetailPage from './pages/AdminDepartmentDetailPage'
 import AdminDepartmentsPage from './pages/AdminDepartmentsPage'
-import { getDefaultRouteForUser, getStoredAuth } from './services/authStorage'
+import { getDefaultRouteForUser, getStoredAuth, isAdminUser } from './services/authStorage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminQrPresentationPage from './pages/AdminQrPresentationPage'
 import AdminQrDisplayPage from './pages/AdminQrDisplayPage'
@@ -32,7 +32,7 @@ function HomeRedirect() {
     return <Navigate to={ROUTES.LOGIN} replace />
   }
 
-  if (!user?.is_profile_complete) {
+  if (!isAdminUser(user) && !user?.is_profile_complete) {
     return <Navigate to={ROUTES.COMPLETE_PROFILE} replace />
   }
 

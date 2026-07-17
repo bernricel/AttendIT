@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { ROUTES } from '../constants/routes'
-import { getDefaultRouteForUser, getStoredAuth } from '../services/authStorage'
+import { getDefaultRouteForUser, getStoredAuth, isAdminUser } from '../services/authStorage'
 
 export function RequireAuth({ children }) {
   const location = useLocation()
@@ -22,7 +22,7 @@ export function RequireAuth({ children }) {
 export function RequireCompleteProfile({ children }) {
   const location = useLocation()
   const { user } = getStoredAuth()
-  if (!user?.is_profile_complete) {
+  if (!isAdminUser(user) && !user?.is_profile_complete) {
     return (
       <Navigate
         to={ROUTES.COMPLETE_PROFILE}
@@ -36,7 +36,7 @@ export function RequireCompleteProfile({ children }) {
 
 export function RequireIncompleteProfile({ children }) {
   const { user } = getStoredAuth()
-  if (user?.is_profile_complete) {
+  if (isAdminUser(user) || user?.is_profile_complete) {
     return <Navigate to={getDefaultRouteForUser(user)} replace />
   }
   return children
@@ -44,7 +44,7 @@ export function RequireIncompleteProfile({ children }) {
 
 export function RequireAdminRole({ children }) {
   const { user } = getStoredAuth()
-  if (user?.role !== 'admin') {
+  if (!isAdminUser(user)) {
     return <Navigate to={user ? getDefaultRouteForUser(user) : ROUTES.ADMIN_LOGIN} replace />
   }
   return children

@@ -37,8 +37,19 @@ export function clearAuthSession() {
   localStorage.removeItem(AUTH_USER_KEY)
 }
 
+export function isAdminUser(user) {
+  const role = String(user?.role || '').toLowerCase()
+  return (
+    role === 'admin' ||
+    role === 'superadmin' ||
+    user?.is_staff === true ||
+    user?.is_superuser === true ||
+    user?.is_admin === true
+  )
+}
+
 export function getDefaultRouteForUser(user) {
-  if (user?.role === 'admin') {
+  if (isAdminUser(user)) {
     return ROUTES.ADMIN_DASHBOARD
   }
   return ROUTES.FACULTY_DASHBOARD

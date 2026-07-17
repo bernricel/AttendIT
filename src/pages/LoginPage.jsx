@@ -10,6 +10,7 @@ import {
   clearAuthSession,
   getDefaultRouteForUser,
   getStoredAuth,
+  isAdminUser,
   storeAuthSession,
 } from "../services/authStorage";
 import { getApiErrorMessage } from "../utils/apiError";
@@ -33,6 +34,14 @@ export default function LoginPage() {
 
   const navigateAfterLogin = useCallback(
     (user) => {
+      if (isAdminUser(user)) {
+        const destination = continueTo?.startsWith("/admin")
+          ? continueTo
+          : getDefaultRouteForUser(user);
+        navigate(destination, { replace: true });
+        return;
+      }
+
       if (!user?.is_profile_complete) {
         navigate(ROUTES.COMPLETE_PROFILE, {
           replace: true,
@@ -47,7 +56,7 @@ export default function LoginPage() {
         const isUniversalScanPath = continueTo.startsWith("/scan/");
         if (
           ((isFacultyPath || isUniversalScanPath) && ["faculty", "student"].includes(user.role)) ||
-          (isAdminPath && user.role === "admin")
+          (isAdminPath && isAdminUser(user))
         ) {
           navigate(continueTo, { replace: true });
           return;
