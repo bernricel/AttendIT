@@ -2,6 +2,11 @@
   gap: 15px;
 }
 
+.backButton {
+  width: fit-content;
+  margin: -4px 0 16px;
+}
+
 .identityCard {
   display: grid;
   gap: 6px;
@@ -140,5 +145,10 @@
   :global([class*="authCard"]):has(.profileForm) {
     width: 100%;
     padding: 28px 22px;
+  }
+
+  .backButton {
+    width: 100%;
+    margin-top: -2px;
   }
 }

@@ -101,6 +101,11 @@ export default function CompleteProfilePage() {
     }));
   };
 
+  const handleBackToLogin = () => {
+    clearAuthSession();
+    navigate(ROUTES.LOGIN, { replace: true, state: null });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
@@ -146,6 +151,14 @@ export default function CompleteProfilePage() {
       sideNote={<p>Your name and account type come from your Google account and cannot be edited here.</p>}
     >
       <AuthCard title="Complete Your Profile">
+        <button
+          className={`${common.ghostBtn} ${common.compact} ${styles.backButton}`.trim()}
+          type="button"
+          onClick={handleBackToLogin}
+          disabled={isSubmitting}
+        >
+          Back to Login
+        </button>
         <form className={`${common.profileForm} ${styles.profileForm}`.trim()} onSubmit={handleSubmit}>
           <div className={styles.identityCard}>
             <span>Verified Google Account</span>
