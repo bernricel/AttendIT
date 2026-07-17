@@ -16,6 +16,7 @@ import {
 } from "../services/attendanceApi";
 import { getApiErrorMessage } from "../utils/apiError";
 import { formatDateTime } from "../utils/dateTime";
+import { buildSyncInScanUrl } from "../utils/qr";
 import styles from "./AdminQrDisplayPage.module.css";
 import common from "../styles/common.module.css";
 
@@ -125,7 +126,10 @@ export default function AdminQrDisplayPage() {
   }, [isQrDisplayRoute, qrStatus, selectedId]);
 
   const currentQrToken = qrStatus?.qr_token || selectedSession?.qr_token || "";
-  const qrUrl = qrStatus?.qr_url || selectedSession?.qr_url || "";
+  const qrUrl = buildSyncInScanUrl({
+    qrUrl: qrStatus?.qr_url || selectedSession?.qr_url || "",
+    qrToken: currentQrToken,
+  });
   const separateDisplayUrl = selectedSession ? buildAdminQrPresentationRoute(selectedSession.id) : "";
   const sessionLifecycleStatus = qrStatus?.lifecycle_status || selectedSession?.lifecycle_status || "UNKNOWN";
   const canAcceptAttendance =

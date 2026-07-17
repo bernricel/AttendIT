@@ -5,6 +5,7 @@ import { DataError, DataLoading } from '../components/admin/DataState'
 import { useSessionQrStatus } from '../hooks/useSessionQrStatus'
 import { getAdminSessions } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
+import { buildSyncInScanUrl } from '../utils/qr'
 import styles from './AdminQrPresentationPage.module.css'
 
 export default function AdminQrPresentationPage() {
@@ -61,7 +62,10 @@ export default function AdminQrPresentationPage() {
     }
   }, [sessionId])
 
-  const qrUrl = qrStatus?.qr_url || sessionLookup.session?.qr_url || ''
+  const qrUrl = buildSyncInScanUrl({
+    qrUrl: qrStatus?.qr_url || sessionLookup.session?.qr_url || '',
+    qrToken: qrStatus?.qr_token || sessionLookup.session?.qr_token || '',
+  })
   const refreshInterval = useMemo(
     () => qrStatus?.qr_refresh_interval_seconds ?? sessionLookup.session?.qr_refresh_interval_seconds ?? 30,
     [qrStatus?.qr_refresh_interval_seconds, sessionLookup.session?.qr_refresh_interval_seconds],
