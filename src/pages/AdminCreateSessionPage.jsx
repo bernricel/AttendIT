@@ -447,8 +447,8 @@ export default function AdminCreateSessionPage() {
                     value={form.allowed_roles}
                     onChange={updateField("allowed_roles")}
                     options={[
-                      { value: "both", label: "Users and Students" },
-                      { value: "faculty", label: "Users" },
+                      { value: "both", label: "Faculty and Students" },
+                      { value: "faculty", label: "Faculty" },
                       { value: "student", label: "Students" },
                     ]}
                     disabled={isSubmitting}
@@ -691,9 +691,9 @@ export default function AdminCreateSessionPage() {
                 <p>
                   <strong>Roles:</strong>{" "}
                   {form.allowed_roles === "both"
-                    ? "Users and Students"
+                    ? "Faculty and Students"
                     : form.allowed_roles === "faculty"
-                      ? "Users"
+                      ? "Faculty"
                       : "Students"}
                 </p>
                 <p>
