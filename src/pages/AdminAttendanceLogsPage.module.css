@@ -1,5 +1,7 @@
 .browserWrapper {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .browserWrapper :global([class*="browserHeader"]) {
@@ -40,6 +42,7 @@
   position: relative;
   overflow: hidden;
   min-height: 196px;
+  min-width: 0;
   border-radius: 18px;
   border: 1px solid #e2e8f0;
   padding: 18px;
@@ -121,6 +124,7 @@
   font-size: clamp(1rem, 1.3vw, 1.16rem);
   font-weight: 700;
   line-height: 1.25;
+  overflow-wrap: break-word;
 }
 
 .browserWrapper :global([class*="sessionCardDate"]) {
@@ -177,11 +181,15 @@
 .selectedSection {
   display: grid;
   gap: 18px;
+  min-width: 0;
+  max-width: 100%;
   color: #0f172a;
 }
 
 .summaryPanel,
 .controlsWrap {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.94);
@@ -212,6 +220,7 @@
   font-size: clamp(1.2rem, 2vw, 1.6rem);
   line-height: 1.2;
   font-weight: 800;
+  overflow-wrap: break-word;
 }
 
 .summaryDate {
@@ -300,6 +309,8 @@
 .actionsRow {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .selectedSection :global([class*="ghostBtn"]) {
@@ -398,6 +409,7 @@
   border-radius: 14px;
   padding: 16px;
   background: #ffffff;
+  min-width: 0;
   color: #0f172a;
 }
 
@@ -405,6 +417,7 @@
   margin: 0;
   color: #0f172a;
   font-weight: 800;
+  overflow-wrap: break-word;
 }
 
 .cardMeta {
@@ -456,5 +469,24 @@
 
   .actionsRow {
     justify-content: flex-start;
+  }
+
+  .summaryPanel,
+  .controlsWrap,
+  .mobileCard {
+    padding: 14px;
+  }
+
+  .actionsRow :global(button),
+  .actionButtons :global(button) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .summaryPanel,
+  .controlsWrap,
+  .mobileCard {
+    padding: 12px;
   }
 }

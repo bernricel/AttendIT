@@ -3,6 +3,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
+  max-width: 100%;
   margin: 20px 0 16px;
   color: #64748b;
   font-size: 0.82rem;
@@ -31,6 +32,9 @@
   background: #ffffff;
   color: #64748b;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .browserWrapper :global(*) {
@@ -55,6 +59,8 @@
 .browserWrapper :global([class*="card"]), 
 .browserWrapper :global([class*="sessionCard"]),
 .browserWrapper :global([class*="Grid"]) > div {
+  max-width: 100%;
+  min-width: 0;
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 14px !important;
@@ -76,6 +82,7 @@
   color: #004b87 !important;
   font-weight: 700 !important;
   letter-spacing: -0.025em;
+  overflow-wrap: break-word;
 }
 
 .browserWrapper :global(h4) {
@@ -127,6 +134,8 @@
   grid-template-columns: 340px 1fr;
   gap: 28px;
   align-items: start;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .qrBox {
@@ -137,6 +146,12 @@
   display: grid;
   place-items: center;
   height: 340px;
+  max-width: 100%;
+}
+
+.qrBox canvas {
+  max-width: 100% !important;
+  height: auto !important;
 }
 
 .qrMeta {
@@ -154,12 +169,14 @@
   font-weight: 700;
   border-bottom: 2px solid #f1f5f9;
   padding-bottom: 12px;
+  overflow-wrap: break-word;
 }
 
 .qrMeta p {
   margin: 10px 0;
   font-size: 0.95rem;
   color: #334155 !important;
+  overflow-wrap: anywhere;
 }
 
 .qrMeta p strong {
@@ -175,6 +192,8 @@
   color: #004b87 !important;
   font-size: 0.875rem;
   font-weight: 600;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .qrMetaActions {
@@ -213,6 +232,8 @@
 
 .confirmModal {
   width: min(540px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
@@ -241,6 +262,7 @@
   justify-content: flex-end;
   gap: 12px;
   margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 .dangerConfirmBtn {
@@ -259,5 +281,35 @@
   }
   .qrBox {
     width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .qrMetaActions,
+  .confirmModalActions {
+    flex-direction: column;
+  }
+
+  .qrMetaActionBtn,
+  .confirmModalActions button {
+    width: 100%;
+  }
+
+  .qrMeta,
+  .confirmModal {
+    padding: 16px;
+  }
+
+  .qrBox {
+    height: auto;
+    min-height: min(300px, calc(100vw - 48px));
+    padding: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .qrMeta,
+  .confirmModal {
+    padding: 12px;
   }
 }

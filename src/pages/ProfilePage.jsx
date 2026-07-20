@@ -124,7 +124,10 @@ export default function ProfilePage() {
             <div className={styles.readonlyGrid}>
               <FormField id="profile_name" label="Name" value={displayName} readOnly disabled />
               <FormField id="profile_email" label="Email" value={profile.email || ""} readOnly disabled />
-              <FormField id="profile_account_type" label="Account Type" value={accountType} readOnly disabled />
+              <div className={styles.accountTypeDisplay}>
+                <span>Account Type</span>
+                <strong>{accountType}</strong>
+              </div>
               <FormField id="profile_school_id" label="School ID" value={profile.school_id || ""} readOnly disabled />
             </div>
             <div className={styles.editGrid}>

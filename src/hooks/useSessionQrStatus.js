@@ -1,12 +1,26 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getAdminSessionQrStatus } from '../services/attendanceApi'
 import { getApiErrorMessage } from '../utils/apiError'
+
+function getSecondsUntilExpiry(expiresAt = '') {
+  const expiresAtMs = new Date(expiresAt).getTime()
+  if (!Number.isFinite(expiresAtMs)) return 0
+  return Math.max(0, Math.ceil((expiresAtMs - Date.now()) / 1000))
+}
+
+function formatCountdown(seconds = 0) {
+  const safeSeconds = Math.max(0, Number(seconds) || 0)
+  const minutes = Math.floor(safeSeconds / 60)
+  const remainingSeconds = safeSeconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`
+}
 
 export function useSessionQrStatus(sessionId) {
   const [qrStatus, setQrStatus] = useState(null)
   const [qrError, setQrError] = useState('')
   const [secondsRemaining, setSecondsRemaining] = useState(0)
   const [isRefreshingQr, setIsRefreshingQr] = useState(false)
+  const isRefreshingRef = useRef(false)
 
   const refreshQrStatus = useCallback(async () => {
     // Guard: no session selected, reset QR state.
@@ -17,18 +31,27 @@ export function useSessionQrStatus(sessionId) {
       return null
     }
 
+    if (isRefreshingRef.current) {
+      return null
+    }
+    isRefreshingRef.current = true
     setIsRefreshingQr(true)
     setQrError('')
     try {
       // Pull current token/status from backend QR status endpoint.
       const data = await getAdminSessionQrStatus(sessionId)
       setQrStatus(data)
-      setSecondsRemaining(data.seconds_until_rotation ?? 0)
+      setSecondsRemaining(
+        data.qr_token_expires_at
+          ? getSecondsUntilExpiry(data.qr_token_expires_at)
+          : data.seconds_until_rotation ?? 0,
+      )
       return data
     } catch (apiError) {
       setQrError(getApiErrorMessage(apiError, 'Failed to refresh QR token status.'))
       return null
     } finally {
+      isRefreshingRef.current = false
       setIsRefreshingQr(false)
     }
   }, [sessionId])
@@ -43,25 +66,28 @@ export function useSessionQrStatus(sessionId) {
       return undefined
     }
 
-    // Keep both the dashboard and dedicated QR screen synchronized with token rotations.
-    const timerId = window.setInterval(() => {
-      const expiresAtMs = new Date(qrStatus.qr_token_expires_at).getTime()
-      const remainingSeconds = Math.max(0, Math.ceil((expiresAtMs - Date.now()) / 1000))
-      setSecondsRemaining(remainingSeconds)
+    const tick = () => {
+      const remainingSeconds = getSecondsUntilExpiry(qrStatus.qr_token_expires_at)
+      setSecondsRemaining((prev) => (prev === remainingSeconds ? prev : remainingSeconds))
 
-      if (remainingSeconds <= 0 && !isRefreshingQr) {
+      if (remainingSeconds <= 0 && !isRefreshingRef.current) {
         // Auto-refresh when countdown reaches zero to fetch the rotated token.
         refreshQrStatus()
       }
-    }, 1000)
+    }
+
+    tick()
+    // Keep both the dashboard and dedicated QR screen synchronized with token rotations.
+    const timerId = window.setInterval(tick, 1000)
 
     return () => window.clearInterval(timerId)
-  }, [isRefreshingQr, qrStatus?.qr_token_expires_at, refreshQrStatus, sessionId])
+  }, [qrStatus?.can_accept_attendance, qrStatus?.qr_token_expires_at, refreshQrStatus, sessionId])
 
   return {
     qrStatus,
     qrError,
     secondsRemaining,
+    countdownLabel: formatCountdown(secondsRemaining),
     isRefreshingQr,
     refreshQrStatus,
   }

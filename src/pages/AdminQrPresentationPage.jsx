@@ -15,7 +15,7 @@ export default function AdminQrPresentationPage() {
     error: '',
     session: null,
   })
-  const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(sessionId)
+  const { qrStatus, qrError, countdownLabel } = useSessionQrStatus(sessionId)
 
   useEffect(() => {
     let isActive = true
@@ -73,6 +73,10 @@ export default function AdminQrPresentationPage() {
   const sessionLifecycleStatus = qrStatus?.lifecycle_status || sessionLookup.session?.lifecycle_status || 'UNKNOWN'
   const canAcceptAttendance =
     qrStatus?.can_accept_attendance ?? sessionLookup.session?.can_accept_attendance ?? false
+  const qrCodeElement = useMemo(
+    () => (canAcceptAttendance && qrUrl ? <QRCodeCanvas value={qrUrl} size={380} level="H" includeMargin /> : null),
+    [canAcceptAttendance, qrUrl],
+  )
 
   return (
     <main className={styles.qrDisplayScreen} role="main" aria-label="Attendance QR presentation screen">
@@ -93,14 +97,14 @@ export default function AdminQrPresentationPage() {
 
           {canAcceptAttendance ? (
             <div className={styles.qrDisplayCodeWrap}>
-              <QRCodeCanvas value={qrUrl} size={380} level="H" includeMargin />
+              {qrCodeElement}
             </div>
           ) : null}
 
           <div className={styles.qrDisplayMeta}>
             <p>Status: {sessionLifecycleStatus}</p>
             <p>Rotation Interval: {refreshInterval}s</p>
-            <p>Next Rotation In: {canAcceptAttendance ? `${secondsRemaining}s` : 'Closed'}</p>
+            <p>Next Rotation In: <span className={styles.countdownValue}>{canAcceptAttendance ? countdownLabel : 'Closed'}</span></p>
           </div>
         </section>
       ) : null}

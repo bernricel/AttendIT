@@ -174,11 +174,15 @@ export default function DashboardLayout({
         <footer className={styles.dashboardFooter} aria-label="Development team">
           <strong>Development Team</strong>
           <div className={styles.footerCredits}>
-            <span>Bern Ricel B. Musngi — Backend &amp; Web Application Developer</span>
+            <span>Bern Ricel B. Musngi</span>
+            <small>Backend &amp; Web Application Developer</small>
             <span>
-              Joshua O. Parungao — Mobile &amp; Desktop Application Developer; Contributing Backend Developer
+              Joshua O. Parungao
             </span>
-            <span>Lance Kyle A. Musngi — Contributing Web Application Developer</span>
+            <small>Mobile &amp; Desktop Application Developer</small>
+            <small>Contributing Web Application &amp; Backend Developer</small>
+            <span>Lance Kyle A. Musngi</span>
+            <small>Contributing Web Application Developer</small>
           </div>
           <small>© 2026 Sync In. All rights reserved.</small>
         </footer>

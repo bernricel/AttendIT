@@ -8,6 +8,7 @@
 .fieldBlock {
   display: grid;
   gap: 7px;
+  min-width: 0;
   text-align: left;
 }
 
@@ -44,6 +45,7 @@
 
 /* Primary Solid Button */
 .primaryBtn {
+  max-width: 100%;
   border-radius: 8px;
   min-height: 40px;
   border: none;
@@ -59,6 +61,8 @@
   margin-top: 6px;
   color: #ffffff;
   background: #1e293b;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .primaryBtn:hover {
@@ -79,6 +83,7 @@
 
 /* Modern Rounded Outlined Button (Ghost Button) */
 .ghostBtn {
+  max-width: 100%;
   background: transparent !important;
   color: #0f172a !important; 
   border: 2px solid #0f172a !important; 
@@ -98,6 +103,8 @@
     transform var(--motion-fast),
     opacity var(--motion-fast);
   padding: 0 24px;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .ghostBtn:hover {
@@ -115,6 +122,8 @@
 .linkButton {
   text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .adminTwoCol,
@@ -131,6 +140,7 @@
 }
 
 .summaryItem {
+  min-width: 0;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -168,6 +178,7 @@
 }
 
 .quickActionCard {
+  min-width: 0;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 16px 20px;
@@ -192,6 +203,7 @@
   color: #0f172a;
   font-size: 1rem;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .quickActionCard span {
@@ -203,7 +215,9 @@
 /* Tables Layout */
 .tableWrap {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .adminTable {
@@ -247,6 +261,7 @@
 
 /* HIGH-CONTRAST GREEN CHIPS */
 .chip {
+  max-width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -256,6 +271,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-align: center;
 }
 
 .chip.ok {
@@ -269,5 +285,26 @@
   .facultyTwoCol,
   .filterGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .primaryBtn,
+  .ghostBtn {
+    width: 100%;
+    padding-inline: 12px;
+  }
+
+  .compact {
+    padding-inline: 12px !important;
+  }
+
+  .adminTable {
+    min-width: 640px;
+  }
+
+  .summaryItem,
+  .quickActionCard {
+    padding: 14px;
   }
 }

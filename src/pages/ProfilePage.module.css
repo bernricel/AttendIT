@@ -1,6 +1,9 @@
 .profilePanel {
   margin-top: 24px;
   padding: 24px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid #e2e8f0;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.94);
@@ -12,6 +15,7 @@
 .editGrid {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .readonlyGrid,
@@ -20,6 +24,7 @@
 }
 
 .profileForm :global([class*="inputControl"]) {
+  max-width: 100%;
   min-height: 44px;
   border: 1px solid #d6e0ec;
   border-radius: 12px;
@@ -31,6 +36,39 @@
 .profileForm :global([class*="inputControl"]:disabled) {
   color: #475569;
   background: #f8fafc;
+}
+
+.accountTypeDisplay {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.accountTypeDisplay span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.accountTypeDisplay strong {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid #d6e0ec;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  padding: 9px 12px;
+  font-size: clamp(0.82rem, 3vw, 0.92rem);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profileForm :global([class*="primaryBtn"]) {
@@ -48,5 +86,11 @@
   .readonlyGrid,
   .editGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .profilePanel {
+    padding: 14px;
   }
 }

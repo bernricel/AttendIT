@@ -1,6 +1,8 @@
 /* 1. Full-Screen Canvas with Highly Visible School Campus Background Image */
 .qrDisplayScreen {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
   display: grid;
   place-items: center;
   padding: clamp(16px, 4vw, 40px);
@@ -11,13 +13,16 @@
   background-size: cover;
   
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* 2. Elevated Modern Presentation Foreground Card */
 .qrDisplayCard {
   width: min(680px, 100%);
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: 24px;
   background: #ffffff;
@@ -45,6 +50,7 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  overflow-wrap: break-word;
 }
 
 /* Department Subtitle Label */
@@ -57,6 +63,8 @@
   font-size: 0.95rem;
   font-weight: 700;
   margin-bottom: 16px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 /* Scan Instructions Body Text */
@@ -73,6 +81,7 @@ p.qrDisplayInstruction:nth-of-type(2) {
   margin: 16px auto 32px auto;
   background: #ffffff;
   width: fit-content;
+  max-width: 100%;
   border: 2px solid #e2e8f0;
   border-radius: 20px;
   padding: clamp(12px, 2.5vw, 20px);
@@ -81,7 +90,7 @@ p.qrDisplayInstruction:nth-of-type(2) {
 }
 
 .qrDisplayCodeWrap:hover {
-  transform: scale(1.02);
+  transform: scale(1.01);
 }
 
 /* 5. Dashboard Chips for Metadata */
@@ -104,6 +113,7 @@ p.qrDisplayInstruction:nth-of-type(2) {
   font-weight: 700;
   flex: 1;
   min-width: 150px;
+  max-width: 100%;
   text-align: center;
 }
 
@@ -118,10 +128,54 @@ p.qrDisplayInstruction:nth-of-type(2) {
   color: #2563eb;
 }
 
+.countdownValue {
+  display: inline-block;
+  min-width: 5ch;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-align: right;
+  white-space: nowrap;
+}
+
 /* Adaptive mobile canvas boundaries sizing overrides */
 @media (max-width: 1100px) {
   .qrDisplayCodeWrap canvas {
     width: min(72vw, 340px) !important;
     height: min(72vw, 340px) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .qrDisplayScreen {
+    padding: 12px;
+  }
+
+  .qrDisplayCard {
+    border-radius: 18px;
+    padding: 18px 14px;
+  }
+
+  .qrDisplayCard h1 {
+    font-size: clamp(1.25rem, 8vw, 1.7rem);
+  }
+
+  .qrDisplayCodeWrap {
+    margin-bottom: 20px;
+  }
+
+  .qrDisplayCodeWrap canvas {
+    width: min(76vw, 280px) !important;
+    height: min(76vw, 280px) !important;
+  }
+
+  .qrDisplayMeta {
+    gap: 8px;
+  }
+
+  .qrDisplayMeta p {
+    flex-basis: 100%;
+    min-width: 0;
+    padding: 10px 12px;
   }
 }

@@ -12,6 +12,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .facultyWelcomeCard h2 {
@@ -19,25 +21,29 @@
   font-size: 1.5rem;
   font-weight: 600;
   color: #000;
+  overflow-wrap: break-word;
 }
 
 .facultyWelcomeCard p {
   margin: 0;
   font-size: 0.95rem;
   color: #334155;
+  overflow-wrap: anywhere;
 }
 
 .facultyTwoCol {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 24px;
   align-items: start;
+  min-width: 0;
 }
 
 @media (max-width: 640px) {
   .facultyWelcomeCard {
     align-items: flex-start;
     flex-direction: column;
+    padding: 18px;
   }
 
 }
@@ -51,6 +57,8 @@
   padding: 24px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   color: #0f172a;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .facultyPanel h3 {
@@ -72,6 +80,7 @@
   border-radius: 8px;
   padding: 12px 16px;
   background: #fafafa;
+  min-width: 0;
 }
 
 .profileField span {
@@ -89,6 +98,7 @@
   font-size: 1rem;
   color: #0f172a;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 /* --- Quick Actions Box Styling --- */
@@ -104,6 +114,7 @@
   border-radius: 8px;
   padding: 16px;
   background: #fafafa;
+  min-width: 0;
   transition: all 0.2s ease;
 }
 
@@ -119,10 +130,25 @@
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 4px;
+  overflow-wrap: break-word;
 }
 
 .actionCard span {
   display: block;
   color: #64748b;
   font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .facultyWelcomeCard,
+  .facultyPanel,
+  .actionCard,
+  .profileField {
+    padding: 14px;
+  }
+
+  .facultyWelcomeCard h2 {
+    font-size: 1.25rem;
+  }
 }

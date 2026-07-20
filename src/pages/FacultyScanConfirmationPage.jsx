@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import jsQR from "jsqr"
 import {
   Link,
   useLocation,
@@ -9,12 +10,15 @@ import {
 import {
   FiCalendar,
   FiAlertTriangle,
+  FiCamera,
   FiCheckCircle,
   FiChevronDown,
   FiClock,
+  FiExternalLink,
   FiInfo,
   FiMapPin,
   FiRefreshCw,
+  FiUpload,
 } from "react-icons/fi"
 
 import LayoutPageMeta from "../components/layout/LayoutPageMeta"
@@ -25,7 +29,20 @@ import { getStoredAuth } from "../services/authStorage"
 import common from "../styles/common.module.css"
 import { getApiErrorMessage } from "../utils/apiError"
 import { formatDateTime, formatIsoDate } from "../utils/dateTime"
+import { buildSyncInScanUrl } from "../utils/qr"
 import styles from "./FacultyScanConfirmationPage.module.css"
+
+const CAMERA_FAILURE_MESSAGE =
+  "Camera could not start. You can still continue by pasting the QR link/token or uploading a QR screenshot."
+const CAMERA_SECURE_CONTEXT_MESSAGE =
+  "Camera access requires HTTPS. Please open Sync In using the secure site link."
+
+function isCameraSecureContext() {
+  if (typeof window === "undefined") return false
+  const { hostname, protocol } = window.location
+  const isLocalDevelopmentHost = hostname === "localhost" || hostname === "127.0.0.1"
+  return window.isSecureContext && (protocol === "https:" || isLocalDevelopmentHost)
+}
 
 function normalizeOption(option) {
   if (!option || option.id === undefined || option.id === null) {
@@ -61,6 +78,62 @@ function getSectionOptions(session, user) {
     seen.add(option.value)
     return true
   })
+}
+
+function getNestedValue(source, path) {
+  return path.reduce((value, key) => {
+    if (value === undefined || value === null) return undefined
+    return value[key]
+  }, source)
+}
+
+function getCandidateSectionId(value) {
+  if (value === undefined || value === null || value === "") return ""
+  if (typeof value === "object") {
+    return getCandidateSectionId(value.id ?? value.section_id ?? value.sectionId)
+  }
+  return String(value)
+}
+
+function getPreviousSectionId(session) {
+  const sources = [session, session?.preview].filter(Boolean)
+  const candidatePaths = [
+    ["checked_in_section_id"],
+    ["check_in_section_id"],
+    ["previous_section_id"],
+    ["current_section_id"],
+    ["existing_section_id"],
+    ["selected_section_id"],
+    ["section_id"],
+    ["checked_in_section"],
+    ["check_in_section"],
+    ["previous_section"],
+    ["current_section"],
+    ["existing_section"],
+    ["selected_section"],
+    ["section"],
+    ["current_attendance", "section_id"],
+    ["current_attendance", "section"],
+    ["attendance", "section_id"],
+    ["attendance", "section"],
+    ["attendance_record", "section_id"],
+    ["attendance_record", "section"],
+    ["user_attendance", "section_id"],
+    ["user_attendance", "section"],
+    ["my_attendance", "section_id"],
+    ["my_attendance", "section"],
+    ["record", "section_id"],
+    ["record", "section"],
+  ]
+
+  for (const source of sources) {
+    for (const path of candidatePaths) {
+      const sectionId = getCandidateSectionId(getNestedValue(source, path))
+      if (sectionId) return sectionId
+    }
+  }
+
+  return ""
 }
 
 function getProgramLabel(session, user) {
@@ -118,6 +191,10 @@ export default function FacultyScanConfirmationPage() {
   const { token, user } = getStoredAuth()
   const videoRef = useRef(null)
   const streamRef = useRef(null)
+  const frameRef = useRef(0)
+  const canvasRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const scannerActiveRef = useRef(false)
 
   const qrToken = useMemo(
     () => params.qrToken || searchParams.get("token") || "",
@@ -136,16 +213,45 @@ export default function FacultyScanConfirmationPage() {
   const [qrProblem, setQrProblem] = useState(false)
   const [scannerError, setScannerError] = useState("")
   const [manualQrValue, setManualQrValue] = useState("")
+  const [isScannerStarting, setIsScannerStarting] = useState(false)
+  const [isScannerActive, setIsScannerActive] = useState(false)
+  const [isImageDecoding, setIsImageDecoding] = useState(false)
 
   const sectionOptions = useMemo(
     () => getSectionOptions(session, user),
     [session, user],
   )
   const isStudent = user?.role === "student"
-  const requiresSectionSelection =
+  const previousSectionId = useMemo(() => getPreviousSectionId(session), [session])
+  const isCheckOutAction = session?.next_valid_action === "check-out"
+  const isSectionRequiredForAction =
     isStudent &&
     (sectionOptions.length > 0 || session?.requires_section) &&
-    session?.next_valid_action === "check-in"
+    Boolean(session?.next_valid_action)
+  const resolvedSectionId =
+    isCheckOutAction && previousSectionId ? previousSectionId : selectedSectionId
+  const requiresSectionSelection =
+    isSectionRequiredForAction && !resolvedSectionId
+  const showSectionPicker =
+    isSectionRequiredForAction &&
+    (!isCheckOutAction || !previousSectionId)
+  const selectedSectionLabel = useMemo(() => {
+    const sectionId = resolvedSectionId
+    return sectionOptions.find((option) => option.value === sectionId)?.label || ""
+  }, [resolvedSectionId, sectionOptions])
+  const normalizedManualToken = extractQrToken(manualQrValue)
+  const manualOpenUrl = buildSyncInScanUrl({ qrToken: normalizedManualToken })
+
+  const stopScanner = useCallback(() => {
+    if (frameRef.current) {
+      window.cancelAnimationFrame(frameRef.current)
+      frameRef.current = 0
+    }
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
+    scannerActiveRef.current = false
+    setIsScannerActive(false)
+  }, [])
 
   useEffect(() => {
     if (!token) {
@@ -173,7 +279,7 @@ export default function FacultyScanConfirmationPage() {
       setSelectedSectionId("")
       try {
         const data = await getFacultySessionPreview(qrToken)
-        setSession(data.session)
+        setSession({ ...(data.session || data), preview: data })
         setAlreadyRecorded(Boolean(data.already_recorded))
       } catch (apiError) {
         if (isQrProblem(apiError)) {
@@ -188,76 +294,111 @@ export default function FacultyScanConfirmationPage() {
     loadSession()
   }, [qrToken, token])
 
+  useEffect(() => () => stopScanner(), [stopScanner])
+
   useEffect(() => {
-    if (!token || qrToken || isLoading) return undefined
-    let isCancelled = false
-    let frameId = 0
-
-    const stopScanner = () => {
-      if (frameId) window.cancelAnimationFrame(frameId)
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-    }
-
-    const startScanner = async () => {
-      setScannerError("")
-      if (!("BarcodeDetector" in window)) {
-        setScannerError("Camera scanning is not supported on this browser. You can paste the QR link below.")
-        return
-      }
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-          audio: false,
-        })
-        if (isCancelled) {
-          stream.getTracks().forEach((track) => track.stop())
-          return
-        }
-        streamRef.current = stream
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          await videoRef.current.play()
-        }
-        const detector = new window.BarcodeDetector({ formats: ["qr_code"] })
-        const scanFrame = async () => {
-          if (isCancelled || !videoRef.current) return
-          try {
-            const codes = await detector.detect(videoRef.current)
-            const tokenValue = extractQrToken(codes[0]?.rawValue)
-            if (tokenValue) {
-              stopScanner()
-              navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
-              return
-            }
-          } catch {
-            setScannerError("Unable to read the QR code. Please try again or paste the QR link below.")
-          }
-          frameId = window.requestAnimationFrame(scanFrame)
-        }
-        frameId = window.requestAnimationFrame(scanFrame)
-      } catch {
-        setScannerError("Camera access was blocked. Allow camera access or paste the QR link below.")
-      }
-    }
-
-    startScanner()
-    return () => {
-      isCancelled = true
+    if (qrToken) {
       stopScanner()
     }
-  }, [isLoading, navigate, qrToken, token])
+  }, [qrToken, stopScanner])
 
   useEffect(() => {
-    if (sectionOptions.length === 1) {
+    if (isCheckOutAction && previousSectionId) {
+      setSelectedSectionId(previousSectionId)
+    } else if (sectionOptions.length === 1) {
       setSelectedSectionId(sectionOptions[0].value)
     }
-  }, [sectionOptions])
+  }, [isCheckOutAction, previousSectionId, sectionOptions])
+
+  const scanVideoFrame = () => {
+    const video = videoRef.current
+    if (!video || !canvasRef.current || !scannerActiveRef.current) return
+
+    if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA && video.videoWidth && video.videoHeight) {
+      const canvas = canvasRef.current
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const context = canvas.getContext("2d", { willReadFrequently: true })
+      if (!context) return
+      context.drawImage(video, 0, 0, canvas.width, canvas.height)
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      const code = jsQR(imageData.data, imageData.width, imageData.height)
+      const tokenValue = extractQrToken(code?.data)
+      if (tokenValue) {
+        stopScanner()
+        navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
+        return
+      }
+    }
+
+    frameRef.current = window.requestAnimationFrame(scanVideoFrame)
+  }
+
+  const startScanner = async () => {
+    if (!token || qrToken || isScannerStarting || isScannerActive) return
+    setIsScannerStarting(true)
+    setScannerError("")
+    stopScanner()
+    if (!isCameraSecureContext()) {
+      setScannerError(CAMERA_SECURE_CONTEXT_MESSAGE)
+      setIsScannerStarting(false)
+      return
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setScannerError(CAMERA_FAILURE_MESSAGE)
+      setIsScannerStarting(false)
+      return
+    }
+
+    const attempts = [
+      { video: { facingMode: { ideal: "environment" } }, audio: false },
+      { video: true, audio: false },
+    ]
+
+    let stream = null
+    for (const constraints of attempts) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints)
+        break
+      } catch {
+        stream = null
+      }
+    }
+
+    if (!stream) {
+      setScannerError(CAMERA_FAILURE_MESSAGE)
+      setIsScannerStarting(false)
+      return
+    }
+
+    streamRef.current = stream
+    try {
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        videoRef.current.setAttribute("playsinline", "true")
+        videoRef.current.muted = true
+        await videoRef.current.play()
+      }
+      scannerActiveRef.current = true
+      setIsScannerActive(true)
+      frameRef.current = window.requestAnimationFrame(scanVideoFrame)
+    } catch {
+      stopScanner()
+      setScannerError(CAMERA_FAILURE_MESSAGE)
+    } finally {
+      setIsScannerStarting(false)
+    }
+  }
 
   const handleConfirm = async () => {
     if (!qrToken || !session?.next_valid_action) return
-    if (requiresSectionSelection && !selectedSectionId) {
-      setError("Select your section before confirming attendance.")
+    if (requiresSectionSelection && !resolvedSectionId) {
+      setError(
+        isCheckOutAction
+          ? "Select your section before checking out."
+          : "Select your section before checking in.",
+      )
       return
     }
 
@@ -269,7 +410,7 @@ export default function FacultyScanConfirmationPage() {
       await scanAttendance(
         qrToken,
         session.next_valid_action,
-        requiresSectionSelection ? selectedSectionId : "",
+        isSectionRequiredForAction ? resolvedSectionId : "",
       )
       const isCheckInAction = session.next_valid_action === "check-in"
       setAlreadyRecorded(true)
@@ -307,6 +448,53 @@ export default function FacultyScanConfirmationPage() {
     navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
   }
 
+  const decodeUploadedQrImage = async (file) => {
+    const objectUrl = URL.createObjectURL(file)
+    try {
+      const image = new Image()
+      image.decoding = "async"
+      const loadedImage = await new Promise((resolve, reject) => {
+        image.onload = () => resolve(image)
+        image.onerror = reject
+        image.src = objectUrl
+      })
+      const canvas = canvasRef.current || document.createElement("canvas")
+      canvas.width = loadedImage.naturalWidth
+      canvas.height = loadedImage.naturalHeight
+      const context = canvas.getContext("2d", { willReadFrequently: true })
+      if (!context) return ""
+      context.drawImage(loadedImage, 0, 0)
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      const code = jsQR(imageData.data, imageData.width, imageData.height)
+      return extractQrToken(code?.data)
+    } finally {
+      URL.revokeObjectURL(objectUrl)
+    }
+  }
+
+  const handleQrImageUpload = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setIsImageDecoding(true)
+    setScannerError("")
+    try {
+      const tokenValue = await decodeUploadedQrImage(file)
+      if (!tokenValue) {
+        setScannerError("Could not read a QR code from that image. Try another screenshot or paste the QR link/token.")
+        return
+      }
+      stopScanner()
+      navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
+    } catch {
+      setScannerError("Could not read a QR code from that image. Try another screenshot or paste the QR link/token.")
+    } finally {
+      setIsImageDecoding(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
+  }
+
   const isSessionClosed =
     session?.can_accept_attendance === false ||
     session?.lifecycle_status === "ENDED"
@@ -318,7 +506,7 @@ export default function FacultyScanConfirmationPage() {
     Boolean(success) ||
     isSessionClosed ||
     !hasAction ||
-    (requiresSectionSelection && !selectedSectionId)
+    (requiresSectionSelection && !resolvedSectionId)
   const confirmButtonText = isSessionClosed
     ? "Session Closed"
     : isConfirming
@@ -344,6 +532,16 @@ export default function FacultyScanConfirmationPage() {
       : hasAction
         ? `Ready to ${actionLabel.toLowerCase()}?`
         : "No additional attendance action is available."
+  const sectionRequirementHelper =
+    isSectionRequiredForAction && !resolvedSectionId
+      ? isCheckOutAction
+        ? "Select your section before checking out."
+        : "Select your section before checking in."
+      : ""
+  const actionHelperText =
+    session?.next_valid_action === "check-out"
+      ? "Use this before leaving."
+      : "Use this when you arrive."
 
   const checkInWindowLabel = useMemo(() => {
     if (!session) return ""
@@ -418,8 +616,18 @@ export default function FacultyScanConfirmationPage() {
           <div className={styles.scannerState}>
             <h2>Scan QR Code</h2>
             <p>Point your camera at the attendance QR code displayed by the facilitator.</p>
+            <button
+              type="button"
+              className={`${common.primaryBtn} ${styles.scanAgainButton}`.trim()}
+              onClick={startScanner}
+              disabled={isScannerStarting || isScannerActive}
+            >
+              <FiCamera aria-hidden="true" />
+              {isScannerStarting ? "Starting Camera..." : isScannerActive ? "Camera Started" : "Start Camera"}
+            </button>
             <div className={styles.scannerFrame}>
-              <video ref={videoRef} muted playsInline aria-label="QR scanner camera preview" />
+              <video ref={videoRef} muted playsInline autoPlay aria-label="QR scanner camera preview" />
+              {!isScannerActive ? <span>Camera preview appears here</span> : null}
             </div>
             {scannerError ? <MessageBanner type="error" message={scannerError} /> : null}
             <form className={styles.manualQrForm} onSubmit={handleManualQrSubmit}>
@@ -434,6 +642,37 @@ export default function FacultyScanConfirmationPage() {
                 Continue
               </button>
             </form>
+            <div className={styles.fallbackActions}>
+              <input
+                ref={fileInputRef}
+                className={styles.fileInput}
+                id="qr_image_upload"
+                type="file"
+                accept="image/*"
+                onChange={handleQrImageUpload}
+              />
+              <button
+                type="button"
+                className={`${common.ghostBtn} ${styles.fallbackButton}`.trim()}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isImageDecoding}
+              >
+                <FiUpload aria-hidden="true" />
+                {isImageDecoding ? "Reading Image..." : "Upload QR Screenshot"}
+              </button>
+              {manualOpenUrl ? (
+                <a
+                  className={`${common.ghostBtn} ${common.linkButton} ${styles.fallbackButton}`.trim()}
+                  href={manualOpenUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FiExternalLink aria-hidden="true" />
+                  Open in Sync In App
+                </a>
+              ) : null}
+            </div>
+            <canvas ref={canvasRef} className={styles.hiddenCanvas} aria-hidden="true" />
           </div>
         ) : null}
 
@@ -464,27 +703,36 @@ export default function FacultyScanConfirmationPage() {
 
               {isStudent ? (
                 <div className={styles.studentFields}>
-                  {sectionOptions.length ? (
+                  {showSectionPicker ? (
                     <label className={styles.selectField} htmlFor="section_id">
-                      <span>Select Section</span>
+                      <span>Select your section</span>
                       <select
                         id="section_id"
                         value={selectedSectionId}
                         onChange={(event) => setSelectedSectionId(event.target.value)}
-                        disabled={isConfirming || isSessionClosed}
+                        disabled={isConfirming || isSessionClosed || !sectionOptions.length}
                       >
-                        <option value="">Choose your section</option>
+                        <option value="">
+                          {sectionOptions.length ? "Choose your section" : "No sections available"}
+                        </option>
                         {sectionOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
                         ))}
                       </select>
+                      {sectionRequirementHelper ? <small>{sectionRequirementHelper}</small> : null}
                     </label>
+                  ) : isSectionRequiredForAction && previousSectionId ? (
+                    <div className={`${styles.selectField} ${styles.reusedSectionNotice}`.trim()}>
+                      <span>Section</span>
+                      <strong>Section: {selectedSectionLabel || `Section ${previousSectionId}`}</strong>
+                    </div>
                   ) : null}
                 </div>
               ) : null}
 
+              <p className={styles.actionHelper}>{actionHelperText}</p>
               <button
                 type="button"
                 className={`${common.primaryBtn} ${styles.inlineConfirmButton}`.trim()}

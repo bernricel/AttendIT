@@ -168,15 +168,6 @@ export default function CompleteProfilePage() {
             <small>{accountType}</small>
           </div>
 
-          <button
-            className={common.ghostBtn}
-            type="button"
-            onClick={handleBackToLogin}
-            disabled={isSubmitting}
-          >
-            Back to Login
-          </button>
-
           <FormField
             id="google_name"
             label="Google Name"
@@ -237,13 +228,13 @@ export default function CompleteProfilePage() {
             {isSubmitting ? "Saving Profile..." : "Save and Continue"}
           </button>
           <button
-          className={`${common.ghostBtn} ${common.compact} ${styles.backButton}`.trim()}
-          type="button"
-          onClick={handleBackToLogin}
-          disabled={isSubmitting}
-        >
-          Back to Login
-        </button>
+            className={`${common.ghostBtn} ${common.compact} ${styles.backButton}`.trim()}
+            type="button"
+            onClick={handleBackToLogin}
+            disabled={isSubmitting}
+          >
+            Back to Login
+          </button>
         </form>
       </AuthCard>
     </AuthLayout>

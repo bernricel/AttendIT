@@ -12,6 +12,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  max-width: 100%;
   transition: transform 0.2s ease;
 }
 
@@ -20,6 +21,8 @@
 }
 
 .googleBtnWrap > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
   width: 100% !important;
   display: flex;
   justify-content: center;
@@ -47,6 +50,7 @@
 
 .authDivider span {
   padding: 0 10px;
+  white-space: nowrap;
 }
 
 /* --- HIGH-CONTRAST ROUNDED ADMIN LOGIN BUTTON (GHOST STYLE) --- */
@@ -61,7 +65,20 @@
   min-height: 44px !important;
   border-radius: 12px !important; 
   text-decoration: none !important;
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+@media (max-width: 420px) {
+  .authDivider {
+    font-size: 0.76rem;
+  }
+
+  .authDivider span {
+    padding: 0 8px;
+  }
 }
 
 .authLinkBtn:hover {

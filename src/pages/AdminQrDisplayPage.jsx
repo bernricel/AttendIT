@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 
@@ -25,6 +25,107 @@ const MANUAL_ACTION_LABELS = {
   "check-out": "Check Out",
 };
 
+function normalizeSectionOption(section) {
+  if (!section || section.id === undefined || section.id === null) return null;
+  return {
+    value: String(section.id),
+    label: section.name || section.section_name || section.label || `Section ${section.id}`,
+  };
+}
+
+function getNestedValue(source, path) {
+  return path.reduce((value, key) => {
+    if (value === undefined || value === null) return undefined;
+    return value[key];
+  }, source);
+}
+
+function getCandidateSectionId(value) {
+  if (value === undefined || value === null || value === "") return "";
+  if (typeof value === "object") {
+    return getCandidateSectionId(value.id ?? value.section_id ?? value.sectionId);
+  }
+  return String(value);
+}
+
+function getSectionOptions(...sources) {
+  const candidateLists = sources.flatMap((source) => [
+    source?.available_sections,
+    source?.allowed_sections,
+    source?.sections,
+    source?.session?.available_sections,
+    source?.session?.allowed_sections,
+    source?.session?.sections,
+    source?.lookup?.available_sections,
+    source?.lookup?.allowed_sections,
+    source?.lookup?.sections,
+    source?.lookup?.session?.available_sections,
+    source?.lookup?.session?.allowed_sections,
+    source?.lookup?.session?.sections,
+  ]);
+  const seen = new Set();
+
+  return candidateLists
+    .flatMap((list) => (Array.isArray(list) ? list : []))
+    .map(normalizeSectionOption)
+    .filter(Boolean)
+    .filter((option) => {
+      if (seen.has(option.value)) return false;
+      seen.add(option.value);
+      return true;
+    });
+}
+
+function getPreviousManualSectionId(manualUser) {
+  const sources = [manualUser, manualUser?.lookup, manualUser?.lookup?.user].filter(Boolean);
+  const candidatePaths = [
+    ["checked_in_section_id"],
+    ["check_in_section_id"],
+    ["previous_section_id"],
+    ["current_section_id"],
+    ["existing_section_id"],
+    ["selected_section_id"],
+    ["attendance_section_id"],
+    ["checked_in_section"],
+    ["check_in_section"],
+    ["previous_section"],
+    ["current_section"],
+    ["existing_section"],
+    ["selected_section"],
+    ["attendance_section"],
+    ["current_attendance", "section_id"],
+    ["current_attendance", "section"],
+    ["attendance", "section_id"],
+    ["attendance", "section"],
+    ["attendance_record", "section_id"],
+    ["attendance_record", "section"],
+    ["user_attendance", "section_id"],
+    ["user_attendance", "section"],
+    ["record", "section_id"],
+    ["record", "section"],
+  ];
+
+  for (const source of sources) {
+    for (const path of candidatePaths) {
+      const sectionId = getCandidateSectionId(getNestedValue(source, path));
+      if (sectionId) return sectionId;
+    }
+  }
+
+  return "";
+}
+
+function getIsManualSectionRequired(session, manualUser, sectionOptions) {
+  return Boolean(
+    session?.requires_section ||
+      session?.session?.requires_section ||
+      manualUser?.requires_section ||
+      manualUser?.lookup?.requires_section ||
+      manualUser?.lookup?.session?.requires_section ||
+      (manualUser && sectionOptions.length > 0),
+  );
+}
+
 function buildManualUser(data, fallbackUser = null) {
   const hasCheckedIn = Boolean(data.has_checked_in);
   const hasCheckedOut = Boolean(data.has_checked_out);
@@ -38,6 +139,7 @@ function buildManualUser(data, fallbackUser = null) {
     has_checked_in: hasCheckedIn,
     has_checked_out: hasCheckedOut,
     action_message: data.action_message || data.message || "",
+    lookup: data,
   };
 }
 
@@ -73,10 +175,11 @@ export default function AdminQrDisplayPage() {
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [manualSchoolId, setManualSchoolId] = useState("");
   const [manualUser, setManualUser] = useState(null);
+  const [manualSectionId, setManualSectionId] = useState("");
   const [manualError, setManualError] = useState("");
   const [manualSuccess, setManualSuccess] = useState("");
   const [isManualLoading, setIsManualLoading] = useState(false);
-  const { qrStatus, qrError, secondsRemaining } = useSessionQrStatus(isQrDisplayRoute ? selectedId : "");
+  const { qrStatus, qrError, countdownLabel } = useSessionQrStatus(isQrDisplayRoute ? selectedId : "");
   const openSession = (session) => {
     setSelectedSession(session);
     setSelectedId(String(session.id));
@@ -134,6 +237,36 @@ export default function AdminQrDisplayPage() {
   const sessionLifecycleStatus = qrStatus?.lifecycle_status || selectedSession?.lifecycle_status || "UNKNOWN";
   const canAcceptAttendance =
     qrStatus?.can_accept_attendance ?? selectedSession?.can_accept_attendance ?? false;
+  const qrCodeElement = useMemo(
+    () => (canAcceptAttendance && qrUrl ? <QRCodeCanvas value={qrUrl} size={320} level="H" includeMargin /> : null),
+    [canAcceptAttendance, qrUrl],
+  );
+  const manualSectionOptions = useMemo(
+    () => getSectionOptions(selectedSession, manualUser),
+    [manualUser, selectedSession],
+  );
+  const manualPreviousSectionId = useMemo(
+    () => getPreviousManualSectionId(manualUser),
+    [manualUser],
+  );
+  const isManualCheckOut = manualUser?.next_action === "check-out";
+  const isManualSectionRequired = getIsManualSectionRequired(
+    selectedSession,
+    manualUser,
+    manualSectionOptions,
+  );
+  const resolvedManualSectionId =
+    isManualCheckOut && manualPreviousSectionId ? manualPreviousSectionId : manualSectionId;
+  const showManualSectionPicker =
+    manualUser && isManualSectionRequired && (!isManualCheckOut || !manualPreviousSectionId);
+  const manualSectionLabel =
+    manualSectionOptions.find((option) => option.value === resolvedManualSectionId)?.label || "";
+  const isManualRecordDisabled =
+    isManualLoading ||
+    !manualUser ||
+    manualUser.attendance_completed ||
+    !manualUser.next_action ||
+    (isManualSectionRequired && !resolvedManualSectionId);
 
   const handleDeleteSession = async () => {
     if (!selectedSession) {
@@ -188,6 +321,7 @@ export default function AdminQrDisplayPage() {
   const resetManualModal = () => {
     setManualSchoolId("");
     setManualUser(null);
+    setManualSectionId("");
     setManualError("");
     setManualSuccess("");
   };
@@ -199,9 +333,15 @@ export default function AdminQrDisplayPage() {
     setManualError("");
     setManualSuccess("");
     setManualUser(null);
+    setManualSectionId("");
     try {
       const data = await lookupManualAttendanceUser(selectedSession.id, manualSchoolId.trim());
-      setManualUser(buildManualUser(data));
+      const nextManualUser = buildManualUser(data);
+      setManualUser(nextManualUser);
+      const previousSectionId = getPreviousManualSectionId(nextManualUser);
+      if (previousSectionId) {
+        setManualSectionId(previousSectionId);
+      }
     } catch (apiError) {
       setManualError(getApiErrorMessage(apiError, "School ID was not found."));
     } finally {
@@ -211,15 +351,26 @@ export default function AdminQrDisplayPage() {
 
   const handleManualRecord = async () => {
     if (!selectedSession || !manualUser) return;
+    if (isManualSectionRequired && !resolvedManualSectionId) {
+      setManualError("Section selection is required for this session. Choose the user's section before recording attendance.");
+      return;
+    }
     setIsManualLoading(true);
     setManualError("");
     setManualSuccess("");
     try {
-      const data = await recordManualAttendance(selectedSession.id, {
+      const payload = {
         school_id: manualUser.school_id,
-      });
+      };
+      if (isManualSectionRequired && resolvedManualSectionId) {
+        payload.section_id = Number(resolvedManualSectionId);
+      }
+      const data = await recordManualAttendance(selectedSession.id, payload);
       setManualSuccess(data.message || "Manual attendance recorded successfully.");
-      setManualUser(buildManualUser(data, manualUser));
+      const nextManualUser = buildManualUser(data, manualUser);
+      setManualUser(nextManualUser);
+      const previousSectionId = getPreviousManualSectionId(nextManualUser);
+      setManualSectionId(previousSectionId || "");
     } catch (apiError) {
       setManualError(getApiErrorMessage(apiError, "Failed to record manual attendance."));
     } finally {
@@ -274,9 +425,7 @@ export default function AdminQrDisplayPage() {
 
             <div className={styles.qrStage}>
               <div className={styles.qrBox}>
-                {canAcceptAttendance && qrUrl ? (
-                  <QRCodeCanvas value={qrUrl} size={320} level="H" includeMargin />
-                ) : (
+                {qrCodeElement || (
                   <div className={styles.endedNotice}>
                     <strong>QR is not accessible</strong>
                     <span>
@@ -308,8 +457,11 @@ export default function AdminQrDisplayPage() {
                 <p>
                   <strong>Refresh Interval:</strong> {qrStatus?.qr_refresh_interval_seconds ?? selectedSession.qr_refresh_interval_seconds ?? 30}s
                 </p>
-                <p style={{ color: canAcceptAttendance ? "#0284c7" : "#64748b", fontWeight: 600 }}>
-                  Next Rotation In: {canAcceptAttendance ? `${secondsRemaining}s` : "Closed"}
+                <p className={styles.countdownRow}>
+                  <strong>Next Rotation In:</strong>{" "}
+                  <span className={styles.countdownValue}>
+                    {canAcceptAttendance ? countdownLabel : "Closed"}
+                  </span>
                 </p>
                 <div className={styles.qrMetaActions}>
                   <a
@@ -444,6 +596,35 @@ export default function AdminQrDisplayPage() {
                   <strong><i aria-hidden="true" /> {getManualActionLabel(manualUser)}</strong>
                   {manualUser.action_message ? <p>{manualUser.action_message}</p> : null}
                 </div>
+                {showManualSectionPicker ? (
+                  <label className={styles.manualSectionField} htmlFor="manual_section_id">
+                    <span>Select Section</span>
+                    <select
+                      id="manual_section_id"
+                      value={manualSectionId}
+                      onChange={(event) => {
+                        setManualSectionId(event.target.value);
+                        setManualError("");
+                      }}
+                      disabled={isManualLoading || !manualSectionOptions.length}
+                    >
+                      <option value="">
+                        {manualSectionOptions.length ? "Choose section" : "No sections available"}
+                      </option>
+                      {manualSectionOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <small>Choose the user's section before recording attendance.</small>
+                  </label>
+                ) : isManualSectionRequired && resolvedManualSectionId ? (
+                  <div className={styles.manualSectionNotice}>
+                    <span>Section</span>
+                    <strong>Section: {manualSectionLabel || `Section ${resolvedManualSectionId}`}</strong>
+                  </div>
+                ) : null}
               </>
             ) : null}
             <div className={styles.confirmModalActions}>
@@ -462,7 +643,7 @@ export default function AdminQrDisplayPage() {
                 className={common.primaryBtn}
                 type="button"
                 onClick={handleManualRecord}
-                disabled={isManualLoading || !manualUser || manualUser.attendance_completed || !manualUser.next_action}
+                disabled={isManualRecordDisabled}
               >
                 {isManualLoading ? "Recording..." : manualUser?.attendance_completed ? "Attendance Completed" : MANUAL_ACTION_LABELS[manualUser?.next_action] || "Unavailable"}
               </button>

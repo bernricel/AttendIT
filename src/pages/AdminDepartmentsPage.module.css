@@ -1,6 +1,8 @@
 .layout {
   display: grid;
   gap: 24px;
+  min-width: 0;
+  max-width: 100%;
   animation: pageIn 280ms ease both;
 }
 
@@ -18,6 +20,8 @@
 .programAccordion,
 .sectionCard,
 .detailHero {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 18px;
   background: #ffffff;
@@ -55,6 +59,7 @@
 .toolbarField {
   flex: 1;
   min-width: 220px;
+  max-width: 100%;
 }
 
 .departmentList,
@@ -104,6 +109,7 @@
   margin: 0;
   color: #0f172a;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .departmentStats {
@@ -139,6 +145,9 @@
   color: #004b87;
   font-weight: 800;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bulkToolbar {
@@ -179,6 +188,8 @@
   display: grid;
   gap: 14px;
   padding: 22px;
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
   border-radius: 18px;
   background: #ffffff;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
@@ -204,6 +215,7 @@
   gap: 16px;
   align-items: center;
   padding: 22px;
+  min-width: 0;
 }
 
 .departmentTitleRow {
@@ -227,6 +239,7 @@
   display: grid;
   gap: 10px;
   min-width: min(420px, 100%);
+  max-width: 100%;
 }
 
 .inlineComposer,
@@ -241,6 +254,7 @@
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
+  min-width: 0;
 }
 
 .inlineGrid {
@@ -256,6 +270,7 @@
 
 .accordionHeader {
   width: 100%;
+  min-width: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 12px;
@@ -306,6 +321,7 @@
   justify-content: space-between;
   gap: 14px;
   align-items: center;
+  min-width: 0;
 }
 
 .badgeActive,
@@ -361,5 +377,39 @@
   .inlineHeader {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .formCard,
+  .listCard,
+  .departmentCard,
+  .inlineComposer,
+  .sectionCard,
+  .detailHero,
+  .accordionHeader {
+    padding: 16px;
+  }
+
+  .toolbarField,
+  .toolbar button,
+  .inlineActionRow button,
+  .modalActions button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .departmentActions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .formCard,
+  .listCard,
+  .departmentCard,
+  .inlineComposer,
+  .sectionCard,
+  .detailHero,
+  .accordionHeader {
+    padding: 14px;
   }
 }

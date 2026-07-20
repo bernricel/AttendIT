@@ -1,4 +1,7 @@
 .adminPanel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   background: rgba(255, 255, 255, 0.95); 
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -17,7 +20,7 @@
   color: #8b6239; 
   margin-top: 0;
   margin-bottom: 4px;
-  font-size: 1.2rem;
+  font-size: clamp(1.05rem, 5vw, 1.2rem);
   font-weight: 600;
 }
 
@@ -25,4 +28,12 @@
   color: #475569;
   margin: 0;
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .adminPanel {
+    padding: 16px 12px;
+    border-radius: 14px;
+  }
 }

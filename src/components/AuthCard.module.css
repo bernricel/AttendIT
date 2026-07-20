@@ -1,5 +1,7 @@
 .authCard {
   width: min(100%, 480px);
+  max-width: 100%;
+  min-width: 0;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -22,11 +24,12 @@
   z-index: 1;
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .authCardHeader h2 {
   margin: 0;
-  font-size: 1.95rem;
+  font-size: clamp(1.45rem, 6vw, 1.95rem);
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.01em;
@@ -39,11 +42,12 @@
   font-size: 0.98rem;
   line-height: 1.5;
   max-width: 36ch;
+  overflow-wrap: anywhere;
 }
 
 .authCard form {
   gap: 12px;
-  padding: 10px;
+  padding: min(10px, 2vw);
 }
 
 .authCard label {
@@ -52,6 +56,8 @@
 
 .authCard input,
 .authCard select {
+  width: 100%;
+  max-width: 100%;
   min-height: 44px;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
@@ -70,4 +76,17 @@
   min-height: 44px;
   border-radius: 10px;
   width: 100%;
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .authCard {
+    padding: 24px 16px;
+  }
+
+  .authCardHeader p {
+    font-size: 0.86rem;
+  }
 }

@@ -18,12 +18,13 @@ export default function AuthLayout({ title, subtitle, children, sideNote }) {
           <div>
             <span>Joshua O. Parungao</span>
             <small>Mobile & Desktop Application Developer</small>
-            <small>Contributing Backend Developer</small>
+            <small>Contributing Web Application & Backend Developer</small>
           </div>
           <div>
             <span>Lance Kyle A. Musngi</span>
             <small>Contributing Web Application Developer</small>
           </div>
+          <small>© 2026 Sync In. All rights reserved.</small>
         </footer>
       </section>
       <section className={styles.authFormPanel}>{children}</section>

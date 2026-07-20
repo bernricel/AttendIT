@@ -37,6 +37,9 @@
 
 body {
   margin: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   color: var(--text-primary);
   font-family: 'Poppins', sans-serif;
   background-color: #f8fafc;
@@ -55,8 +58,29 @@ body {
   font-family: inherit;
 }
 
+html,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 #root {
   min-height: 100vh;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {

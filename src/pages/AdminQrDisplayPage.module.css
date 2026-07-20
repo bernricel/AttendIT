@@ -1,5 +1,7 @@
 .browserWrapper {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .browserWrapper :global([class*="browserHeader"]) {
@@ -179,10 +181,14 @@
   grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
   gap: 22px;
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .qrBox,
 .qrMeta {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 18px;
   background:
@@ -192,7 +198,7 @@
 }
 
 .qrBox {
-  min-height: 340px;
+  min-height: min(340px, calc(100vw - 48px));
   display: grid;
   place-items: center;
   padding: 22px;
@@ -248,6 +254,7 @@
   font-size: clamp(1.2rem, 2vw, 1.55rem);
   font-weight: 800;
   line-height: 1.2;
+  overflow-wrap: break-word;
 }
 
 .qrMeta p {
@@ -255,6 +262,7 @@
   color: #334155;
   font-size: 0.95rem;
   font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
 .qrMeta p strong {
@@ -272,6 +280,22 @@
   color: #0f172a;
   padding: 3px 7px;
   font-size: 0.86rem;
+}
+
+.countdownRow {
+  color: #0284c7 !important;
+  font-weight: 700 !important;
+}
+
+.countdownValue {
+  display: inline-block;
+  min-width: 5ch;
+  color: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-align: right;
+  white-space: nowrap;
 }
 
 .qrMetaActions {
@@ -317,6 +341,9 @@
 
 .confirmModal {
   width: min(540px, 100%);
+  max-width: 100%;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   display: grid;
   gap: 14px;
   border: 1px solid rgba(15, 23, 42, 0.1);
@@ -343,6 +370,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  flex-wrap: wrap;
   margin-top: 8px;
 }
 
@@ -358,6 +386,7 @@
   border: 1px solid #dbe4ef;
   border-radius: 12px;
   background: #f8fafc;
+  min-width: 0;
 }
 
 .manualUserCard strong {
@@ -368,6 +397,7 @@
 .manualUserCard span {
   color: #475569;
   font-weight: 650;
+  overflow-wrap: anywhere;
 }
 
 .manualActionCard {
@@ -377,6 +407,7 @@
   border: 1px solid #bbf7d0;
   border-radius: 12px;
   background: #ecfdf5;
+  min-width: 0;
 }
 
 .manualActionCard span {
@@ -393,6 +424,8 @@
   gap: 8px;
   color: #047857;
   font-size: 1.05rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .manualActionCard strong i {
@@ -406,6 +439,64 @@
   margin: 0;
   color: #475569;
   font-weight: 650;
+}
+
+.manualSectionField,
+.manualSectionNotice {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 14px;
+  border: 1px solid #dbe4ef;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.manualSectionField span,
+.manualSectionNotice span {
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.manualSectionField select {
+  width: 100%;
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.manualSectionField small {
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.manualSectionNotice {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
+}
+
+.manualSectionNotice span {
+  color: #047857;
+}
+
+.manualSectionNotice strong {
+  color: #065f46;
+  font-size: 1rem;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .checkInAction {
@@ -471,5 +562,32 @@
 
   .qrMetaActionBtn {
     width: 100%;
+  }
+
+  .qrBox,
+  .qrMeta,
+  .confirmModal {
+    padding: 16px;
+  }
+
+  .confirmModalActions {
+    flex-direction: column-reverse;
+  }
+
+  .confirmModalActions button,
+  .confirmModalActions a {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .qrBox,
+  .qrMeta,
+  .confirmModal {
+    padding: 12px;
+  }
+
+  .qrBox canvas {
+    width: min(100%, 280px) !important;
   }
 }

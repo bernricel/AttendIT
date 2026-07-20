@@ -616,7 +616,7 @@ export default function AdminAttendanceLogsPage() {
             {!isRowsLoading && !rowsError && hasRows ? (
               <div className={styles.responsiveBlock}>
                 <div className={styles.desktopOnly}>
-                  <div className={common.tableWrap} style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                  <div className={common.tableWrap} style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                     <table className={common.adminTable}>
                       <thead style={{ background: '#f8fafc' }}>
                         <tr>

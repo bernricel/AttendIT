@@ -1,6 +1,9 @@
 .facultyPanel {
   margin-top: 16px;
   padding: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid #ffffff;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.94);
@@ -13,10 +16,13 @@
 .scanConfirmStack {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .confirmPanel,
 .detailsCard {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   background:
@@ -51,6 +57,7 @@
   font-size: clamp(1.55rem, 8vw, 2.15rem);
   line-height: 1;
   font-weight: 900;
+  overflow-wrap: break-word;
 }
 
 .essentialBlock {
@@ -76,6 +83,9 @@
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .statusOpen {
@@ -116,8 +126,7 @@
 }
 
 .summaryLine span,
-.summaryItem span:first-child,
-.selectField span {
+.summaryItem span:first-child {
   color: #64748b;
   font-size: 0.72rem;
   font-weight: 800;
@@ -142,20 +151,64 @@
 .selectField {
   display: grid;
   gap: 7px;
+  min-width: 0;
   padding: 12px 14px;
   border: 1px solid #dbe4ef;
   border-radius: 14px;
   background: #ffffff;
 }
 
+.selectField > span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .selectField select {
   min-height: 44px;
+  max-width: 100%;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   background: #ffffff;
   color: #0f172a;
   font-weight: 700;
   padding: 8px 12px;
+}
+
+.selectField small {
+  color: #004b87;
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.reusedSectionNotice {
+  border: 1px solid #bbf7d0;
+  background: #ecfdf5;
+}
+
+.reusedSectionNotice > span {
+  color: #047857;
+}
+
+.reusedSectionNotice strong {
+  color: #065f46;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionHelper {
+  margin: -2px 0 0;
+  color: #004b87;
+  font-size: 0.92rem;
+  font-weight: 850;
+  line-height: 1.35;
 }
 
 .detailsToggle {
@@ -172,6 +225,14 @@
   cursor: pointer;
   font-size: 0.98rem;
   font-weight: 800;
+  min-width: 0;
+}
+
+.detailsToggle span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .detailsToggle svg {
@@ -187,6 +248,7 @@
   display: grid;
   gap: 10px;
   padding: 0 14px 14px;
+  min-width: 0;
 }
 
 .summaryItem {
@@ -247,6 +309,7 @@
   justify-items: center;
   gap: 14px;
   max-width: 520px;
+  width: 100%;
   margin: 0 auto;
   padding: 28px 18px;
   text-align: center;
@@ -263,6 +326,7 @@
   justify-items: center;
   gap: 14px;
   max-width: 520px;
+  width: 100%;
   margin: 0 auto;
   padding: 18px;
   text-align: center;
@@ -287,8 +351,11 @@
 }
 
 .scannerFrame {
+  position: relative;
   width: min(100%, 360px);
   aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   overflow: hidden;
   border: 3px solid #004b87;
   border-radius: 22px;
@@ -297,9 +364,18 @@
 }
 
 .scannerFrame video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.scannerFrame span {
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  font-weight: 750;
+  padding: 14px;
 }
 
 .manualQrForm {
@@ -318,12 +394,39 @@
 }
 
 .manualQrForm input {
+  width: 100%;
+  max-width: 100%;
   min-height: 44px;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
   color: #0f172a;
   padding: 9px 12px;
   font-weight: 650;
+}
+
+.fallbackActions {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+}
+
+.fallbackButton {
+  width: 100%;
+  min-height: 46px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px !important;
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-weight: 850 !important;
+}
+
+.fileInput,
+.hiddenCanvas {
+  display: none;
 }
 
 .expiredIcon {
@@ -425,10 +528,21 @@
   }
 
   .confirmPanel {
-    padding: 14px;
+    padding: 12px;
   }
 
   .summaryLine {
     grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  .selectField,
+  .summaryItem,
+  .scannerState,
+  .expiredState {
+    padding: 12px;
+  }
+
+  .actionHeader h2 {
+    font-size: clamp(1.35rem, 10vw, 1.7rem);
   }
 }

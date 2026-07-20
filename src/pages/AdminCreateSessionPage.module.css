@@ -4,6 +4,8 @@
   gap: 24px;
   align-items: start;
   min-height: 800px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .primaryColumn,
@@ -15,6 +17,7 @@
 .reviewList {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .secondaryColumn {
@@ -23,6 +26,7 @@
 }
 
 .formCard {
+  max-width: 100%;
   padding: 22px;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
@@ -39,6 +43,7 @@
   justify-content: space-between;
   gap: 16px;
   align-items: center;
+  min-width: 0;
 }
 
 .cardHeader h2,
@@ -46,7 +51,7 @@
 .reviewTitle {
   margin: 4px 0 0;
   color: #0f172a;
-  font-size: 1.3rem;
+  font-size: clamp(1.08rem, 5vw, 1.3rem);
   font-weight: 800;
 }
 
@@ -70,6 +75,8 @@
   text-decoration: none;
   font-weight: 700;
   background: #ffffff;
+  max-width: 100%;
+  text-align: center;
 }
 
 .formGrid {
@@ -114,6 +121,7 @@
   font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
+  max-width: 100%;
 }
 
 .chipRow {
@@ -129,6 +137,7 @@
 
 .chip,
 .addChip {
+  max-width: 100%;
   min-height: 30px;
   border: 1px solid #dbe4ef;
   border-radius: 999px;
@@ -138,6 +147,7 @@
   font-size: 0.84rem;
   font-weight: 700;
   cursor: default;
+  overflow-wrap: anywhere;
 }
 
 .addChip {
@@ -166,6 +176,7 @@
 .floatingPicker {
   position: fixed;
   z-index: 3000;
+  max-width: calc(100vw - 24px);
 }
 
 .inlinePicker {
@@ -203,6 +214,8 @@
   color: #0f172a;
   font-size: 0.9rem;
   font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
   transition: background-color var(--motion-fast), color var(--motion-fast);
 }
 
@@ -265,6 +278,8 @@
   background: #ffffff;
   color: #0f172a;
   font-weight: 600;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .previewNote,
@@ -302,5 +317,33 @@
 
   .audienceGrid {
     grid-template-columns: 1fr;
+  }
+
+  .sessionForm {
+    gap: 16px;
+    min-height: 0;
+  }
+
+  .formCard,
+  .ruleBlock {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .manageLink {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .formCard,
+  .ruleBlock {
+    padding: 14px;
+  }
+
+  .chip,
+  .addChip,
+  .weekdayChip {
+    font-size: 0.78rem;
   }
 }
