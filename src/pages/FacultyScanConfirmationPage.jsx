@@ -136,7 +136,6 @@ export default function FacultyScanConfirmationPage() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [qrProblem, setQrProblem] = useState(false);
   const [scannerError, setScannerError] = useState("");
-  const [manualQrValue, setManualQrValue] = useState("");
 
   const sectionOptions = useMemo(
     () => getSectionOptions(session, user),
@@ -302,16 +301,6 @@ export default function FacultyScanConfirmationPage() {
     } finally {
       setIsConfirming(false);
     }
-  };
-
-  const handleManualQrSubmit = (event) => {
-    event.preventDefault();
-    const tokenValue = extractQrToken(manualQrValue);
-    if (!tokenValue) {
-      setScannerError("Enter a valid QR link or token.");
-      return;
-    }
-    navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true });
   };
 
   const isSessionClosed =
