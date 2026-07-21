@@ -29,7 +29,7 @@ export default function LoginPage() {
 
   const hasGoogleClientId = useMemo(
     () => Boolean(googleClientId),
-    [googleClientId]
+    [googleClientId],
   );
 
   const navigateAfterLogin = useCallback(
@@ -55,7 +55,8 @@ export default function LoginPage() {
         const isAdminPath = continueTo.startsWith("/admin");
         const isUniversalScanPath = continueTo.startsWith("/scan/");
         if (
-          ((isFacultyPath || isUniversalScanPath) && ["faculty", "student"].includes(user.role)) ||
+          ((isFacultyPath || isUniversalScanPath) &&
+            ["faculty", "student"].includes(user.role)) ||
           (isAdminPath && isAdminUser(user))
         ) {
           navigate(continueTo, { replace: true });
@@ -65,7 +66,7 @@ export default function LoginPage() {
 
       navigate(getDefaultRouteForUser(user), { replace: true });
     },
-    [continueTo, navigate]
+    [continueTo, navigate],
   );
 
   useEffect(() => {
@@ -104,7 +105,7 @@ export default function LoginPage() {
     } catch (apiError) {
       clearAuthSession();
       setError(
-        getApiErrorMessage(apiError, "Sign in failed. Please try again.")
+        getApiErrorMessage(apiError, "Sign in failed. Please try again."),
       );
     } finally {
       setIsLoading(false);
@@ -114,18 +115,15 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="Sync In Attendance Portal"
-      subtitle="Secure sign-in for users, students, and administrators."
+      subtitle="Secure sign-in for faculty members, students, and administrators."
       sideNote={
         <p>
-          Access is limited to accounts ending with <strong>@ua.edu.ph</strong>.
+          Access is restricted to users without a valid{" "}
+          <strong>UA Google Workspace</strong> account.
         </p>
       }
     >
-      <AuthCard
-        title="Login"
-        description="Access Sync In attendance tools."
-      >
+      <AuthCard title="Login" description="Access Sync In attendance tools.">
         {isLoading ? (
           <div className={styles.loaderLine}>Authenticating...</div>
         ) : null}
@@ -154,7 +152,10 @@ export default function LoginPage() {
         <div className={styles.authDivider} role="presentation">
           <span>or</span>
         </div>
-        <Link className={`${common.ghostBtn} ${styles.authLinkBtn}`.trim()} to={ROUTES.ADMIN_LOGIN}>
+        <Link
+          className={`${common.ghostBtn} ${styles.authLinkBtn}`.trim()}
+          to={ROUTES.ADMIN_LOGIN}
+        >
           Admin Login
         </Link>
       </AuthCard>

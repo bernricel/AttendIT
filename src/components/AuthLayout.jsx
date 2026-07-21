@@ -1,14 +1,21 @@
-import styles from './AuthLayout.module.css'
+import styles from "./AuthLayout.module.css";
 
 export default function AuthLayout({ title, subtitle, children, sideNote }) {
   return (
     <main className={styles.authPage}>
       <section className={styles.authBrandPanel}>
-        <img src="/syncin-icon.png" alt="Sync In logo" className={styles.brandLogo} />
+        <img
+          src="/syncin-icon.png"
+          alt="Sync In logo"
+          className={styles.brandLogo}
+        />
         <span className={styles.brandTag}>Sync In Attendance Portal</span>
+
         <h1>{title}</h1>
         <p>{subtitle}</p>
-        {sideNote ? <div className={styles.brandSideNote}>{sideNote}</div> : null}
+        {sideNote ? (
+          <div className={styles.brandSideNote}>{sideNote}</div>
+        ) : null}
         <footer className={styles.publicCredits} aria-label="Development team">
           <strong>Development Team</strong>
           <div>
@@ -28,5 +35,5 @@ export default function AuthLayout({ title, subtitle, children, sideNote }) {
       </section>
       <section className={styles.authFormPanel}>{children}</section>
     </main>
-  )
+  );
 }

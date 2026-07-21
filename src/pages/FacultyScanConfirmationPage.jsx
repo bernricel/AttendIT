@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Link,
   useLocation,
   useNavigate,
   useParams,
   useSearchParams,
-} from "react-router-dom"
+} from "react-router-dom";
 import {
   FiCalendar,
   FiAlertTriangle,
@@ -15,52 +15,53 @@ import {
   FiInfo,
   FiMapPin,
   FiRefreshCw,
-} from "react-icons/fi"
+} from "react-icons/fi";
 
-import LayoutPageMeta from "../components/layout/LayoutPageMeta"
-import MessageBanner from "../components/MessageBanner"
-import { ROUTES } from "../constants/routes"
-import { getFacultySessionPreview, scanAttendance } from "../services/attendanceApi"
-import { getStoredAuth } from "../services/authStorage"
-import common from "../styles/common.module.css"
-import { getApiErrorMessage } from "../utils/apiError"
-import { formatDateTime, formatIsoDate } from "../utils/dateTime"
-import styles from "./FacultyScanConfirmationPage.module.css"
+import LayoutPageMeta from "../components/layout/LayoutPageMeta";
+import MessageBanner from "../components/MessageBanner";
+import { ROUTES } from "../constants/routes";
+import {
+  getFacultySessionPreview,
+  scanAttendance,
+} from "../services/attendanceApi";
+import { getStoredAuth } from "../services/authStorage";
+import common from "../styles/common.module.css";
+import { getApiErrorMessage } from "../utils/apiError";
+import { formatDateTime, formatIsoDate } from "../utils/dateTime";
+import styles from "./FacultyScanConfirmationPage.module.css";
 
 function normalizeOption(option) {
   if (!option || option.id === undefined || option.id === null) {
-    return null
+    return null;
   }
   return {
     value: String(option.id),
     label: option.name || option.section_name || `Section ${option.id}`,
-  }
+  };
 }
 
 function getSectionOptions(session, user) {
-  const userProgramId = user?.program_id ? String(user.program_id) : ""
-  const candidateLists = [
-    session?.available_sections,
-    session?.sections,
-  ]
+  const userProgramId = user?.program_id ? String(user.program_id) : "";
+  const candidateLists = [session?.available_sections, session?.sections];
   const nextOptions = candidateLists
     .flatMap((list) => (Array.isArray(list) ? list : []))
     .filter((section) => {
-      if (!userProgramId) return true
-      if (section?.program_id === undefined || section?.program_id === null) return true
-      return String(section.program_id) === userProgramId
+      if (!userProgramId) return true;
+      if (section?.program_id === undefined || section?.program_id === null)
+        return true;
+      return String(section.program_id) === userProgramId;
     })
     .map(normalizeOption)
-    .filter(Boolean)
+    .filter(Boolean);
 
-  const seen = new Set()
+  const seen = new Set();
   return nextOptions.filter((option) => {
     if (seen.has(option.value)) {
-      return false
+      return false;
     }
-    seen.add(option.value)
-    return true
-  })
+    seen.add(option.value);
+    return true;
+  });
 }
 
 function getProgramLabel(session, user) {
@@ -70,7 +71,7 @@ function getProgramLabel(session, user) {
     user?.program_name ||
     user?.program?.name ||
     "N/A"
-  )
+  );
 }
 
 function getDepartmentLabel(session, user) {
@@ -82,11 +83,11 @@ function getDepartmentLabel(session, user) {
     user?.department_name ||
     user?.department?.name ||
     "N/A"
-  )
+  );
 }
 
 function isQrProblem(apiError) {
-  const message = getApiErrorMessage(apiError, "").toLowerCase()
+  const message = getApiErrorMessage(apiError, "").toLowerCase();
   return (
     [400, 404, 410].includes(apiError?.response?.status) ||
     message.includes("qr") ||
@@ -94,231 +95,237 @@ function isQrProblem(apiError) {
     message.includes("session not found") ||
     message.includes("expired") ||
     message.includes("invalid")
-  )
+  );
 }
 
 function extractQrToken(value) {
-  const raw = String(value || "").trim()
-  if (!raw) return ""
+  const raw = String(value || "").trim();
+  if (!raw) return "";
   try {
-    const parsed = new URL(raw)
-    const parts = parsed.pathname.split("/").filter(Boolean)
-    return parts.at(-1) || ""
+    const parsed = new URL(raw);
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    return parts.at(-1) || "";
   } catch {
-    const parts = raw.split("/").filter(Boolean)
-    return parts.at(-1) || raw
+    const parts = raw.split("/").filter(Boolean);
+    return parts.at(-1) || raw;
   }
 }
 
 export default function FacultyScanConfirmationPage() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const params = useParams()
-  const [searchParams] = useSearchParams()
-  const { token, user } = getStoredAuth()
-  const videoRef = useRef(null)
-  const streamRef = useRef(null)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const params = useParams();
+  const [searchParams] = useSearchParams();
+  const { token, user } = getStoredAuth();
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
 
   const qrToken = useMemo(
     () => params.qrToken || searchParams.get("token") || "",
     [params.qrToken, searchParams],
-  )
+  );
 
-  const [session, setSession] = useState(null)
-  const [selectedSectionId, setSelectedSectionId] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
-  const [isConfirming, setIsConfirming] = useState(false)
-  const [error, setError] = useState("")
-  const [warning, setWarning] = useState("")
-  const [success, setSuccess] = useState("")
-  const [alreadyRecorded, setAlreadyRecorded] = useState(false)
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
-  const [qrProblem, setQrProblem] = useState(false)
-  const [scannerError, setScannerError] = useState("")
-  const [manualQrValue, setManualQrValue] = useState("")
+  const [session, setSession] = useState(null);
+  const [selectedSectionId, setSelectedSectionId] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
+  const [success, setSuccess] = useState("");
+  const [alreadyRecorded, setAlreadyRecorded] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [qrProblem, setQrProblem] = useState(false);
+  const [scannerError, setScannerError] = useState("");
+  const [manualQrValue, setManualQrValue] = useState("");
 
   const sectionOptions = useMemo(
     () => getSectionOptions(session, user),
     [session, user],
-  )
-  const isStudent = user?.role === "student"
+  );
+  const isStudent = user?.role === "student";
   const requiresSectionSelection =
     isStudent &&
     (sectionOptions.length > 0 || session?.requires_section) &&
-    session?.next_valid_action === "check-in"
+    session?.next_valid_action === "check-in";
 
   useEffect(() => {
     if (!token) {
       navigate(ROUTES.LOGIN, {
         replace: true,
         state: { from: `${location.pathname}${location.search}` },
-      })
+      });
     }
-  }, [location.pathname, location.search, navigate, token])
+  }, [location.pathname, location.search, navigate, token]);
 
   useEffect(() => {
     const loadSession = async () => {
-      if (!token) return
+      if (!token) return;
       if (!qrToken) {
-        setQrProblem(false)
-        setAlreadyRecorded(false)
-        setIsLoading(false)
-        return
+        setQrProblem(false);
+        setAlreadyRecorded(false);
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(true)
-      setError("")
-      setWarning("")
-      setQrProblem(false)
-      setAlreadyRecorded(false)
-      setSelectedSectionId("")
+      setIsLoading(true);
+      setError("");
+      setWarning("");
+      setQrProblem(false);
+      setAlreadyRecorded(false);
+      setSelectedSectionId("");
       try {
-        const data = await getFacultySessionPreview(qrToken)
-        setSession(data.session)
-        setAlreadyRecorded(Boolean(data.already_recorded))
+        const data = await getFacultySessionPreview(qrToken);
+        setSession(data.session);
+        setAlreadyRecorded(Boolean(data.already_recorded));
       } catch (apiError) {
         if (isQrProblem(apiError)) {
-          setQrProblem(true)
+          setQrProblem(true);
         } else {
-          setError(getApiErrorMessage(apiError, "Unable to load session details."))
+          setError(
+            getApiErrorMessage(apiError, "Unable to load session details."),
+          );
         }
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    loadSession()
-  }, [qrToken, token])
+    };
+    loadSession();
+  }, [qrToken, token]);
 
   useEffect(() => {
-    if (!token || qrToken || isLoading) return undefined
-    let isCancelled = false
-    let frameId = 0
+    if (!token || qrToken || isLoading) return undefined;
+    let isCancelled = false;
+    let frameId = 0;
 
     const stopScanner = () => {
-      if (frameId) window.cancelAnimationFrame(frameId)
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-    }
+      if (frameId) window.cancelAnimationFrame(frameId);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
 
     const startScanner = async () => {
-      setScannerError("")
+      setScannerError("");
       if (!("BarcodeDetector" in window)) {
-        setScannerError("Camera scanning is not supported on this browser. You can paste the QR link below.")
-        return
+        setScannerError("Camera scanning is not supported on this browser.");
+        return;
       }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
           audio: false,
-        })
+        });
         if (isCancelled) {
-          stream.getTracks().forEach((track) => track.stop())
-          return
+          stream.getTracks().forEach((track) => track.stop());
+          return;
         }
-        streamRef.current = stream
+        streamRef.current = stream;
         if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          await videoRef.current.play()
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
         }
-        const detector = new window.BarcodeDetector({ formats: ["qr_code"] })
+        const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
         const scanFrame = async () => {
-          if (isCancelled || !videoRef.current) return
+          if (isCancelled || !videoRef.current) return;
           try {
-            const codes = await detector.detect(videoRef.current)
-            const tokenValue = extractQrToken(codes[0]?.rawValue)
+            const codes = await detector.detect(videoRef.current);
+            const tokenValue = extractQrToken(codes[0]?.rawValue);
             if (tokenValue) {
-              stopScanner()
-              navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
-              return
+              stopScanner();
+              navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, {
+                replace: true,
+              });
+              return;
             }
           } catch {
-            setScannerError("Unable to read the QR code. Please try again or paste the QR link below.")
+            setScannerError("Unable to read the QR code. Please try again.");
           }
-          frameId = window.requestAnimationFrame(scanFrame)
-        }
-        frameId = window.requestAnimationFrame(scanFrame)
+          frameId = window.requestAnimationFrame(scanFrame);
+        };
+        frameId = window.requestAnimationFrame(scanFrame);
       } catch {
-        setScannerError("Camera access was blocked. Allow camera access or paste the QR link below.")
+        setScannerError("Camera access was blocked. Allow camera access.");
       }
-    }
+    };
 
-    startScanner()
+    startScanner();
     return () => {
-      isCancelled = true
-      stopScanner()
-    }
-  }, [isLoading, navigate, qrToken, token])
+      isCancelled = true;
+      stopScanner();
+    };
+  }, [isLoading, navigate, qrToken, token]);
 
   useEffect(() => {
     if (sectionOptions.length === 1) {
-      setSelectedSectionId(sectionOptions[0].value)
+      setSelectedSectionId(sectionOptions[0].value);
     }
-  }, [sectionOptions])
+  }, [sectionOptions]);
 
   const handleConfirm = async () => {
-    if (!qrToken || !session?.next_valid_action) return
+    if (!qrToken || !session?.next_valid_action) return;
     if (requiresSectionSelection && !selectedSectionId) {
-      setError("Select your section before confirming attendance.")
-      return
+      setError("Select your section before confirming attendance.");
+      return;
     }
 
-    setIsConfirming(true)
-    setError("")
-    setWarning("")
-    setSuccess("")
+    setIsConfirming(true);
+    setError("");
+    setWarning("");
+    setSuccess("");
     try {
       await scanAttendance(
         qrToken,
         session.next_valid_action,
         requiresSectionSelection ? selectedSectionId : "",
-      )
-      const isCheckInAction = session.next_valid_action === "check-in"
-      setAlreadyRecorded(true)
+      );
+      const isCheckInAction = session.next_valid_action === "check-in";
+      setAlreadyRecorded(true);
       setSuccess(
         isCheckInAction
           ? "Check-in recorded successfully. Please scan again when you are ready to check out."
           : "Check-out recorded successfully. You have already completed attendance for this session.",
-      )
+      );
     } catch (apiError) {
       const apiMessage = getApiErrorMessage(
         apiError,
         "Unable to process attendance request.",
-      )
-      const statusCode = apiError?.response?.status
+      );
+      const statusCode = apiError?.response?.status;
 
       if (statusCode === 409) {
-        setWarning(apiMessage || "You have already checked in for this session.")
+        setWarning(
+          apiMessage || "You have already checked in for this session.",
+        );
       } else if (isQrProblem(apiError)) {
-        setQrProblem(true)
+        setQrProblem(true);
       } else {
-        setError(apiMessage)
+        setError(apiMessage);
       }
     } finally {
-      setIsConfirming(false)
+      setIsConfirming(false);
     }
-  }
+  };
 
   const handleManualQrSubmit = (event) => {
-    event.preventDefault()
-    const tokenValue = extractQrToken(manualQrValue)
+    event.preventDefault();
+    const tokenValue = extractQrToken(manualQrValue);
     if (!tokenValue) {
-      setScannerError("Enter a valid QR link or token.")
-      return
+      setScannerError("Enter a valid QR link or token.");
+      return;
     }
-    navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
-  }
+    navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true });
+  };
 
   const isSessionClosed =
     session?.can_accept_attendance === false ||
-    session?.lifecycle_status === "ENDED"
+    session?.lifecycle_status === "ENDED";
   const actionLabel =
-    session?.next_valid_action === "check-out" ? "Check Out" : "Check In"
-  const hasAction = Boolean(session?.next_valid_action)
+    session?.next_valid_action === "check-out" ? "Check Out" : "Check In";
+  const hasAction = Boolean(session?.next_valid_action);
   const isActionDisabled =
     isConfirming ||
     Boolean(success) ||
     isSessionClosed ||
     !hasAction ||
-    (requiresSectionSelection && !selectedSectionId)
+    (requiresSectionSelection && !selectedSectionId);
   const confirmButtonText = isSessionClosed
     ? "Session Closed"
     : isConfirming
@@ -327,7 +334,7 @@ export default function FacultyScanConfirmationPage() {
         ? "Attendance Confirmed"
         : hasAction
           ? actionLabel
-          : "Attendance Complete"
+          : "Attendance Complete";
   const attendanceStatusLabel = success
     ? "Attendance Confirmed"
     : session?.already_checked_out || alreadyRecorded
@@ -336,34 +343,36 @@ export default function FacultyScanConfirmationPage() {
         ? "Already Checked In"
         : hasAction
           ? `Ready to ${actionLabel}`
-          : "No Action Available"
+          : "No Action Available";
   const promptText = isSessionClosed
     ? "This session is no longer accepting attendance."
     : success
       ? "Attendance has been recorded."
       : hasAction
         ? `Ready to ${actionLabel.toLowerCase()}?`
-        : "No additional attendance action is available."
+        : "No additional attendance action is available.";
 
   const checkInWindowLabel = useMemo(() => {
-    if (!session) return ""
-    if (!session.enable_check_in_window) return "Anytime while session is active"
-    const startLabel = formatDateTime(session.check_in_start_time)
+    if (!session) return "";
+    if (!session.enable_check_in_window)
+      return "Anytime while session is active";
+    const startLabel = formatDateTime(session.check_in_start_time);
     const endLabel = session.check_in_end_time
       ? formatDateTime(session.check_in_end_time)
-      : "No end time"
-    return `${startLabel} to ${endLabel}`
-  }, [session])
+      : "No end time";
+    return `${startLabel} to ${endLabel}`;
+  }, [session]);
 
   const checkOutWindowLabel = useMemo(() => {
-    if (!session) return ""
-    if (!session.enable_check_out_window) return "Anytime while session is active"
-    const startLabel = formatDateTime(session.check_out_start_time)
+    if (!session) return "";
+    if (!session.enable_check_out_window)
+      return "Anytime while session is active";
+    const startLabel = formatDateTime(session.check_out_start_time);
     const endLabel = session.check_out_end_time
       ? formatDateTime(session.check_out_end_time)
-      : "No end time"
-    return `${startLabel} to ${endLabel}`
-  }, [session])
+      : "No end time";
+    return `${startLabel} to ${endLabel}`;
+  }, [session]);
 
   return (
     <>
@@ -386,13 +395,19 @@ export default function FacultyScanConfirmationPage() {
           </p>
         ) : null}
         {!isLoading && warning ? (
-          <p className={`${common.dataState} ${common.error}`.trim()}>{warning}</p>
+          <p className={`${common.dataState} ${common.error}`.trim()}>
+            {warning}
+          </p>
         ) : null}
-        {!isLoading && error && !qrProblem ? <MessageBanner type="error" message={error} /> : null}
+        {!isLoading && error && !qrProblem ? (
+          <MessageBanner type="error" message={error} />
+        ) : null}
         {!isLoading && session?.action_message ? (
           <MessageBanner type="info" message={session.action_message} />
         ) : null}
-        {!isLoading && success ? <MessageBanner type="info" message={success} /> : null}
+        {!isLoading && success ? (
+          <MessageBanner type="info" message={success} />
+        ) : null}
 
         {!isLoading && qrProblem ? (
           <div className={styles.expiredState}>
@@ -401,7 +416,8 @@ export default function FacultyScanConfirmationPage() {
             </div>
             <h2>QR Code Expired</h2>
             <p>
-              This QR code is no longer valid. Please scan the latest QR code displayed by the facilitator or administrator to continue.
+              This QR code is no longer valid. Please scan the latest QR code
+              displayed by the facilitator or administrator to continue.
             </p>
             <button
               type="button"
@@ -417,23 +433,21 @@ export default function FacultyScanConfirmationPage() {
         {!isLoading && !qrToken && !qrProblem ? (
           <div className={styles.scannerState}>
             <h2>Scan QR Code</h2>
-            <p>Point your camera at the attendance QR code displayed by the facilitator.</p>
+            <p>
+              Point your camera at the attendance QR code displayed by the
+              facilitator.
+            </p>
             <div className={styles.scannerFrame}>
-              <video ref={videoRef} muted playsInline aria-label="QR scanner camera preview" />
-            </div>
-            {scannerError ? <MessageBanner type="error" message={scannerError} /> : null}
-            <form className={styles.manualQrForm} onSubmit={handleManualQrSubmit}>
-              <label htmlFor="manual_qr_value">Paste QR link or token</label>
-              <input
-                id="manual_qr_value"
-                value={manualQrValue}
-                onChange={(event) => setManualQrValue(event.target.value)}
-                placeholder="https://.../scan/token"
+              <video
+                ref={videoRef}
+                muted
+                playsInline
+                aria-label="QR scanner camera preview"
               />
-              <button className={`${common.primaryBtn} ${styles.scanAgainButton}`.trim()} type="submit">
-                Continue
-              </button>
-            </form>
+            </div>
+            {scannerError ? (
+              <MessageBanner type="error" message={scannerError} />
+            ) : null}
           </div>
         ) : null}
 
@@ -470,7 +484,9 @@ export default function FacultyScanConfirmationPage() {
                       <select
                         id="section_id"
                         value={selectedSectionId}
-                        onChange={(event) => setSelectedSectionId(event.target.value)}
+                        onChange={(event) =>
+                          setSelectedSectionId(event.target.value)
+                        }
                         disabled={isConfirming || isSessionClosed}
                       >
                         <option value="">Choose your section</option>
@@ -503,21 +519,34 @@ export default function FacultyScanConfirmationPage() {
                 aria-expanded={isDetailsOpen}
               >
                 <span>Session Details</span>
-                <FiChevronDown className={isDetailsOpen ? styles.chevronOpen : ""} aria-hidden="true" />
+                <FiChevronDown
+                  className={isDetailsOpen ? styles.chevronOpen : ""}
+                  aria-hidden="true"
+                />
               </button>
               {isDetailsOpen ? (
                 <div className={styles.summaryGrid}>
                   <div className={styles.summaryItem}>
                     <span>Date</span>
-                    <p><FiCalendar aria-hidden="true" /> {formatIsoDate(session.start_time)}</p>
+                    <p>
+                      <FiCalendar aria-hidden="true" />{" "}
+                      {formatIsoDate(session.start_time)}
+                    </p>
                   </div>
                   <div className={styles.summaryItem}>
                     <span>Time</span>
-                    <p><FiClock aria-hidden="true" /> {formatDateTime(session.start_time)} to {formatDateTime(session.end_time)}</p>
+                    <p>
+                      <FiClock aria-hidden="true" />{" "}
+                      {formatDateTime(session.start_time)} to{" "}
+                      {formatDateTime(session.end_time)}
+                    </p>
                   </div>
                   <div className={styles.summaryItem}>
                     <span>Department</span>
-                    <p><FiMapPin aria-hidden="true" /> {getDepartmentLabel(session, user)}</p>
+                    <p>
+                      <FiMapPin aria-hidden="true" />{" "}
+                      {getDepartmentLabel(session, user)}
+                    </p>
                   </div>
                   <div className={styles.summaryItem}>
                     <span>Check-in Window</span>
@@ -529,7 +558,10 @@ export default function FacultyScanConfirmationPage() {
                   </div>
                   <div className={styles.summaryItem}>
                     <span>Session Status</span>
-                    <p><FiCheckCircle aria-hidden="true" /> {session.lifecycle_status || "UNKNOWN"}</p>
+                    <p>
+                      <FiCheckCircle aria-hidden="true" />{" "}
+                      {session.lifecycle_status || "UNKNOWN"}
+                    </p>
                   </div>
                   <div className={styles.summaryItem}>
                     <span>Already Recorded</span>
@@ -544,10 +576,9 @@ export default function FacultyScanConfirmationPage() {
                 </div>
               ) : null}
             </div>
-
           </div>
         ) : null}
       </section>
     </>
-  )
+  );
 }
