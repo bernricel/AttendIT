@@ -378,53 +378,6 @@
   padding: 14px;
 }
 
-.manualQrForm {
-  width: 100%;
-  display: grid;
-  gap: 9px;
-  text-align: left;
-}
-
-.manualQrForm label {
-  color: #64748b;
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.manualQrForm input {
-  width: 100%;
-  max-width: 100%;
-  min-height: 44px;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  color: #0f172a;
-  padding: 9px 12px;
-  font-weight: 650;
-}
-
-.fallbackActions {
-  width: 100%;
-  display: grid;
-  gap: 10px;
-}
-
-.fallbackButton {
-  width: 100%;
-  min-height: 46px;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border-radius: 14px !important;
-  border-color: #cbd5e1 !important;
-  background: #ffffff !important;
-  color: #0f172a !important;
-  font-weight: 850 !important;
-}
-
-.fileInput,
 .hiddenCanvas {
   display: none;
 }

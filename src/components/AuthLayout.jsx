@@ -4,9 +4,7 @@ export default function AuthLayout({ title, subtitle, children, sideNote }) {
   return (
     <main className={styles.authPage}>
       <section className={styles.authBrandPanel}>
-        <img src="/syncin-icon.png" alt="Sync In logo" className={styles.brandLogo} />
-        <span className={styles.brandTag}>Sync In Attendance Portal</span>
-        <h1>{title}</h1>
+        <img src="/dashboard.png" alt="Sync In logo" className={styles.brandLogo} />
         <p>{subtitle}</p>
         {sideNote ? <div className={styles.brandSideNote}>{sideNote}</div> : null}
         <footer className={styles.publicCredits} aria-label="Development team">

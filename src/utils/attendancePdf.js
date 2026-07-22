@@ -17,6 +17,9 @@ function formatLongDate(value) {
 }
 
 function toLateStatus(row) {
+  const lateStatus = String(row.late_status || "").trim()
+  if (lateStatus) return lateStatus
+
   const status = normalizeStatus(row.attendance_status)
   if (status === "late") return "Late"
   if (status === "on_time") return "On Time"

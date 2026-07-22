@@ -163,6 +163,13 @@
   transition: box-shadow var(--motion-fast), border-color var(--motion-fast), background-color var(--motion-fast);
 }
 
+.adminTopbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  flex-shrink: 0;
+}
+
 .adminTopbar h1,
 .facultyTopbar h1 {
   margin: 4px 0 0;
@@ -369,6 +376,18 @@
     min-height: 100vh;
     overflow: visible;
     padding: 14px;
+  }
+  .adminShell {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .adminMain {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

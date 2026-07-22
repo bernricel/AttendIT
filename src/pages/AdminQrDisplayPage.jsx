@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 
 import AdminPanel from "../components/admin/AdminPanel";
@@ -159,6 +159,7 @@ function getManualActionClass(user) {
 
 export default function AdminQrDisplayPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isQrDisplayRoute = location.pathname === ROUTES.ADMIN_QR_DISPLAY;
   const [selectedSession, setSelectedSession] = useState(null);
   const [selectedId, setSelectedId] = useState("");
@@ -179,10 +180,16 @@ export default function AdminQrDisplayPage() {
   const [manualError, setManualError] = useState("");
   const [manualSuccess, setManualSuccess] = useState("");
   const [isManualLoading, setIsManualLoading] = useState(false);
-  const { qrStatus, qrError, countdownLabel } = useSessionQrStatus(isQrDisplayRoute ? selectedId : "");
+  const { qrStatus, qrError, countdownLabel, rotationInterval, isSessionClosed } = useSessionQrStatus(isQrDisplayRoute ? selectedId : "");
   const openSession = (session) => {
     setSelectedSession(session);
     setSelectedId(String(session.id));
+  };
+
+  const backToSessionBrowser = () => {
+    setSelectedSession(null);
+    setSelectedId("");
+    navigate(ROUTES.ADMIN_QR_DISPLAY, { replace: true, state: null });
   };
 
   useEffect(() => {
@@ -235,8 +242,8 @@ export default function AdminQrDisplayPage() {
   });
   const separateDisplayUrl = selectedSession ? buildAdminQrPresentationRoute(selectedSession.id) : "";
   const sessionLifecycleStatus = qrStatus?.lifecycle_status || selectedSession?.lifecycle_status || "UNKNOWN";
-  const canAcceptAttendance =
-    qrStatus?.can_accept_attendance ?? selectedSession?.can_accept_attendance ?? false;
+  const canAcceptAttendance = !isSessionClosed &&
+    (qrStatus?.can_accept_attendance ?? selectedSession?.can_accept_attendance ?? false);
   const qrCodeElement = useMemo(
     () => (canAcceptAttendance && qrUrl ? <QRCodeCanvas value={qrUrl} size={320} level="H" includeMargin /> : null),
     [canAcceptAttendance, qrUrl],
@@ -414,10 +421,7 @@ export default function AdminQrDisplayPage() {
             <button
               type="button"
               className={`${common.ghostBtn} ${common.compact}`.trim()}
-              onClick={() => {
-                setSelectedSession(null);
-                setSelectedId("");
-              }}
+              onClick={backToSessionBrowser}
               style={{ marginBottom: "16px", fontWeight: 600, color: "#1e293b" }}
             >
               Back to Session Browser
@@ -455,7 +459,7 @@ export default function AdminQrDisplayPage() {
                 <p><strong>End:</strong> {formatDateTime(selectedSession.session_end_time || selectedSession.end_time)}</p>
                 {canAcceptAttendance ? <p><strong>QR Token:</strong> <code>{currentQrToken}</code></p> : null}
                 <p>
-                  <strong>Refresh Interval:</strong> {qrStatus?.qr_refresh_interval_seconds ?? selectedSession.qr_refresh_interval_seconds ?? 30}s
+                  <strong>Refresh Interval:</strong> {rotationInterval ?? selectedSession.qr_refresh_interval_seconds ?? "-"}s
                 </p>
                 <p className={styles.countdownRow}>
                   <strong>Next Rotation In:</strong>{" "}

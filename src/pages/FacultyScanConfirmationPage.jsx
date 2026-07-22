@@ -14,11 +14,9 @@ import {
   FiCheckCircle,
   FiChevronDown,
   FiClock,
-  FiExternalLink,
   FiInfo,
   FiMapPin,
   FiRefreshCw,
-  FiUpload,
 } from "react-icons/fi"
 
 import LayoutPageMeta from "../components/layout/LayoutPageMeta"
@@ -29,11 +27,10 @@ import { getStoredAuth } from "../services/authStorage"
 import common from "../styles/common.module.css"
 import { getApiErrorMessage } from "../utils/apiError"
 import { formatDateTime, formatIsoDate } from "../utils/dateTime"
-import { buildSyncInScanUrl } from "../utils/qr"
 import styles from "./FacultyScanConfirmationPage.module.css"
 
 const CAMERA_FAILURE_MESSAGE =
-  "Camera could not start. You can still continue by pasting the QR link/token or uploading a QR screenshot."
+  "Camera could not start. Check camera permissions and try again, or open a valid Sync In QR link."
 const CAMERA_SECURE_CONTEXT_MESSAGE =
   "Camera access requires HTTPS. Please open Sync In using the secure site link."
 
@@ -193,7 +190,6 @@ export default function FacultyScanConfirmationPage() {
   const streamRef = useRef(null)
   const frameRef = useRef(0)
   const canvasRef = useRef(null)
-  const fileInputRef = useRef(null)
   const scannerActiveRef = useRef(false)
 
   const qrToken = useMemo(
@@ -212,10 +208,8 @@ export default function FacultyScanConfirmationPage() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [qrProblem, setQrProblem] = useState(false)
   const [scannerError, setScannerError] = useState("")
-  const [manualQrValue, setManualQrValue] = useState("")
   const [isScannerStarting, setIsScannerStarting] = useState(false)
   const [isScannerActive, setIsScannerActive] = useState(false)
-  const [isImageDecoding, setIsImageDecoding] = useState(false)
 
   const sectionOptions = useMemo(
     () => getSectionOptions(session, user),
@@ -239,9 +233,6 @@ export default function FacultyScanConfirmationPage() {
     const sectionId = resolvedSectionId
     return sectionOptions.find((option) => option.value === sectionId)?.label || ""
   }, [resolvedSectionId, sectionOptions])
-  const normalizedManualToken = extractQrToken(manualQrValue)
-  const manualOpenUrl = buildSyncInScanUrl({ qrToken: normalizedManualToken })
-
   const stopScanner = useCallback(() => {
     if (frameRef.current) {
       window.cancelAnimationFrame(frameRef.current)
@@ -438,63 +429,6 @@ export default function FacultyScanConfirmationPage() {
     }
   }
 
-  const handleManualQrSubmit = (event) => {
-    event.preventDefault()
-    const tokenValue = extractQrToken(manualQrValue)
-    if (!tokenValue) {
-      setScannerError("Enter a valid QR link or token.")
-      return
-    }
-    navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
-  }
-
-  const decodeUploadedQrImage = async (file) => {
-    const objectUrl = URL.createObjectURL(file)
-    try {
-      const image = new Image()
-      image.decoding = "async"
-      const loadedImage = await new Promise((resolve, reject) => {
-        image.onload = () => resolve(image)
-        image.onerror = reject
-        image.src = objectUrl
-      })
-      const canvas = canvasRef.current || document.createElement("canvas")
-      canvas.width = loadedImage.naturalWidth
-      canvas.height = loadedImage.naturalHeight
-      const context = canvas.getContext("2d", { willReadFrequently: true })
-      if (!context) return ""
-      context.drawImage(loadedImage, 0, 0)
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-      const code = jsQR(imageData.data, imageData.width, imageData.height)
-      return extractQrToken(code?.data)
-    } finally {
-      URL.revokeObjectURL(objectUrl)
-    }
-  }
-
-  const handleQrImageUpload = async (event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    setIsImageDecoding(true)
-    setScannerError("")
-    try {
-      const tokenValue = await decodeUploadedQrImage(file)
-      if (!tokenValue) {
-        setScannerError("Could not read a QR code from that image. Try another screenshot or paste the QR link/token.")
-        return
-      }
-      stopScanner()
-      navigate(`${ROUTES.FACULTY_SCAN}/${tokenValue}`, { replace: true })
-    } catch {
-      setScannerError("Could not read a QR code from that image. Try another screenshot or paste the QR link/token.")
-    } finally {
-      setIsImageDecoding(false)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-    }
-  }
-
   const isSessionClosed =
     session?.can_accept_attendance === false ||
     session?.lifecycle_status === "ENDED"
@@ -630,48 +564,6 @@ export default function FacultyScanConfirmationPage() {
               {!isScannerActive ? <span>Camera preview appears here</span> : null}
             </div>
             {scannerError ? <MessageBanner type="error" message={scannerError} /> : null}
-            <form className={styles.manualQrForm} onSubmit={handleManualQrSubmit}>
-              <label htmlFor="manual_qr_value">Paste QR link or token</label>
-              <input
-                id="manual_qr_value"
-                value={manualQrValue}
-                onChange={(event) => setManualQrValue(event.target.value)}
-                placeholder="https://.../scan/token"
-              />
-              <button className={`${common.primaryBtn} ${styles.scanAgainButton}`.trim()} type="submit">
-                Continue
-              </button>
-            </form>
-            <div className={styles.fallbackActions}>
-              <input
-                ref={fileInputRef}
-                className={styles.fileInput}
-                id="qr_image_upload"
-                type="file"
-                accept="image/*"
-                onChange={handleQrImageUpload}
-              />
-              <button
-                type="button"
-                className={`${common.ghostBtn} ${styles.fallbackButton}`.trim()}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isImageDecoding}
-              >
-                <FiUpload aria-hidden="true" />
-                {isImageDecoding ? "Reading Image..." : "Upload QR Screenshot"}
-              </button>
-              {manualOpenUrl ? (
-                <a
-                  className={`${common.ghostBtn} ${common.linkButton} ${styles.fallbackButton}`.trim()}
-                  href={manualOpenUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FiExternalLink aria-hidden="true" />
-                  Open in Sync In App
-                </a>
-              ) : null}
-            </div>
             <canvas ref={canvasRef} className={styles.hiddenCanvas} aria-hidden="true" />
           </div>
         ) : null}

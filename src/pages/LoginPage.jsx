@@ -118,7 +118,7 @@ export default function LoginPage() {
       subtitle="Secure sign-in for users, students, and administrators."
       sideNote={
         <p>
-          Access is limited to accounts ending with <strong>@ua.edu.ph</strong>.
+          Access is restricted to users with a valid <strong>UA Google Workspace</strong> Account.
         </p>
       }
     >

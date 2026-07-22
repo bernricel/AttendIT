@@ -15,7 +15,7 @@ export default function AdminQrPresentationPage() {
     error: '',
     session: null,
   })
-  const { qrStatus, qrError, countdownLabel } = useSessionQrStatus(sessionId)
+  const { qrStatus, qrError, countdownLabel, rotationInterval, isSessionClosed } = useSessionQrStatus(sessionId)
 
   useEffect(() => {
     let isActive = true
@@ -67,12 +67,12 @@ export default function AdminQrPresentationPage() {
     qrToken: qrStatus?.qr_token || sessionLookup.session?.qr_token || '',
   })
   const refreshInterval = useMemo(
-    () => qrStatus?.qr_refresh_interval_seconds ?? sessionLookup.session?.qr_refresh_interval_seconds ?? 30,
-    [qrStatus?.qr_refresh_interval_seconds, sessionLookup.session?.qr_refresh_interval_seconds],
+    () => rotationInterval ?? sessionLookup.session?.qr_refresh_interval_seconds ?? '-',
+    [rotationInterval, sessionLookup.session?.qr_refresh_interval_seconds],
   )
   const sessionLifecycleStatus = qrStatus?.lifecycle_status || sessionLookup.session?.lifecycle_status || 'UNKNOWN'
-  const canAcceptAttendance =
-    qrStatus?.can_accept_attendance ?? sessionLookup.session?.can_accept_attendance ?? false
+  const canAcceptAttendance = !isSessionClosed &&
+    (qrStatus?.can_accept_attendance ?? sessionLookup.session?.can_accept_attendance ?? false)
   const qrCodeElement = useMemo(
     () => (canAcceptAttendance && qrUrl ? <QRCodeCanvas value={qrUrl} size={380} level="H" includeMargin /> : null),
     [canAcceptAttendance, qrUrl],
